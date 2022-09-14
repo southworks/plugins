@@ -83,9 +83,9 @@ class FileSelectorWindows extends FileSelectorPlatform {
       ..title = 'hello world!!'
       ..filterSpecification = {'All Files (*.*)': '*.*'};
 
-    final String? result = filePicker.getFile();
+    final Directory? result = filePicker.getDirectory();
     if (result != null) {
-      return Future<String>.value(result);
+      return Future<String>.value(result.path);
     }
     return null;
   }

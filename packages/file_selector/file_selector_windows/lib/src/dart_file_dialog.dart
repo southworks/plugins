@@ -15,7 +15,7 @@ class CustomPlace {
 
 abstract class FileDialog {
   /// A mapping of known folders to GUID references.
-  final _knownFolderMappings = {
+  final Map<WindowsKnownFolder, String> _knownFolderMappings = {
     WindowsKnownFolder.AdminTools: FOLDERID_AdminTools,
     WindowsKnownFolder.CDBurning: FOLDERID_CDBurning,
     WindowsKnownFolder.CommonAdminTools: FOLDERID_CommonAdminTools,
@@ -71,7 +71,7 @@ abstract class FileDialog {
   };
 
   /// A list of custom places. Use [addPlace] to add an item to this list.
-  final customPlaces = <CustomPlace>[];
+  final List<CustomPlace> customPlaces = <CustomPlace>[];
 
   /// Sets the title of the dialog.
   String title = '';
@@ -125,24 +125,32 @@ abstract class FileDialog {
 
   /// Add a known folder to the 'Quick Access' list.
   void addPlace(WindowsKnownFolder folder, Place location) {
-    var hr = CoInitializeEx(
+    int hr = CoInitializeEx(
         nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(hr)) throw WindowsException(hr);
+    if (FAILED(hr)) {
+      throw WindowsException(hr);
+    }
 
-    final folderGUID = _knownFolderMappings[folder]!;
-    final knownFolderManager = KnownFolderManager.createInstance();
-    final publicMusicFolder = calloc<GUID>()..ref.setGUID(folderGUID);
+    final String folderGUID = _knownFolderMappings[folder]!;
+    final KnownFolderManager knownFolderManager =
+        KnownFolderManager.createInstance();
+    final Pointer<GUID> publicMusicFolder = calloc<GUID>()
+      ..ref.setGUID(folderGUID);
 
-    final ppkf = calloc<Pointer<COMObject>>();
+    final Pointer<Pointer<COMObject>> ppkf = calloc<Pointer<COMObject>>();
     hr = knownFolderManager.getFolder(publicMusicFolder, ppkf);
-    if (FAILED(hr)) throw WindowsException(hr);
-    final knownFolder = IKnownFolder(ppkf.cast());
+    if (FAILED(hr)) {
+      throw WindowsException(hr);
+    }
+    final IKnownFolder knownFolder = IKnownFolder(ppkf.cast());
 
-    final psi = calloc<Pointer>();
-    final riid = convertToIID(IID_IShellItem);
+    final Pointer<Pointer<NativeType>> psi = calloc<Pointer>();
+    final Pointer<GUID> riid = convertToIID(IID_IShellItem);
     hr = knownFolder.getShellItem(0, riid, psi);
-    if (FAILED(hr)) throw WindowsException(hr);
-    final shellItem = IShellItem(psi.cast());
+    if (FAILED(hr)) {
+      throw WindowsException(hr);
+    }
+    final IShellItem shellItem = IShellItem(psi.cast());
 
     customPlaces.add(CustomPlace(shellItem, location));
 
