@@ -19,7 +19,7 @@ class OpenFilePicker extends FileDialog {
   bool? forcePreviewPaneOn;
 
   /// Returns a `File` object from the selected file path.
-  String? getFile() {
+  File? getFile() {
     bool didUserCancel = false;
     late String filePath;
 
@@ -142,11 +142,11 @@ class OpenFilePicker extends FileDialog {
     if (didUserCancel) {
       return null;
     } else {
-      return filePath;
+      return File(filePath);
     }
   }
 
-  /// Sets the options for the file dialog.
+  /// Sets and checks the options for the file dialog.
   int setOpenFileOptions(
       Pointer<Uint32> pfos, int hr, FileOpenDialog fileDialog) {
     int options = pfos.value;
@@ -196,30 +196,7 @@ class OpenFilePicker extends FileDialog {
       throw WindowsException(hr);
     }
 
-    int options = pfos.value;
-
-    options |= FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
-
-    if (hidePinnedPlaces) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_HIDEPINNEDPLACES;
-    }
-
-    if (fileMustExist) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
-    }
-
-    if (forceFileSystemItems) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM;
-    }
-
-    if (isDirectoryFixed) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
-    }
-
-    hr = dialog.setOptions(options);
-    if (FAILED(hr)) {
-      throw WindowsException(hr);
-    }
+    hr = setGetDirectoryOptions(pfos, hr, dialog);
 
     if (title.isNotEmpty) {
       hr = dialog.setTitle(TEXT(title));
@@ -287,5 +264,35 @@ class OpenFilePicker extends FileDialog {
     } else {
       return Directory(path);
     }
+  }
+
+  /// Sets and checks options for the dialog.
+  int setGetDirectoryOptions(
+      Pointer<Uint32> pfos, int hr, FileOpenDialog dialog) {
+    int options = pfos.value;
+
+    options |= FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
+
+    if (hidePinnedPlaces) {
+      options |= FILEOPENDIALOGOPTIONS.FOS_HIDEPINNEDPLACES;
+    }
+
+    if (fileMustExist) {
+      options |= FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
+    }
+
+    if (forceFileSystemItems) {
+      options |= FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM;
+    }
+
+    if (isDirectoryFixed) {
+      options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
+    }
+
+    hr = dialog.setOptions(options);
+    if (FAILED(hr)) {
+      throw WindowsException(hr);
+    }
+    return hr;
   }
 }
