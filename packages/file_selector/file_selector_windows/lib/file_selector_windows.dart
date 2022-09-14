@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'dart:io';
 
+import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'package:file_selector_windows/src/dart_file_selector_api.dart'
+    as picker;
+import 'package:file_selector_windows/src/dart_file_selector_api.dart';
 import 'src/messages.g.dart';
 
 /// An implementation of [FileSelectorPlatform] for Windows.
@@ -73,15 +77,17 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showOpenDialog(
-        SelectionOptions(
-          allowMultiple: false,
-          selectFolders: true,
-          allowedTypes: <TypeGroup>[],
-        ),
-        initialDirectory,
-        confirmButtonText);
-    return paths.isEmpty ? null : paths.first!;
+    final OpenFilePicker filePicker = picker.OpenFilePicker()
+      ..hidePinnedPlaces = true
+      ..forcePreviewPaneOn = true
+      ..title = 'hello world!!'
+      ..filterSpecification = {'All Files (*.*)': '*.*'};
+
+    final String? result = filePicker.getFile();
+    if (result != null) {
+      return Future<String>.value(result);
+    }
+    return null;
   }
 }
 
