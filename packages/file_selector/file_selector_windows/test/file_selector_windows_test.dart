@@ -4,6 +4,7 @@
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:file_selector_windows/file_selector_windows.dart';
+import 'package:file_selector_windows/src/dart_file_selector_api.dart';
 import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,20 +14,23 @@ import 'package:mockito/mockito.dart';
 import 'file_selector_windows_test.mocks.dart';
 import 'test_api.dart';
 
-@GenerateMocks(<Type>[TestFileSelectorApi])
+@GenerateMocks(<Type>[TestFileSelectorApi, OpenFilePicker])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final FileSelectorWindows plugin = FileSelectorWindows();
+  late FileSelectorWindows plugin;
   late MockTestFileSelectorApi mockApi;
+  late MockOpenFilePicker mockOpenFilePicker;
 
   setUp(() {
+    mockOpenFilePicker = MockOpenFilePicker();
     mockApi = MockTestFileSelectorApi();
+    plugin = FileSelectorWindows(mockOpenFilePicker);
     TestFileSelectorApi.setup(mockApi);
   });
 
   test('registered instance', () {
-    FileSelectorWindows.registerWith();
+    FileSelectorWindows.registerWith(mockOpenFilePicker);
     expect(FileSelectorPlatform.instance, isA<FileSelectorWindows>());
   });
 
@@ -184,32 +188,45 @@ void main() {
     });
   });
 
+  const String returnedPath = 'c://folder/foo';
+  const String confirmText = 'Open Directory';
+  const String initialDirectory = 'c://example/directory';
   group('#getDirectoryPath', () {
     setUp(() {
-      when(mockApi.showOpenDialog(any, any, any)).thenReturn(<String?>['foo']);
+      when(mockOpenFilePicker.getDirectoryPath()).thenReturn(returnedPath);
+      when(mockOpenFilePicker.title).thenReturn('title');
+      when(mockOpenFilePicker.hidePinnedPlaces).thenReturn(true);
+      when(mockOpenFilePicker.getDirectoryPath(confirmButtonText: confirmText))
+          .thenReturn(returnedPath);
+      when(mockOpenFilePicker.getDirectoryPath(
+              initialDirectory: initialDirectory))
+          .thenReturn(returnedPath);
     });
 
     test('simple call works', () async {
       final String? path = await plugin.getDirectoryPath();
 
-      expect(path, 'foo');
-      final VerificationResult result =
-          verify(mockApi.showOpenDialog(captureAny, null, null));
-      final SelectionOptions options = result.captured[0] as SelectionOptions;
-      expect(options.allowMultiple, false);
-      expect(options.selectFolders, true);
+      expect(path, returnedPath);
+      verify(mockOpenFilePicker.getDirectoryPath());
+      verify(mockOpenFilePicker.hidePinnedPlaces = true);
+      verify(mockOpenFilePicker.title = any);
     });
 
     test('passes initialDirectory correctly', () async {
-      await plugin.getDirectoryPath(initialDirectory: '/example/directory');
+      final String? path =
+          await plugin.getDirectoryPath(initialDirectory: initialDirectory);
 
-      verify(mockApi.showOpenDialog(any, '/example/directory', null));
+      verify(mockOpenFilePicker.getDirectoryPath(
+          initialDirectory: initialDirectory));
+      expect(path, returnedPath);
     });
 
     test('passes confirmButtonText correctly', () async {
-      await plugin.getDirectoryPath(confirmButtonText: 'Open Directory');
-
-      verify(mockApi.showOpenDialog(any, null, 'Open Directory'));
+      final String? path =
+          await plugin.getDirectoryPath(confirmButtonText: confirmText);
+      verify(
+          mockOpenFilePicker.getDirectoryPath(confirmButtonText: confirmText));
+      expect(path, returnedPath);
     });
   });
 

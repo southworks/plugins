@@ -8,11 +8,19 @@ import 'src/messages.g.dart';
 
 /// An implementation of [FileSelectorPlatform] for Windows.
 class FileSelectorWindows extends FileSelectorPlatform {
+  /// Constructor for filePicker.
+  FileSelectorWindows([this._filePicker]) {
+    _filePicker = _filePicker ?? OpenFilePicker();
+    _internalFilePicker = _filePicker!;
+  }
+
   final FileSelectorApi _hostApi = FileSelectorApi();
+  late OpenFilePicker _internalFilePicker;
+  late OpenFilePicker? _filePicker;
 
   /// Registers the Windows implementation.
-  static void registerWith() {
-    FileSelectorPlatform.instance = FileSelectorWindows();
+  static void registerWith([OpenFilePicker? filePicker]) {
+    FileSelectorPlatform.instance = FileSelectorWindows(filePicker);
   }
 
   @override
@@ -73,11 +81,10 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final OpenFilePicker filePicker = OpenFilePicker()
-      ..hidePinnedPlaces = true
-      ..title = 'Select a directory';
+    _internalFilePicker.hidePinnedPlaces = true;
+    _internalFilePicker.title = 'Select a directory';
 
-    final String? path = filePicker.getDirectoryPath(
+    final String? path = _internalFilePicker.getDirectoryPath(
         initialDirectory: initialDirectory,
         confirmButtonText: confirmButtonText);
     if (path != null) {

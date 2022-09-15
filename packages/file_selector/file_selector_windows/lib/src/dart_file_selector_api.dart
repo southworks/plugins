@@ -80,7 +80,7 @@ class OpenFilePicker extends FileDialog {
     String? confirmButtonText,
   }) {
     bool didUserCancel = false;
-    late String path;
+    late String userSelectedPath;
 
     int hResult = _initializeComLibrary();
 
@@ -138,7 +138,7 @@ class OpenFilePicker extends FileDialog {
       // long file paths and the user selects a path with length > MAX_PATH
       // characters, it could be longer. In this case, the file name will be
       // truncated.
-      path = pathPtr.toDartString();
+      userSelectedPath = pathPtr.toDartString();
 
       hResult = item.release();
       if (FAILED(hResult)) {
@@ -155,7 +155,7 @@ class OpenFilePicker extends FileDialog {
     if (didUserCancel) {
       return null;
     } else {
-      return Directory(path);
+      return Directory(userSelectedPath);
     }
   }
 }
