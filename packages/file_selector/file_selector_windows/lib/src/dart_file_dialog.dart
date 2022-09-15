@@ -6,16 +6,23 @@ import 'package:win32/win32.dart';
 import 'dart_folders.dart';
 import 'dart_place.dart';
 
+/// Exposes custom places.
 class CustomPlace {
-  IShellItem item;
-  Place place;
-
+  /// CustomPlace constructor.
   CustomPlace(this.item, this.place);
+
+  /// An IShellItem.
+  IShellItem item;
+
+  /// A Place.
+  Place place;
 }
 
+/// An abstract of FileDialog, that allows user to interact with the file system.
 abstract class FileDialog {
   /// A mapping of known folders to GUID references.
-  final Map<WindowsKnownFolder, String> _knownFolderMappings = {
+  final Map<WindowsKnownFolder, String> _knownFolderMappings =
+      <WindowsKnownFolder, String>{
     WindowsKnownFolder.AdminTools: FOLDERID_AdminTools,
     WindowsKnownFolder.CDBurning: FOLDERID_CDBurning,
     WindowsKnownFolder.CommonAdminTools: FOLDERID_CommonAdminTools,
@@ -99,7 +106,7 @@ abstract class FileDialog {
   /// The first value is the "friendly" name which is shown to the user (e.g.
   /// `JPEG Files`); the second value is a filter, which may be a semicolon-
   /// separated list (for example `*.jpg;*.jpeg`).
-  Map<String, String> filterSpecification = {};
+  Map<String, String> filterSpecification = <String, String>{};
 
   /// Which entry in the [filterSpecification] is shown by default. Typically
   /// this is the first entry shown.
@@ -110,7 +117,6 @@ abstract class FileDialog {
   bool hidePinnedPlaces = false;
 
   /// Ensures that returned items are file system items.
-  ///
   /// True by default.
   bool forceFileSystemItems = true;
 
@@ -125,10 +131,10 @@ abstract class FileDialog {
 
   /// Add a known folder to the 'Quick Access' list.
   void addPlace(WindowsKnownFolder folder, Place location) {
-    int hr = CoInitializeEx(
+    int hResult = CoInitializeEx(
         nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(hr)) {
-      throw WindowsException(hr);
+    if (FAILED(hResult)) {
+      throw WindowsException(hResult);
     }
 
     final String folderGUID = _knownFolderMappings[folder]!;
@@ -138,17 +144,17 @@ abstract class FileDialog {
       ..ref.setGUID(folderGUID);
 
     final Pointer<Pointer<COMObject>> ppkf = calloc<Pointer<COMObject>>();
-    hr = knownFolderManager.getFolder(publicMusicFolder, ppkf);
-    if (FAILED(hr)) {
-      throw WindowsException(hr);
+    hResult = knownFolderManager.getFolder(publicMusicFolder, ppkf);
+    if (FAILED(hResult)) {
+      throw WindowsException(hResult);
     }
     final IKnownFolder knownFolder = IKnownFolder(ppkf.cast());
 
-    final Pointer<Pointer<NativeType>> psi = calloc<Pointer>();
+    final Pointer<Pointer<NativeType>> psi = calloc<Pointer<NativeType>>();
     final Pointer<GUID> riid = convertToIID(IID_IShellItem);
-    hr = knownFolder.getShellItem(0, riid, psi);
-    if (FAILED(hr)) {
-      throw WindowsException(hr);
+    hResult = knownFolder.getShellItem(0, riid, psi);
+    if (FAILED(hResult)) {
+      throw WindowsException(hResult);
     }
     final IShellItem shellItem = IShellItem(psi.cast());
 
