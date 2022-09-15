@@ -6,7 +6,9 @@ package io.flutter.plugins.file_selector;
 
 import android.app.Activity;
 import android.app.Application;
+import android.os.Build;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
