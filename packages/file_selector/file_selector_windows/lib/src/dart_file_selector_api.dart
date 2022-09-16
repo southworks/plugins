@@ -6,14 +6,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
 import 'dart_file_dialog.dart';
+import 'dart_file_open_dialog_api.dart';
 import 'dart_place.dart';
 
 /// Dart native implementation of FileSelectorAPI
 class DartFileSelectorAPI extends FileDialog {
   /// We need the file to exist. This value is default to `false`.
-  DartFileSelectorAPI() : super() {
+  DartFileSelectorAPI([FileOpenDialogAPI? fileOpenDialogAPI]) : super() {
     fileMustExist = true;
+    _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();
   }
+
+  late FileOpenDialogAPI _fileOpenDialogAPI;
 
   /// Returns directory path from user selection
   String? getDirectoryPath({
@@ -29,7 +33,7 @@ class DartFileSelectorAPI extends FileDialog {
   /// Sets and checks options for the dialog.
   @visibleForTesting
   int setDirectoryOptions(
-      Pointer<Uint32> pfos, int hResult, FileOpenDialog dialog) {
+      Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
     int options = pfos.value;
 
     options |= FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
@@ -50,14 +54,16 @@ class DartFileSelectorAPI extends FileDialog {
       options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
     }
 
-    hResult = dialog.setOptions(options);
+    hResult = _fileOpenDialogAPI.setOptions(options, dialog);
     if (FAILED(hResult)) {
       throw WindowsException(hResult);
     }
     return hResult;
   }
 
-  int _initializeComLibrary() {
+  /// Initialices the com library
+  @visibleForTesting
+  int initializeComLibrary() {
     final int hResult = CoInitializeEx(
         nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (FAILED(hResult)) {
@@ -73,7 +79,7 @@ class DartFileSelectorAPI extends FileDialog {
     bool didUserCancel = false;
     late String userSelectedPath;
 
-    int hResult = _initializeComLibrary();
+    int hResult = initializeComLibrary();
 
     final FileOpenDialog dialog = FileOpenDialog.createInstance();
 

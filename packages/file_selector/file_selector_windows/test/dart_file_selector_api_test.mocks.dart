@@ -3,14 +3,10 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:ffi' as _i1;
-
-import 'package:ffi/ffi.dart' as _i6;
-import 'package:mockito/mockito.dart' as _i2;
-import 'package:win32/src/com/ifileopendialog.dart' as _i3;
-import 'package:win32/src/combase.dart' as _i4;
-import 'package:win32/src/guid.dart' as _i7;
-import 'package:win32/src/structs.g.dart' as _i5;
+import 'package:file_selector_windows/src/dart_file_open_dialog_api.dart'
+    as _i2;
+import 'package:mockito/mockito.dart' as _i1;
+import 'package:win32/win32.dart' as _i3;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -23,155 +19,16 @@ import 'package:win32/src/structs.g.dart' as _i5;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakePointer_0<T extends _i1.NativeType> extends _i2.SmartFake
-    implements _i1.Pointer<T> {
-  _FakePointer_0(Object parent, Invocation parentInvocation)
-      : super(parent, parentInvocation);
-}
-
-/// A class which mocks [FileOpenDialog].
+/// A class which mocks [FileOpenDialogAPI].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockFileOpenDialog extends _i2.Mock implements _i3.FileOpenDialog {
-  MockFileOpenDialog() {
-    _i2.throwOnMissingStub(this);
+class MockFileOpenDialogAPI extends _i1.Mock implements _i2.FileOpenDialogAPI {
+  MockFileOpenDialogAPI() {
+    _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i1.Pointer<_i4.COMObject> get ptr => (super.noSuchMethod(
-          Invocation.getter(#ptr),
-          returnValue:
-              _FakePointer_0<_i4.COMObject>(this, Invocation.getter(#ptr)))
-      as _i1.Pointer<_i4.COMObject>);
-  @override
-  set ptr(_i1.Pointer<_i4.COMObject>? _ptr) =>
-      super.noSuchMethod(Invocation.setter(#ptr, _ptr),
-          returnValueForMissingStub: null);
-  @override
-  int getResults(_i1.Pointer<_i1.Pointer<_i4.COMObject>>? ppenum) =>
-      (super.noSuchMethod(Invocation.method(#getResults, [ppenum]),
+  int setOptions(int? fos, _i3.IFileOpenDialog? dialog) =>
+      (super.noSuchMethod(Invocation.method(#setOptions, [fos, dialog]),
           returnValue: 0) as int);
-  @override
-  int getSelectedItems(_i1.Pointer<_i1.Pointer<_i4.COMObject>>? ppsai) =>
-      (super.noSuchMethod(Invocation.method(#getSelectedItems, [ppsai]),
-          returnValue: 0) as int);
-  @override
-  int setFileTypes(
-          int? cFileTypes, _i1.Pointer<_i5.COMDLG_FILTERSPEC>? rgFilterSpec) =>
-      (super.noSuchMethod(
-          Invocation.method(#setFileTypes, [cFileTypes, rgFilterSpec]),
-          returnValue: 0) as int);
-  @override
-  int setFileTypeIndex(int? iFileType) =>
-      (super.noSuchMethod(Invocation.method(#setFileTypeIndex, [iFileType]),
-          returnValue: 0) as int);
-  @override
-  int getFileTypeIndex(_i1.Pointer<_i1.Uint32>? piFileType) =>
-      (super.noSuchMethod(Invocation.method(#getFileTypeIndex, [piFileType]),
-          returnValue: 0) as int);
-  @override
-  int advise(_i1.Pointer<_i4.COMObject>? pfde,
-          _i1.Pointer<_i1.Uint32>? pdwCookie) =>
-      (super.noSuchMethod(Invocation.method(#advise, [pfde, pdwCookie]),
-          returnValue: 0) as int);
-  @override
-  int unadvise(int? dwCookie) =>
-      (super.noSuchMethod(Invocation.method(#unadvise, [dwCookie]),
-          returnValue: 0) as int);
-  @override
-  int setOptions(int? fos) =>
-      (super.noSuchMethod(Invocation.method(#setOptions, [fos]), returnValue: 0)
-          as int);
-  @override
-  int getOptions(_i1.Pointer<_i1.Uint32>? pfos) => (super
-          .noSuchMethod(Invocation.method(#getOptions, [pfos]), returnValue: 0)
-      as int);
-  @override
-  int setDefaultFolder(_i1.Pointer<_i4.COMObject>? psi) =>
-      (super.noSuchMethod(Invocation.method(#setDefaultFolder, [psi]),
-          returnValue: 0) as int);
-  @override
-  int setFolder(_i1.Pointer<_i4.COMObject>? psi) =>
-      (super.noSuchMethod(Invocation.method(#setFolder, [psi]), returnValue: 0)
-          as int);
-  @override
-  int getFolder(_i1.Pointer<_i1.Pointer<_i4.COMObject>>? ppsi) =>
-      (super.noSuchMethod(Invocation.method(#getFolder, [ppsi]), returnValue: 0)
-          as int);
-  @override
-  int getCurrentSelection(_i1.Pointer<_i1.Pointer<_i4.COMObject>>? ppsi) =>
-      (super.noSuchMethod(Invocation.method(#getCurrentSelection, [ppsi]),
-          returnValue: 0) as int);
-  @override
-  int setFileName(_i1.Pointer<_i6.Utf16>? pszName) =>
-      (super.noSuchMethod(Invocation.method(#setFileName, [pszName]),
-          returnValue: 0) as int);
-  @override
-  int getFileName(_i1.Pointer<_i1.Pointer<_i6.Utf16>>? pszName) =>
-      (super.noSuchMethod(Invocation.method(#getFileName, [pszName]),
-          returnValue: 0) as int);
-  @override
-  int setTitle(_i1.Pointer<_i6.Utf16>? pszTitle) =>
-      (super.noSuchMethod(Invocation.method(#setTitle, [pszTitle]),
-          returnValue: 0) as int);
-  @override
-  int setOkButtonLabel(_i1.Pointer<_i6.Utf16>? pszText) =>
-      (super.noSuchMethod(Invocation.method(#setOkButtonLabel, [pszText]),
-          returnValue: 0) as int);
-  @override
-  int setFileNameLabel(_i1.Pointer<_i6.Utf16>? pszLabel) =>
-      (super.noSuchMethod(Invocation.method(#setFileNameLabel, [pszLabel]),
-          returnValue: 0) as int);
-  @override
-  int getResult(_i1.Pointer<_i1.Pointer<_i4.COMObject>>? ppsi) =>
-      (super.noSuchMethod(Invocation.method(#getResult, [ppsi]), returnValue: 0)
-          as int);
-  @override
-  int addPlace(_i1.Pointer<_i4.COMObject>? psi, int? fdap) =>
-      (super.noSuchMethod(Invocation.method(#addPlace, [psi, fdap]),
-          returnValue: 0) as int);
-  @override
-  int setDefaultExtension(_i1.Pointer<_i6.Utf16>? pszDefaultExtension) =>
-      (super.noSuchMethod(
-          Invocation.method(#setDefaultExtension, [pszDefaultExtension]),
-          returnValue: 0) as int);
-  @override
-  int close(int? hr) =>
-      (super.noSuchMethod(Invocation.method(#close, [hr]), returnValue: 0)
-          as int);
-  @override
-  int setClientGuid(_i1.Pointer<_i7.GUID>? guid) =>
-      (super.noSuchMethod(Invocation.method(#setClientGuid, [guid]),
-          returnValue: 0) as int);
-  @override
-  int clearClientData() => (super
-          .noSuchMethod(Invocation.method(#clearClientData, []), returnValue: 0)
-      as int);
-  @override
-  int setFilter(_i1.Pointer<_i4.COMObject>? pFilter) =>
-      (super.noSuchMethod(Invocation.method(#setFilter, [pFilter]),
-          returnValue: 0) as int);
-  @override
-  int show(int? hwndOwner) =>
-      (super.noSuchMethod(Invocation.method(#show, [hwndOwner]), returnValue: 0)
-          as int);
-  @override
-  int queryInterface(_i1.Pointer<_i7.GUID>? riid,
-          _i1.Pointer<_i1.Pointer<_i1.NativeType>>? ppvObject) =>
-      (super.noSuchMethod(Invocation.method(#queryInterface, [riid, ppvObject]),
-          returnValue: 0) as int);
-  @override
-  int addRef() =>
-      (super.noSuchMethod(Invocation.method(#addRef, []), returnValue: 0)
-          as int);
-  @override
-  int release() =>
-      (super.noSuchMethod(Invocation.method(#release, []), returnValue: 0)
-          as int);
-  @override
-  _i1.Pointer<_i4.COMObject> toInterface(String? iid) =>
-      (super.noSuchMethod(Invocation.method(#toInterface, [iid]),
-              returnValue: _FakePointer_0<_i4.COMObject>(
-                  this, Invocation.method(#toInterface, [iid])))
-          as _i1.Pointer<_i4.COMObject>);
 }

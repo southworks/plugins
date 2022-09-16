@@ -209,8 +209,6 @@ void main() {
 
       expect(path, returnedPath);
       verify(mockDartFileSelectorAPI.getDirectoryPath());
-      verify(mockDartFileSelectorAPI.hidePinnedPlaces = true);
-      verify(mockDartFileSelectorAPI.title = any);
     });
 
     test('passes initialDirectory correctly', () async {

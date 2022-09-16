@@ -3,12 +3,15 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+import 'dart:ffi' as _i6;
+
 import 'package:file_selector_windows/src/dart_file_dialog.dart' as _i5;
 import 'package:file_selector_windows/src/dart_file_selector_api.dart' as _i4;
-import 'package:file_selector_windows/src/dart_folders.dart' as _i6;
-import 'package:file_selector_windows/src/dart_place.dart' as _i7;
+import 'package:file_selector_windows/src/dart_folders.dart' as _i8;
+import 'package:file_selector_windows/src/dart_place.dart' as _i9;
 import 'package:file_selector_windows/src/messages.g.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:win32/win32.dart' as _i7;
 
 import 'test_api.dart' as _i2;
 
@@ -146,7 +149,13 @@ class MockDartFileSelectorAPI extends _i1.Mock
       super.noSuchMethod(Invocation.setter(#hWndOwner, _hWndOwner),
           returnValueForMissingStub: null);
   @override
-  void addPlace(_i6.WindowsKnownFolder? folder, _i7.Place? location) =>
+  int setDirectoryOptions(_i6.Pointer<_i6.Uint32>? pfos, int? hResult,
+          _i7.IFileOpenDialog? dialog) =>
+      (super.noSuchMethod(
+          Invocation.method(#setDirectoryOptions, [pfos, hResult, dialog]),
+          returnValue: 0) as int);
+  @override
+  void addPlace(_i8.WindowsKnownFolder? folder, _i9.Place? location) =>
       super.noSuchMethod(Invocation.method(#addPlace, [folder, location]),
           returnValueForMissingStub: null);
 }
