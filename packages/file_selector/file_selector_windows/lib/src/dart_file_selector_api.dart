@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:ffi/ffi.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
 import 'dart_file_dialog.dart';
@@ -25,19 +26,9 @@ class DartFileSelectorAPI extends FileDialog {
         ?.path;
   }
 
-  /// Sets the dialog's title.
-  int _setDialogTitle(int hResult, FileOpenDialog dialog) {
-    if (title.isNotEmpty) {
-      hResult = dialog.setTitle(TEXT(title));
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
-    }
-    return hResult;
-  }
-
   /// Sets and checks options for the dialog.
-  int _setGetDirectoryOptions(
+  @visibleForTesting
+  int setDirectoryOptions(
       Pointer<Uint32> pfos, int hResult, FileOpenDialog dialog) {
     int options = pfos.value;
 
@@ -92,9 +83,8 @@ class DartFileSelectorAPI extends FileDialog {
       throw WindowsException(hResult);
     }
 
-    hResult = _setGetDirectoryOptions(options, hResult, dialog);
+    hResult = setDirectoryOptions(options, hResult, dialog);
 
-    hResult = _setDialogTitle(hResult, dialog);
     dialog.setOkButtonLabel(TEXT(confirmButtonText ?? 'Pick'));
 
     for (final CustomPlace place in customPlaces) {
