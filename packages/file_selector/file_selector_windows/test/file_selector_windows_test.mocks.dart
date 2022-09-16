@@ -51,11 +51,12 @@ class MockTestFileSelectorApi extends _i1.Mock
           returnValue: <String?>[]) as List<String?>);
 }
 
-/// A class which mocks [OpenFilePicker].
+/// A class which mocks [DartFileSelectorAPI].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockOpenFilePicker extends _i1.Mock implements _i4.OpenFilePicker {
-  MockOpenFilePicker() {
+class MockDartFileSelectorAPI extends _i1.Mock
+    implements _i4.DartFileSelectorAPI {
+  MockDartFileSelectorAPI() {
     _i1.throwOnMissingStub(this);
   }
 

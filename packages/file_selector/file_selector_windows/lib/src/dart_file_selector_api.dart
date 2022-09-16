@@ -8,9 +8,9 @@ import 'dart_file_dialog.dart';
 import 'dart_place.dart';
 
 /// Dart native implementation of FileSelectorAPI
-class OpenFilePicker extends FileDialog {
+class DartFileSelectorAPI extends FileDialog {
   /// We need the file to exist. This value is default to `false`.
-  OpenFilePicker() : super() {
+  DartFileSelectorAPI() : super() {
     fileMustExist = true;
   }
 

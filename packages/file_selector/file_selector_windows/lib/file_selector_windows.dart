@@ -10,16 +10,16 @@ import 'src/messages.g.dart';
 class FileSelectorWindows extends FileSelectorPlatform {
   /// Constructor for filePicker.
   FileSelectorWindows([this._filePicker]) {
-    _filePicker = _filePicker ?? OpenFilePicker();
+    _filePicker = _filePicker ?? DartFileSelectorAPI();
     _internalFilePicker = _filePicker!;
   }
 
   final FileSelectorApi _hostApi = FileSelectorApi();
-  late OpenFilePicker _internalFilePicker;
-  late OpenFilePicker? _filePicker;
+  late DartFileSelectorAPI _internalFilePicker;
+  late DartFileSelectorAPI? _filePicker;
 
   /// Registers the Windows implementation.
-  static void registerWith([OpenFilePicker? filePicker]) {
+  static void registerWith([DartFileSelectorAPI? filePicker]) {
     FileSelectorPlatform.instance = FileSelectorWindows(filePicker);
   }
 
