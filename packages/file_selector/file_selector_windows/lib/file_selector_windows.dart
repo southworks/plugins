@@ -81,9 +81,6 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    _internalFilePicker.hidePinnedPlaces = true;
-    _internalFilePicker.title = 'Select a directory';
-
     final String? path = _internalFilePicker.getDirectoryPath(
         initialDirectory: initialDirectory,
         confirmButtonText: confirmButtonText);
