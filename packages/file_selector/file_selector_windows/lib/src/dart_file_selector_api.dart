@@ -30,8 +30,9 @@ class DartFileSelectorAPI extends FileDialog {
   }
 
   /// Returns dialog options.
+  @visibleForTesting
   int getOptions(Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
-    hResult = dialog.getOptions(pfos); // TODO: Use fileDialogAPI
+    hResult = _fileOpenDialogAPI.getOptions(pfos, dialog);
     if (FAILED(hResult)) {
       throw WindowsException(hResult);
     }
@@ -102,10 +103,9 @@ class DartFileSelectorAPI extends FileDialog {
 
     hResult = getOptions(options, hResult, dialog);
     hResult = setDirectoryOptions(options, hResult, dialog);
-    addConfirmButtonLabel(dialog, confirmButtonText);
-    addCustomPlaces(hResult, dialog);
-
-    hResult = dialog.show(hWndOwner);
+    hResult = addConfirmButtonLabel(dialog, confirmButtonText);
+    hResult = addCustomPlaces(hResult, dialog);
+    hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
     return returnSelectedElement(hResult, dialog);
   }
 
@@ -172,8 +172,7 @@ class DartFileSelectorAPI extends FileDialog {
   /// Add confirmation button text.
   @visibleForTesting
   int addConfirmButtonLabel(FileOpenDialog dialog, String? confirmButtonText) {
-    return dialog
-        .setOkButtonLabel(TEXT(confirmButtonText ?? 'Pick')); // TODO use api
+    return _fileOpenDialogAPI.setOkButtonLabel(confirmButtonText, dialog);
   }
 
   /// Returns a file.
@@ -187,19 +186,22 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = addFileFilters(hResult, fileDialog, selectionOptions);
     hResult = addCustomPlaces(hResult, fileDialog);
     hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
-    hResult = fileDialog.show(hWndOwner);
+    hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
     return returnSelectedElement(hResult, fileDialog);
   }
 
   /// Adds custom places.
+  @visibleForTesting
   int addCustomPlaces(int hResult, FileOpenDialog fileDialog) {
     for (final CustomPlace place in customPlaces) {
       final Pointer<NativeType> shellItem =
           Pointer<NativeType>.fromAddress(place.item.ptr.cast<IntPtr>().value);
       if (place.place == Place.bottom) {
-        hResult = fileDialog.addPlace(shellItem.cast(), FDAP.FDAP_BOTTOM);
+        hResult = _fileOpenDialogAPI.addPlace(
+            shellItem.cast(), FDAP.FDAP_BOTTOM, fileDialog);
       } else {
-        hResult = fileDialog.addPlace(shellItem.cast(), FDAP.FDAP_TOP);
+        hResult = _fileOpenDialogAPI.addPlace(
+            shellItem.cast(), FDAP.FDAP_TOP, fileDialog);
       }
       if (FAILED(hResult)) {
         throw WindowsException(hResult);
@@ -214,7 +216,9 @@ class DartFileSelectorAPI extends FileDialog {
   int addFileFilters(int hResult, FileOpenDialog fileDialog,
       SelectionOptions selectionOptions) {
     for (final TypeGroup? option in selectionOptions.allowedTypes) {
-      if (option == null || option.extensions == null) {
+      if (option == null ||
+          option.extensions == null ||
+          option.extensions.isEmpty) {
         continue;
       }
 
@@ -229,30 +233,11 @@ class DartFileSelectorAPI extends FileDialog {
     }
 
     if (filterSpecification.isNotEmpty) {
-      final Pointer<COMDLG_FILTERSPEC> rgSpec =
-          calloc<COMDLG_FILTERSPEC>(filterSpecification.length);
+      hResult = _fileOpenDialogAPI.setFileTypes(
+          filterSpecification, hResult, fileDialog);
 
-      int index = 0;
-      for (final String key in filterSpecification.keys) {
-        rgSpec[index]
-          ..pszName = TEXT(key)
-          ..pszSpec = TEXT(filterSpecification[key]!);
-        index++;
-      }
-      hResult = fileDialog.setFileTypes(filterSpecification.length, rgSpec);
       if (FAILED(hResult)) {
         throw WindowsException(hResult);
-      }
-    }
-
-    if (defaultFilterIndex != null) {
-      if (defaultFilterIndex! > 0 &&
-          defaultFilterIndex! < filterSpecification.length) {
-        // SetFileTypeIndex is one-based, not zero-based
-        hResult = fileDialog.setFileTypeIndex(defaultFilterIndex! + 1);
-        if (FAILED(hResult)) {
-          throw WindowsException(hResult);
-        }
       }
     }
 
