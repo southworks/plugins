@@ -149,6 +149,11 @@ class MockDartFileSelectorAPI extends _i1.Mock
       super.noSuchMethod(Invocation.setter(#hWndOwner, _hWndOwner),
           returnValueForMissingStub: null);
   @override
+  String? getFile(_i3.SelectionOptions? selectionOptions,
+          String? initialDirectory, String? confirmButtonText) =>
+      (super.noSuchMethod(Invocation.method(#getFile,
+          [selectionOptions, initialDirectory, confirmButtonText])) as String?);
+  @override
   int getOptions(_i6.Pointer<_i6.Uint32>? pfos, int? hResult,
           _i7.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(
@@ -181,15 +186,6 @@ class MockDartFileSelectorAPI extends _i1.Mock
       (super.noSuchMethod(
           Invocation.method(
               #addConfirmButtonLabel, [dialog, confirmButtonText]),
-          returnValue: 0) as int);
-  @override
-  String? getFile(_i3.SelectionOptions? selectionOptions,
-          String? initialDirectory, String? confirmButtonText) =>
-      (super.noSuchMethod(Invocation.method(#getFile,
-          [selectionOptions, initialDirectory, confirmButtonText])) as String?);
-  @override
-  int addCustomPlaces(int? hResult, _i7.FileOpenDialog? fileDialog) => (super
-      .noSuchMethod(Invocation.method(#addCustomPlaces, [hResult, fileDialog]),
           returnValue: 0) as int);
   @override
   int addFileFilters(int? hResult, _i7.FileOpenDialog? fileDialog,

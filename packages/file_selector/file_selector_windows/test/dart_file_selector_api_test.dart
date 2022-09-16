@@ -17,6 +17,7 @@ import 'dart_file_selector_api_test.mocks.dart';
 @GenerateMocks(<Type>[FileOpenDialogAPI])
 void main() {
   const int defaultReturnValue = 1;
+  const String defaultPath = 'C://';
   TestWidgetsFlutterBinding.ensureInitialized();
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
   late DartFileSelectorAPI api;
@@ -42,9 +43,18 @@ void main() {
         .thenReturn(defaultReturnValue);
     when(mockFileOpenDialogAPI.setFileTypes(any, any, any))
         .thenReturn(defaultReturnValue);
+    when(mockFileOpenDialogAPI.show(any, any)).thenReturn(defaultReturnValue);
+    when(mockFileOpenDialogAPI.getResult(any, any))
+        .thenReturn(defaultReturnValue);
+    when(mockFileOpenDialogAPI.release(any)).thenReturn(defaultReturnValue);
+    when(mockFileOpenDialogAPI.getDisplayName(any, any))
+        .thenReturn(defaultReturnValue);
+    when(mockFileOpenDialogAPI.getUserSelectedPath(any))
+        .thenReturn(defaultPath);
+    when(mockFileOpenDialogAPI.releaseItem(any)).thenReturn(defaultReturnValue);
   });
 
-  test('setDirectoryOptions call dialog setOptions', () {
+  test('setDirectoryOptions should call dialog setOptions', () {
     const int expectedDirectoryOptions = 2144;
     expect(
         defaultReturnValue, api.setDirectoryOptions(options, hResult, dialog));
@@ -52,14 +62,14 @@ void main() {
         .called(1);
   });
 
-  test('getOptions should have been called', () {
+  test('getOptions should call dialog getOptions', () {
     final Pointer<Uint32> pfos = calloc<Uint32>();
     expect(defaultReturnValue, api.getOptions(pfos, hResult, dialog));
     verify(mockFileOpenDialogAPI.getOptions(pfos, dialog))
         .called(defaultReturnValue);
   });
 
-  test('addConfirmButtonLabel should call setOkButtonLabel', () {
+  test('addConfirmButtonLabel should call dialog setOkButtonLabel', () {
     const String confirmationText = 'Text';
     expect(defaultReturnValue,
         api.addConfirmButtonLabel(dialog, confirmationText));
@@ -67,7 +77,7 @@ void main() {
         .called(defaultReturnValue);
   });
 
-  test('addFileFilters should call setFileTypes', () {
+  test('addFileFilters should call dialog setFileTypes', () {
     final TypeGroup typeGroup =
         TypeGroup(extensions: <String?>['jpg', 'png'], label: 'Images');
 
@@ -89,7 +99,7 @@ void main() {
   });
 
   test(
-      'addFileFilters should not call setFileTypes if filterSpecification is empty',
+      'addFileFilters should not call dialog setFileTypes if filterSpecification is empty',
       () {
     final TypeGroup typeGroup =
         TypeGroup(extensions: <String?>[], label: 'Images');
@@ -102,5 +112,27 @@ void main() {
 
     expect(hResult, api.addFileFilters(hResult, dialog, selectionOptions));
     verifyNever(mockFileOpenDialogAPI.setFileTypes(any, hResult, dialog));
+  });
+
+  test(
+      'returnSelectedElement should call dialog getResult and should return selected path',
+      () {
+    expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+    verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
+  });
+
+  test('returnSelectedElement should call dialog release', () {
+    expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+    verify(mockFileOpenDialogAPI.release(dialog)).called(1);
+  });
+
+  test('returnSelectedElement should call dialog getDisplayName', () {
+    expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+    verify(mockFileOpenDialogAPI.getDisplayName(any, any)).called(1);
+  });
+
+  test('returnSelectedElement should call dialog getUserSelectedPath', () {
+    expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+    verify(mockFileOpenDialogAPI.getUserSelectedPath(any)).called(1);
   });
 }

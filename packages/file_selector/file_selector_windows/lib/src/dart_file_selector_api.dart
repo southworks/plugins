@@ -7,7 +7,6 @@ import 'package:win32/win32.dart';
 
 import 'dart_file_dialog.dart';
 import 'dart_file_open_dialog_api.dart';
-import 'dart_place.dart';
 
 /// Dart native implementation of FileSelectorAPI
 class DartFileSelectorAPI extends FileDialog {
@@ -27,6 +26,20 @@ class DartFileSelectorAPI extends FileDialog {
     return _getDirectory(
         initialDirectory: initialDirectory,
         confirmButtonText: confirmButtonText);
+  }
+
+  /// Returns a file.
+  String? getFile(SelectionOptions selectionOptions, String? initialDirectory,
+      String? confirmButtonText) {
+    int hResult = initializeComLibrary();
+    final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
+    final Pointer<Uint32> options = calloc<Uint32>();
+    hResult = getOptions(options, hResult, fileDialog);
+    hResult = setFileOptions(options, hResult, fileDialog);
+    hResult = addFileFilters(hResult, fileDialog, selectionOptions);
+    hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
+    hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
+    return returnSelectedElement(hResult, fileDialog);
   }
 
   /// Returns dialog options.
@@ -104,7 +117,6 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = getOptions(options, hResult, dialog);
     hResult = setDirectoryOptions(options, hResult, dialog);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
-    hResult = addCustomPlaces(hResult, dialog);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
     return returnSelectedElement(hResult, dialog);
   }
@@ -133,30 +145,28 @@ class DartFileSelectorAPI extends FileDialog {
       }
     } else {
       final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
-      hResult = dialog.getResult(ppsi);
+      hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
       if (FAILED(hResult)) {
         throw WindowsException(hResult);
       }
 
       final IShellItem item = IShellItem(ppsi.cast());
       final Pointer<IntPtr> pathPtrPtr = calloc<IntPtr>();
-      hResult = item.getDisplayName(SIGDN.SIGDN_FILESYSPATH, pathPtrPtr.cast());
+
+      hResult = _fileOpenDialogAPI.getDisplayName(item, pathPtrPtr);
       if (FAILED(hResult)) {
         throw WindowsException(hResult);
       }
 
-      final Pointer<Utf16> pathPtr =
-          Pointer<Utf16>.fromAddress(pathPtrPtr.value);
+      userSelectedPath = _fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr);
+      hResult = _fileOpenDialogAPI.releaseItem(item);
 
-      userSelectedPath = pathPtr.toDartString();
-
-      hResult = item.release();
       if (FAILED(hResult)) {
         throw WindowsException(hResult);
       }
     }
 
-    hResult = dialog.release();
+    hResult = _fileOpenDialogAPI.release(dialog);
     if (FAILED(hResult)) {
       throw WindowsException(hResult);
     }
@@ -173,42 +183,6 @@ class DartFileSelectorAPI extends FileDialog {
   @visibleForTesting
   int addConfirmButtonLabel(FileOpenDialog dialog, String? confirmButtonText) {
     return _fileOpenDialogAPI.setOkButtonLabel(confirmButtonText, dialog);
-  }
-
-  /// Returns a file.
-  String? getFile(SelectionOptions selectionOptions, String? initialDirectory,
-      String? confirmButtonText) {
-    int hResult = initializeComLibrary();
-    final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
-    final Pointer<Uint32> options = calloc<Uint32>();
-    hResult = getOptions(options, hResult, fileDialog);
-    hResult = setFileOptions(options, hResult, fileDialog);
-    hResult = addFileFilters(hResult, fileDialog, selectionOptions);
-    hResult = addCustomPlaces(hResult, fileDialog);
-    hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
-    hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
-    return returnSelectedElement(hResult, fileDialog);
-  }
-
-  /// Adds custom places.
-  @visibleForTesting
-  int addCustomPlaces(int hResult, FileOpenDialog fileDialog) {
-    for (final CustomPlace place in customPlaces) {
-      final Pointer<NativeType> shellItem =
-          Pointer<NativeType>.fromAddress(place.item.ptr.cast<IntPtr>().value);
-      if (place.place == Place.bottom) {
-        hResult = _fileOpenDialogAPI.addPlace(
-            shellItem.cast(), FDAP.FDAP_BOTTOM, fileDialog);
-      } else {
-        hResult = _fileOpenDialogAPI.addPlace(
-            shellItem.cast(), FDAP.FDAP_TOP, fileDialog);
-      }
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
-    }
-
-    return hResult;
   }
 
   /// Adds file type filters.

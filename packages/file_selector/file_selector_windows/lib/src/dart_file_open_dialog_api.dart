@@ -42,13 +42,34 @@ class FileOpenDialogAPI {
     return hResult;
   }
 
-  /// Adds a place to the dialog.
-  int addPlace(Pointer<COMObject> psi, int fdap, IFileOpenDialog dialog) {
-    return dialog.addPlace(psi, FDAP.FDAP_BOTTOM);
-  }
-
   /// Shows a dialog.
   int show(int hwndOwner, IFileOpenDialog dialog) {
     return dialog.show(hwndOwner);
+  }
+
+  /// Release a dialog.
+  int release(IFileOpenDialog dialog) {
+    return dialog.release();
+  }
+
+  /// Return a result from a dialog.
+  int getResult(Pointer<Pointer<COMObject>> ppsi, IFileOpenDialog dialog) {
+    return dialog.getResult(ppsi);
+  }
+
+  /// Gets display name for an item.
+  int getDisplayName(IShellItem item, Pointer<IntPtr> pathPtr) {
+    return item.getDisplayName(SIGDN.SIGDN_FILESYSPATH, pathPtr.cast());
+  }
+
+  /// Returns the selected path by the user.
+  String getUserSelectedPath(Pointer<IntPtr> pathPtrPtr) {
+    final Pointer<Utf16> pathPtr = Pointer<Utf16>.fromAddress(pathPtrPtr.value);
+    return pathPtr.toDartString();
+  }
+
+  /// Releases an IShellItem.
+  int releaseItem(IShellItem item) {
+    return item.release();
   }
 }
