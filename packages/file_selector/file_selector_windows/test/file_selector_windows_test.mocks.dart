@@ -3,15 +3,12 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:ffi' as _i6;
+import 'dart:ffi' as _i5;
 
-import 'package:file_selector_windows/src/dart_file_dialog.dart' as _i5;
 import 'package:file_selector_windows/src/dart_file_selector_api.dart' as _i4;
-import 'package:file_selector_windows/src/dart_folders.dart' as _i8;
-import 'package:file_selector_windows/src/dart_place.dart' as _i9;
 import 'package:file_selector_windows/src/messages.g.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:win32/win32.dart' as _i7;
+import 'package:win32/win32.dart' as _i6;
 
 import 'test_api.dart' as _i2;
 
@@ -63,10 +60,6 @@ class MockDartFileSelectorAPI extends _i1.Mock
     _i1.throwOnMissingStub(this);
   }
 
-  @override
-  List<_i5.CustomPlace> get customPlaces =>
-      (super.noSuchMethod(Invocation.getter(#customPlaces),
-          returnValue: <_i5.CustomPlace>[]) as List<_i5.CustomPlace>);
   @override
   String get title =>
       (super.noSuchMethod(Invocation.getter(#title), returnValue: '')
@@ -156,30 +149,20 @@ class MockDartFileSelectorAPI extends _i1.Mock
               [selectionOptions, initialDirectory, confirmButtonText]),
           returnValue: <String>[]) as List<String>);
   @override
-  int getOptions(_i6.Pointer<_i6.Uint32>? pfos, int? hResult,
-          _i7.IFileOpenDialog? dialog) =>
+  int getOptions(_i5.Pointer<_i5.Uint32>? pfos, int? hResult,
+          _i6.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(
           Invocation.method(#getOptions, [pfos, hResult, dialog]),
           returnValue: 0) as int);
   @override
-  int setDirectoryOptions(
-          _i6.Pointer<_i6.Uint32>? pfos,
+  int setDialogOptions(
+          _i5.Pointer<_i5.Uint32>? pfos,
           int? hResult,
           _i3.SelectionOptions? selectionOptions,
-          _i7.IFileOpenDialog? dialog) =>
+          _i6.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(
           Invocation.method(
-              #setDirectoryOptions, [pfos, hResult, selectionOptions, dialog]),
-          returnValue: 0) as int);
-  @override
-  int setFileOptions(
-          _i6.Pointer<_i6.Uint32>? pfos,
-          int? hResult,
-          _i3.SelectionOptions? selectionOptions,
-          _i7.IFileOpenDialog? dialog) =>
-      (super.noSuchMethod(
-          Invocation.method(
-              #setFileOptions, [pfos, hResult, selectionOptions, dialog]),
+              #setDialogOptions, [pfos, hResult, selectionOptions, dialog]),
           returnValue: 0) as int);
   @override
   int initializeComLibrary() =>
@@ -187,27 +170,27 @@ class MockDartFileSelectorAPI extends _i1.Mock
           returnValue: 0) as int);
   @override
   List<String> returnSelectedElement(int? hResult,
-          _i3.SelectionOptions? selectionOptions, _i7.FileOpenDialog? dialog) =>
+          _i3.SelectionOptions? selectionOptions, _i6.FileOpenDialog? dialog) =>
       (super.noSuchMethod(
           Invocation.method(
               #returnSelectedElement, [hResult, selectionOptions, dialog]),
           returnValue: <String>[]) as List<String>);
   @override
   int addConfirmButtonLabel(
-          _i7.FileOpenDialog? dialog, String? confirmButtonText) =>
+          _i6.FileOpenDialog? dialog, String? confirmButtonText) =>
       (super.noSuchMethod(
           Invocation.method(
               #addConfirmButtonLabel, [dialog, confirmButtonText]),
           returnValue: 0) as int);
   @override
-  int addFileFilters(int? hResult, _i7.FileOpenDialog? fileDialog,
+  int addFileFilters(int? hResult, _i6.FileOpenDialog? fileDialog,
           _i3.SelectionOptions? selectionOptions) =>
       (super.noSuchMethod(
           Invocation.method(
               #addFileFilters, [hResult, fileDialog, selectionOptions]),
           returnValue: 0) as int);
   @override
-  void addPlace(_i8.WindowsKnownFolder? folder, _i9.Place? location) =>
-      super.noSuchMethod(Invocation.method(#addPlace, [folder, location]),
+  void clearFilterSpecification() =>
+      super.noSuchMethod(Invocation.method(#clearFilterSpecification, []),
           returnValueForMissingStub: null);
 }

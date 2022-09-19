@@ -30,6 +30,7 @@ void main() {
   tearDown(() {
     reset(mockFileOpenDialogAPI);
   });
+
   group('#Isolated functions', () {
     final TypeGroup imagesTypeGroup =
         TypeGroup(extensions: <String?>[], label: 'Images');
@@ -56,7 +57,7 @@ void main() {
           selectFolders: true,
           allowedTypes: <TypeGroup>[]);
       expect(defaultReturnValue,
-          api.setDirectoryOptions(options, hResult, selectOptions, dialog));
+          api.setDialogOptions(options, hResult, selectOptions, dialog));
       verify(mockFileOpenDialogAPI.setOptions(expectedDirectoryOptions, dialog))
           .called(1);
     });
@@ -95,6 +96,31 @@ void main() {
       verify(mockFileOpenDialogAPI.setFileTypes(
               filterSpecification, hResult, dialog))
           .called(1);
+    });
+
+    test(
+        'invoking addFileFilters twice should call dialog setFileTypes with proper parameters',
+        () {
+      final TypeGroup typeGroup =
+          TypeGroup(extensions: <String?>['jpg', 'png'], label: 'Images');
+
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: true,
+        allowedTypes: <TypeGroup?>[typeGroup],
+      );
+
+      final Map<String, String> filterSpecification = <String, String>{
+        'Images': '*.jpg;*.png;',
+      };
+
+      expect(defaultReturnValue,
+          api.addFileFilters(hResult, dialog, selectionOptions));
+      expect(defaultReturnValue,
+          api.addFileFilters(hResult, dialog, selectionOptions));
+      verify(mockFileOpenDialogAPI.setFileTypes(
+              filterSpecification, hResult, dialog))
+          .called(2);
     });
 
     test(
