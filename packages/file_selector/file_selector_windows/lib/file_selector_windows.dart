@@ -46,7 +46,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showOpenDialog(
+    final List<String?> paths = _internalFilePicker.getFile(
         SelectionOptions(
           allowMultiple: true,
           selectFolders: false,

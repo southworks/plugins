@@ -37,7 +37,8 @@ void main() {
   group('#openFile', () {
     setUp(() {
       when(mockApi.showOpenDialog(any, any, any)).thenReturn(<String?>['foo']);
-      when(mockDartFileSelectorAPI.getFile(any, any, any)).thenReturn('foo');
+      when(mockDartFileSelectorAPI.getFile(any, any, any))
+          .thenReturn(<String>['foo']);
     });
 
     test('simple call works', () async {
@@ -122,9 +123,12 @@ void main() {
 
       expect(file[0].path, 'foo');
       expect(file[1].path, 'bar');
+
       final VerificationResult result =
           verify(mockApi.showOpenDialog(captureAny, null, null));
+
       final SelectionOptions options = result.captured[0] as SelectionOptions;
+
       expect(options.allowMultiple, true);
       expect(options.selectFolders, false);
     });

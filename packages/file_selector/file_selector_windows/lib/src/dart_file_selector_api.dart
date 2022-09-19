@@ -38,7 +38,7 @@ class DartFileSelectorAPI extends FileDialog {
 
       /// aca hay que mandar la configuracion de multi file.
       hResult = getOptions(options, hResult, fileDialog);
-      hResult = setFileOptions(options, hResult, fileDialog);
+      hResult = setFileOptions(options, hResult, selectionOptions, fileDialog);
     });
 
     hResult = setInitialDirectory(initialDirectory, fileDialog);
@@ -62,13 +62,11 @@ class DartFileSelectorAPI extends FileDialog {
 
   /// Sets and checks options for the dialog.
   @visibleForTesting
-  int setDirectoryOptions(
-      Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
+  int setDirectoryOptions(Pointer<Uint32> pfos, int hResult,
+      SelectionOptions selectionOptions, IFileOpenDialog dialog) {
     int options = pfos.value;
 
-    options |= FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
-
-    options = _getFileOptions(options);
+    options = _getFileOptions(options, selectionOptions);
 
     hResult = _fileOpenDialogAPI.setOptions(options, dialog);
 
@@ -79,7 +77,7 @@ class DartFileSelectorAPI extends FileDialog {
     return hResult;
   }
 
-  int _getFileOptions(int options) {
+  int _getFileOptions(int options, SelectionOptions selectionOptions) {
     if (hidePinnedPlaces) {
       options |= FILEOPENDIALOGOPTIONS.FOS_HIDEPINNEDPLACES;
     }
@@ -96,14 +94,22 @@ class DartFileSelectorAPI extends FileDialog {
       options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
     }
 
+    if (selectionOptions.selectFolders) {
+      options |= FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
+    }
+
+    if (selectionOptions.allowMultiple) {
+      options |= FILEOPENDIALOGOPTIONS.FOS_ALLOWMULTISELECT;
+    }
+
     return options;
   }
 
   /// Sets and checks options for the dialog.
   @visibleForTesting
-  int setFileOptions(
-      Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
-    final int options = _getFileOptions(pfos.value);
+  int setFileOptions(Pointer<Uint32> pfos, int hResult,
+      SelectionOptions selectionOptions, IFileOpenDialog dialog) {
+    final int options = _getFileOptions(pfos.value, selectionOptions);
 
     hResult = _fileOpenDialogAPI.setOptions(options, dialog);
 
@@ -147,12 +153,14 @@ class DartFileSelectorAPI extends FileDialog {
     String? initialDirectory,
     String? confirmButtonText,
   }) {
+    final SelectionOptions selectOptions = SelectionOptions(
+        allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     int hResult = initializeComLibrary();
     final FileOpenDialog dialog = FileOpenDialog.createInstance();
     using((Arena arena) {
       final Pointer<Uint32> options = arena<Uint32>();
       hResult = getOptions(options, hResult, dialog);
-      hResult = setDirectoryOptions(options, hResult, dialog);
+      hResult = setDirectoryOptions(options, hResult, selectOptions, dialog);
     });
 
     hResult = setInitialDirectory(initialDirectory, dialog);

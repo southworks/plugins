@@ -43,8 +43,12 @@ void main() {
 
     test('setDirectoryOptions should call dialog setOptions', () {
       const int expectedDirectoryOptions = 2144;
+      final SelectionOptions selectOptions = SelectionOptions(
+          allowMultiple: false,
+          selectFolders: true,
+          allowedTypes: <TypeGroup>[]);
       expect(defaultReturnValue,
-          api.setDirectoryOptions(options, hResult, dialog));
+          api.setDirectoryOptions(options, hResult, selectOptions, dialog));
       verify(mockFileOpenDialogAPI.setOptions(expectedDirectoryOptions, dialog))
           .called(1);
     });
