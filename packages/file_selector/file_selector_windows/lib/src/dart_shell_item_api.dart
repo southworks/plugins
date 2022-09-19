@@ -4,7 +4,7 @@ import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
 
 /// ShellItemApi provider to interact with Shell Items.
-class ShellItemApi {
+class ShellItemAPI {
   /// Create a shell item from a given pointer.
   IShellItem createShellItem(Pointer<Pointer<COMObject>> ppsi) {
     return IShellItem(ppsi.cast());
@@ -16,7 +16,7 @@ class ShellItemApi {
   }
 
   /// Gets display name for an item.
-  int getDisplayName(IShellItem item, Pointer<IntPtr> pathPtr) {
+  int getDisplayName(Pointer<IntPtr> pathPtr, IShellItem item) {
     return item.getDisplayName(SIGDN.SIGDN_FILESYSPATH, pathPtr.cast());
   }
 

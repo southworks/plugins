@@ -7,6 +7,7 @@ import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:file_selector_windows/src/dart_file_open_dialog_api.dart';
 import 'package:file_selector_windows/src/dart_file_selector_api.dart';
+import 'package:file_selector_windows/src/dart_shell_item_api.dart';
 import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -14,7 +15,7 @@ import 'package:mockito/mockito.dart';
 import 'package:win32/win32.dart';
 import 'dart_file_selector_api_test.mocks.dart';
 
-@GenerateMocks(<Type>[FileOpenDialogAPI])
+@GenerateMocks(<Type>[FileOpenDialogAPI, ShellItemAPI])
 void main() {
   const int defaultReturnValue = 1;
   const int successReturnValue = 0;
@@ -22,6 +23,7 @@ void main() {
   const List<String> expectedPaths = <String>[defaultPath];
   TestWidgetsFlutterBinding.ensureInitialized();
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
+  final MockShellItemAPI mockShellItemAPI = MockShellItemAPI();
   late DartFileSelectorAPI api;
   late Pointer<Uint32> options;
   late int hResult;
@@ -29,6 +31,7 @@ void main() {
 
   tearDown(() {
     reset(mockFileOpenDialogAPI);
+    reset(mockShellItemAPI);
   });
 
   group('#Isolated functions', () {
@@ -41,13 +44,13 @@ void main() {
     );
 
     setUp(() {
-      api = DartFileSelectorAPI(mockFileOpenDialogAPI);
+      api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       options = calloc<Uint32>();
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
-      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue,
-          successReturnValue, defaultPath);
+      setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
+          successReturnValue, defaultReturnValue, defaultPath);
     });
 
     test('setDirectoryOptions should call dialog setOptions', () {
@@ -161,13 +164,13 @@ void main() {
       }
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
-      verifyNever(mockFileOpenDialogAPI.getDisplayName(any, any));
+      verifyNever(mockShellItemAPI.getDisplayName(any, any));
     });
 
     test(
         'returnSelectedElement should throw if dialog getDisplayName returns an error',
         () {
-      when(mockFileOpenDialogAPI.getDisplayName(any, any)).thenReturn(-1);
+      when(mockShellItemAPI.getDisplayName(any, any)).thenReturn(-1);
       try {
         api.returnSelectedElement(hResult, singleFileSelectionOptions, dialog);
         expect(false, true);
@@ -176,13 +179,13 @@ void main() {
       }
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
-      verify(mockFileOpenDialogAPI.getDisplayName(any, any)).called(1);
+      verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
     });
 
     test(
         'returnSelectedElement should throw if dialog releaseItem returns an error',
         () {
-      when(mockFileOpenDialogAPI.releaseItem(any)).thenReturn(-1);
+      when(mockShellItemAPI.releaseItem(any)).thenReturn(-1);
       try {
         api.returnSelectedElement(hResult, singleFileSelectionOptions, dialog);
         expect(false, true);
@@ -191,8 +194,8 @@ void main() {
       }
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
-      verify(mockFileOpenDialogAPI.getDisplayName(any, any)).called(1);
-      verify(mockFileOpenDialogAPI.releaseItem(any)).called(1);
+      verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
+      verify(mockShellItemAPI.releaseItem(any)).called(1);
     });
 
     test(
@@ -207,8 +210,8 @@ void main() {
       }
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
-      verify(mockFileOpenDialogAPI.getDisplayName(any, any)).called(1);
-      verify(mockFileOpenDialogAPI.releaseItem(any)).called(1);
+      verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
+      verify(mockShellItemAPI.releaseItem(any)).called(1);
       verify(mockFileOpenDialogAPI.release(any)).called(1);
     });
 
@@ -223,8 +226,8 @@ void main() {
               cancelledhResult, singleFileSelectionOptions, dialog));
 
       verifyNever(mockFileOpenDialogAPI.getResult(any, dialog));
-      verifyNever(mockFileOpenDialogAPI.getDisplayName(any, any));
-      verifyNever(mockFileOpenDialogAPI.getUserSelectedPath(any));
+      verifyNever(mockShellItemAPI.getDisplayName(any, any));
+      verifyNever(mockShellItemAPI.getUserSelectedPath(any));
       verify(mockFileOpenDialogAPI.release(dialog)).called(1);
     });
 
@@ -241,7 +244,7 @@ void main() {
           expectedPaths,
           api.returnSelectedElement(
               hResult, singleFileSelectionOptions, dialog));
-      verify(mockFileOpenDialogAPI.getDisplayName(any, any)).called(1);
+      verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
     });
 
     test('returnSelectedElement should call dialog getUserSelectedPath', () {
@@ -249,7 +252,7 @@ void main() {
           expectedPaths,
           api.returnSelectedElement(
               hResult, singleFileSelectionOptions, dialog));
-      verify(mockFileOpenDialogAPI.getUserSelectedPath(any)).called(1);
+      verify(mockShellItemAPI.getUserSelectedPath(any)).called(1);
     });
 
     test('setInitialDirectory should return param if initialDirectory is empty',
@@ -299,13 +302,13 @@ void main() {
 
   group('#Public facing functions', () {
     setUp(() {
-      api = DartFileSelectorAPI(mockFileOpenDialogAPI);
+      api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       options = calloc<Uint32>();
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
-      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue,
-          successReturnValue, defaultPath);
+      setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
+          successReturnValue, defaultReturnValue, defaultPath);
     });
 
     test('getDirectory should return selected path', () {
@@ -327,8 +330,12 @@ void main() {
   });
 }
 
-void setDefaultMocks(MockFileOpenDialogAPI mockFileOpenDialogAPI,
-    int defaultReturnValue, int successReturnValue, String defaultPath) {
+void setDefaultMocks(
+    MockFileOpenDialogAPI mockFileOpenDialogAPI,
+    MockShellItemAPI mockShellItemAPI,
+    int successReturnValue,
+    int defaultReturnValue,
+    String defaultPath) {
   when(mockFileOpenDialogAPI.setOptions(any, any))
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.getOptions(any, any))
@@ -341,10 +348,14 @@ void setDefaultMocks(MockFileOpenDialogAPI mockFileOpenDialogAPI,
   when(mockFileOpenDialogAPI.getResult(any, any))
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.release(any)).thenReturn(defaultReturnValue);
-  when(mockFileOpenDialogAPI.getDisplayName(any, any))
-      .thenReturn(defaultReturnValue);
-  when(mockFileOpenDialogAPI.getUserSelectedPath(any)).thenReturn(defaultPath);
-  when(mockFileOpenDialogAPI.releaseItem(any)).thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.setFolder(any, any))
       .thenReturn(successReturnValue);
+  final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
+  when(mockShellItemAPI.createShellItem(any))
+      .thenReturn(IShellItem(ppsi.cast()));
+  free(ppsi);
+  when(mockShellItemAPI.getDisplayName(any, any))
+      .thenReturn(defaultReturnValue);
+  when(mockShellItemAPI.getUserSelectedPath(any)).thenReturn(defaultPath);
+  when(mockShellItemAPI.releaseItem(any)).thenReturn(defaultReturnValue);
 }

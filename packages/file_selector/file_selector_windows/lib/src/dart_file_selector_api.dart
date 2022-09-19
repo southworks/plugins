@@ -13,15 +13,15 @@ import 'dart_shell_item_api.dart';
 class DartFileSelectorAPI extends FileDialog {
   /// We need the file to exist. This value is default to `false`.
   DartFileSelectorAPI(
-      [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemApi? shellItemAPI])
+      [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemAPI? shellItemAPI])
       : super() {
     fileMustExist = true;
     _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();
-    _shellItemAPI = shellItemAPI ?? ShellItemApi();
+    _shellItemAPI = shellItemAPI ?? ShellItemAPI();
   }
 
   late FileOpenDialogAPI _fileOpenDialogAPI;
-  late ShellItemApi _shellItemAPI;
+  late ShellItemAPI _shellItemAPI;
 
   /// Returns directory path from user selection.
   String? getDirectoryPath({
@@ -234,7 +234,7 @@ class DartFileSelectorAPI extends FileDialog {
     final IShellItem item = _shellItemAPI.createShellItem(ppsi);
     final Pointer<IntPtr> pathPtrPtr = arena<IntPtr>();
 
-    hResult = _shellItemAPI.getDisplayName(item, pathPtrPtr);
+    hResult = _shellItemAPI.getDisplayName(pathPtrPtr, item);
     _validateResult(hResult);
 
     selectedElements.add(_shellItemAPI.getUserSelectedPath(pathPtrPtr));
