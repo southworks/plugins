@@ -29,6 +29,11 @@ void main() {
     TestFileSelectorApi.setup(mockApi);
   });
 
+  tearDown(() {
+    reset(mockDartFileSelectorAPI);
+    reset(mockApi);
+  });
+
   test('registered instance', () {
     FileSelectorWindows.registerWith(mockDartFileSelectorAPI);
     expect(FileSelectorPlatform.instance, isA<FileSelectorWindows>());
@@ -36,7 +41,6 @@ void main() {
 
   group('#openFile', () {
     setUp(() {
-      when(mockApi.showOpenDialog(any, any, any)).thenReturn(<String?>['foo']);
       when(mockDartFileSelectorAPI.getFile(any, any, any))
           .thenReturn(<String>['foo']);
     });
@@ -114,8 +118,8 @@ void main() {
 
   group('#openFiles', () {
     setUp(() {
-      when(mockApi.showOpenDialog(any, any, any))
-          .thenReturn(<String?>['foo', 'bar']);
+      when(mockDartFileSelectorAPI.getFile(any, any, any))
+          .thenReturn(<String>['foo', 'bar']);
     });
 
     test('simple call works', () async {
@@ -125,7 +129,7 @@ void main() {
       expect(file[1].path, 'bar');
 
       final VerificationResult result =
-          verify(mockApi.showOpenDialog(captureAny, null, null));
+          verify(mockDartFileSelectorAPI.getFile(captureAny, null, null));
 
       final SelectionOptions options = result.captured[0] as SelectionOptions;
 
@@ -150,7 +154,7 @@ void main() {
       await plugin.openFiles(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
 
       final VerificationResult result =
-          verify(mockApi.showOpenDialog(captureAny, null, null));
+          verify(mockDartFileSelectorAPI.getFile(captureAny, null, null));
       final SelectionOptions options = result.captured[0] as SelectionOptions;
       expect(
           _typeGroupListsMatch(options.allowedTypes, <TypeGroup>[
@@ -163,13 +167,13 @@ void main() {
     test('passes initialDirectory correctly', () async {
       await plugin.openFiles(initialDirectory: '/example/directory');
 
-      verify(mockApi.showOpenDialog(any, '/example/directory', null));
+      verify(mockDartFileSelectorAPI.getFile(any, '/example/directory', null));
     });
 
     test('passes confirmButtonText correctly', () async {
       await plugin.openFiles(confirmButtonText: 'Open Files');
 
-      verify(mockApi.showOpenDialog(any, null, 'Open Files'));
+      verify(mockDartFileSelectorAPI.getFile(any, null, 'Open Files'));
     });
 
     test('throws for a type group that does not support Windows', () async {
