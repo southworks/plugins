@@ -37,11 +37,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
         ),
         initialDirectory,
         confirmButtonText);
-    if (path == null) {
-      return null;
-    } else {
-      return XFile(path);
-    }
+    return path == null ? null : XFile(path);
   }
 
   @override
@@ -88,11 +84,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
     final String? path = _internalFilePicker.getDirectoryPath(
         initialDirectory: initialDirectory,
         confirmButtonText: confirmButtonText);
-    if (path != null) {
-      return Future<String>.value(path);
-    }
-
-    return null;
+    return path == null ? null : Future<String>.value(path);
   }
 }
 
