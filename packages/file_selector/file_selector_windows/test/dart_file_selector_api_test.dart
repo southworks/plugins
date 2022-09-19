@@ -378,6 +378,58 @@ void main() {
           api.returnSelectedElement(hResult, selectionOptions, dialog));
       verify(mockShellItemAPI.release(any)).called(selectedFiles);
     });
+
+    test('returnSelectedElement should call createShellItem', () {
+      const int selectedFiles = 2;
+      mockGetCount(mockShellItemAPI, selectedFiles);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedMultiplePaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.createShellItem(any)).called(selectedFiles);
+    });
+
+    test('returnSelectedElement should call getDisplayName', () {
+      const int selectedFiles = 2;
+      mockGetCount(mockShellItemAPI, selectedFiles);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedMultiplePaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.getDisplayName(any, any)).called(selectedFiles);
+    });
+
+    test('returnSelectedElement should call getUserSelectedPath', () {
+      const int selectedFiles = 2;
+      mockGetCount(mockShellItemAPI, selectedFiles);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedMultiplePaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.getUserSelectedPath(any)).called(selectedFiles);
+    });
+
+    test('returnSelectedElement should call releaseItem', () {
+      const int selectedFiles = 2;
+      mockGetCount(mockShellItemAPI, selectedFiles);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedMultiplePaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.releaseItem(any)).called(selectedFiles);
+    });
   });
 
   group('#Public facing functions', () {
@@ -465,8 +517,6 @@ void setDefaultMocks(
       .thenReturn(defaultReturnValue);
   when(mockShellItemAPI.getUserSelectedPath(any)).thenReturn(defaultPath);
   when(mockShellItemAPI.releaseItem(any)).thenReturn(defaultReturnValue);
-  //when(mockShellItemAPI.getCount(any, any));
   when(mockShellItemAPI.getItemAt(any, any, any))
       .thenReturn(defaultReturnValue);
-  //when(mockShellItemAPI.release(any));
 }
