@@ -36,7 +36,7 @@ void main() {
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
-      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue, defaultPath);
+      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue, successReturnValue, defaultPath);
     });
 
     test('setDirectoryOptions should call dialog setOptions', () {
@@ -197,48 +197,47 @@ void main() {
 
     test('setInitialDirectory should return param if initialDirectory is empty',
         () {
-      expect(defaultReturnValue,
-          api.setInitialDirectory(defaultReturnValue, '', dialog));
+      expect(successReturnValue,
+          api.setInitialDirectory('', dialog));
     });
 
     test(
-        'setInitialDirectory should return same hResult if initialDirectory is null',
+        'setInitialDirectory should return successReturnValue if initialDirectory is null',
         () {
-      const int anyHResult = 999;
-
-      expect(anyHResult, api.setInitialDirectory(anyHResult, null, dialog));
+      expect(successReturnValue, api.setInitialDirectory(null, dialog));
     });
 
     test(
-        'setInitialDirectory should return same hResult if initialDirectory is null',
+        'setInitialDirectory should return successReturnValue if initialDirectory is null',
         () {
-      const int anyHResult = 999;
-
-      expect(anyHResult, api.setInitialDirectory(anyHResult, null, dialog));
+      expect(successReturnValue, api.setInitialDirectory(null, dialog));
     });
 
     test('setInitialDirectory should success when initialDirectory is valid',
         () {
-      expect(successReturnValue,
-          api.setInitialDirectory(defaultReturnValue, defaultPath, dialog));
+      expect(successReturnValue, api.setInitialDirectory(defaultPath, dialog));
     });
 
-    test('setInitialDirectory should throw Error 0x80070002 when initialDirectory is an inexistent path',
+    test(
+        'setInitialDirectory should throw Error 0x80070002 when initialDirectory is an inexistent path',
         () {
       expect(
-          () => api.setInitialDirectory(defaultReturnValue, 'INEXISTENT_DIR', dialog),
+          () => api.setInitialDirectory('INEXISTENT_DIR', dialog),
           throwsA(predicate((e) =>
               e is WindowsException &&
-              e.toString() == 'Error 0x80070002: The system cannot find the file specified.')));
+              e.toString() ==
+                  'Error 0x80070002: The system cannot find the file specified.')));
     });
 
-    test('setInitialDirectory should throw Error 0x80070057 when initialDirectory is invalid',
+    test(
+        'setInitialDirectory should throw Error 0x80070057 when initialDirectory is invalid',
         () {
       expect(
-          () => api.setInitialDirectory(defaultReturnValue, ':/', dialog),
+          () => api.setInitialDirectory(':/', dialog),
           throwsA(predicate((e) =>
               e is WindowsException &&
-              e.toString() == 'Error 0x80070057: The parameter is incorrect.')));
+              e.toString() ==
+                  'Error 0x80070057: The parameter is incorrect.')));
     });
   });
 
@@ -249,7 +248,7 @@ void main() {
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
-      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue, defaultPath);
+      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue, successReturnValue, defaultPath);
     });
 
     test('getDirectory should return selected path', () {
@@ -272,7 +271,7 @@ void main() {
 }
 
 void setDefaultMocks(MockFileOpenDialogAPI mockFileOpenDialogAPI,
-    int defaultReturnValue, String defaultPath) {
+    int defaultReturnValue, int successReturnValue, String defaultPath) {
   when(mockFileOpenDialogAPI.setOptions(any, any))
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.getOptions(any, any))
@@ -289,4 +288,6 @@ void setDefaultMocks(MockFileOpenDialogAPI mockFileOpenDialogAPI,
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.getUserSelectedPath(any)).thenReturn(defaultPath);
   when(mockFileOpenDialogAPI.releaseItem(any)).thenReturn(defaultReturnValue);
+  when(mockFileOpenDialogAPI.setFolder(any, any))
+      .thenReturn(successReturnValue);
 }

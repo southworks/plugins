@@ -72,4 +72,9 @@ class FileOpenDialogAPI {
   int releaseItem(IShellItem item) {
     return item.release();
   }
+
+  /// Sets the initial directory for a dialog
+  int setFolder(Pointer<Pointer<COMObject>> dirPath, IFileOpenDialog dialog) {
+    return dialog.setFolder(dirPath.value);
+  }
 }

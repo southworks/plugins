@@ -39,7 +39,7 @@ class DartFileSelectorAPI extends FileDialog {
       hResult = setFileOptions(options, hResult, fileDialog);
     });
 
-    hResult = setInitialDirectory(hResult, initialDirectory, fileDialog);
+    hResult = setInitialDirectory(initialDirectory, fileDialog);
     hResult = addFileFilters(hResult, fileDialog, selectionOptions);
     hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
@@ -112,30 +112,31 @@ class DartFileSelectorAPI extends FileDialog {
 
   /// Sets the initial directory to open the dialog
   @visibleForTesting
-  int setInitialDirectory(
-      int hResult, String? initialDirectory, IFileOpenDialog dialog) {
+  int setInitialDirectory(String? initialDirectory, IFileOpenDialog dialog) {
+    int result = 0;
+
     if (initialDirectory == null || initialDirectory.isEmpty) {
-      return hResult;
+      return result;
     }
 
     using((Arena arena) {
       final Pointer<GUID> guid = GUIDFromString(IID_IShellItem);
       final Pointer<Pointer<COMObject>> dirPath = arena<Pointer<COMObject>>();
-      hResult = SHCreateItemFromParsingName(
+      result = SHCreateItemFromParsingName(
           TEXT(initialDirectory), nullptr, guid, dirPath);
 
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
+      if (FAILED(result)) {
+        throw WindowsException(result);
       }
 
-      hResult = dialog.setFolder(dirPath.value);
+      result = _fileOpenDialogAPI.setFolder(dirPath, dialog);
 
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
+      if (FAILED(result)) {
+        throw WindowsException(result);
       }
     });
 
-    return hResult;
+    return result;
   }
 
   String? _getDirectory({
@@ -150,7 +151,7 @@ class DartFileSelectorAPI extends FileDialog {
       hResult = setDirectoryOptions(options, hResult, dialog);
     });
 
-    hResult = setInitialDirectory(hResult, initialDirectory, dialog);
+    hResult = setInitialDirectory(initialDirectory, dialog);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
     return returnSelectedElement(hResult, dialog);
