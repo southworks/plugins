@@ -17,7 +17,8 @@ import 'dart_file_selector_api_test.mocks.dart';
 @GenerateMocks(<Type>[FileOpenDialogAPI])
 void main() {
   const int defaultReturnValue = 1;
-  const String defaultPath = 'C://';
+  const int successReturnValue = 0;
+  const String defaultPath = 'C:';
   TestWidgetsFlutterBinding.ensureInitialized();
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
   late DartFileSelectorAPI api;
@@ -192,6 +193,52 @@ void main() {
     test('returnSelectedElement should call dialog getUserSelectedPath', () {
       expect(defaultPath, api.returnSelectedElement(hResult, dialog));
       verify(mockFileOpenDialogAPI.getUserSelectedPath(any)).called(1);
+    });
+
+    test('setInitialDirectory should return param if initialDirectory is empty',
+        () {
+      expect(defaultReturnValue,
+          api.setInitialDirectory(defaultReturnValue, '', dialog));
+    });
+
+    test(
+        'setInitialDirectory should return same hResult if initialDirectory is null',
+        () {
+      const int anyHResult = 999;
+
+      expect(anyHResult, api.setInitialDirectory(anyHResult, null, dialog));
+    });
+
+    test(
+        'setInitialDirectory should return same hResult if initialDirectory is null',
+        () {
+      const int anyHResult = 999;
+
+      expect(anyHResult, api.setInitialDirectory(anyHResult, null, dialog));
+    });
+
+    test('setInitialDirectory should success when initialDirectory is valid',
+        () {
+      expect(successReturnValue,
+          api.setInitialDirectory(defaultReturnValue, defaultPath, dialog));
+    });
+
+    test('setInitialDirectory should throw Error 0x80070002 when initialDirectory is an inexistent path',
+        () {
+      expect(
+          () => api.setInitialDirectory(defaultReturnValue, r'C:\INEXISTENT_DIR', dialog),
+          throwsA(predicate((e) =>
+              e is WindowsException &&
+              e.toString() == 'Error 0x80070002: The system cannot find the file specified.')));
+    });
+
+    test('setInitialDirectory should throw Error 0x80070057 when initialDirectory is invalid',
+        () {
+      expect(
+          () => api.setInitialDirectory(defaultReturnValue, ':/', dialog),
+          throwsA(predicate((e) =>
+              e is WindowsException &&
+              e.toString() == 'Error 0x80070057: The parameter is incorrect.')));
     });
   });
 

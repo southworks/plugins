@@ -39,6 +39,7 @@ class DartFileSelectorAPI extends FileDialog {
       hResult = setFileOptions(options, hResult, fileDialog);
     });
 
+    hResult = setInitialDirectory(hResult, initialDirectory, fileDialog);
     hResult = addFileFilters(hResult, fileDialog, selectionOptions);
     hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
@@ -109,6 +110,34 @@ class DartFileSelectorAPI extends FileDialog {
     return hResult;
   }
 
+  /// Sets the initial directory to open the dialog
+  @visibleForTesting
+  int setInitialDirectory(
+      int hResult, String? initialDirectory, IFileOpenDialog dialog) {
+    if (initialDirectory == null || initialDirectory.isEmpty) {
+      return hResult;
+    }
+
+    using((Arena arena) {
+      final Pointer<GUID> guid = GUIDFromString(IID_IShellItem);
+      final Pointer<Pointer<COMObject>> dirPath = arena<Pointer<COMObject>>();
+      hResult = SHCreateItemFromParsingName(
+          TEXT(initialDirectory), nullptr, guid, dirPath);
+
+      if (FAILED(hResult)) {
+        throw WindowsException(hResult);
+      }
+
+      hResult = dialog.setFolder(dirPath.value);
+
+      if (FAILED(hResult)) {
+        throw WindowsException(hResult);
+      }
+    });
+
+    return hResult;
+  }
+
   String? _getDirectory({
     String? initialDirectory,
     String? confirmButtonText,
@@ -120,6 +149,8 @@ class DartFileSelectorAPI extends FileDialog {
       hResult = getOptions(options, hResult, dialog);
       hResult = setDirectoryOptions(options, hResult, dialog);
     });
+
+    hResult = setInitialDirectory(hResult, initialDirectory, dialog);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
     return returnSelectedElement(hResult, dialog);
