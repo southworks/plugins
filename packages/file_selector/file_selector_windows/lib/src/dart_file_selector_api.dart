@@ -33,9 +33,12 @@ class DartFileSelectorAPI extends FileDialog {
       String? confirmButtonText) {
     int hResult = initializeComLibrary();
     final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
-    final Pointer<Uint32> options = calloc<Uint32>();
-    hResult = getOptions(options, hResult, fileDialog);
-    hResult = setFileOptions(options, hResult, fileDialog);
+    using((Arena arena) {
+      final Pointer<Uint32> options = arena<Uint32>();
+      hResult = getOptions(options, hResult, fileDialog);
+      hResult = setFileOptions(options, hResult, fileDialog);
+    });
+
     hResult = addFileFilters(hResult, fileDialog, selectionOptions);
     hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
@@ -112,10 +115,11 @@ class DartFileSelectorAPI extends FileDialog {
   }) {
     int hResult = initializeComLibrary();
     final FileOpenDialog dialog = FileOpenDialog.createInstance();
-    final Pointer<Uint32> options = calloc<Uint32>();
-
-    hResult = getOptions(options, hResult, dialog);
-    hResult = setDirectoryOptions(options, hResult, dialog);
+    using((Arena arena) {
+      final Pointer<Uint32> options = arena<Uint32>();
+      hResult = getOptions(options, hResult, dialog);
+      hResult = setDirectoryOptions(options, hResult, dialog);
+    });
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
     return returnSelectedElement(hResult, dialog);
@@ -135,31 +139,33 @@ class DartFileSelectorAPI extends FileDialog {
   /// Returns a directory path from user interaction.
   @visibleForTesting
   String? returnSelectedElement(int hResult, FileOpenDialog dialog) {
-    bool didUserCancel = false;
+    bool cancelledByUser = false;
     late String userSelectedPath;
     if (FAILED(hResult)) {
       if (hResult == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
-        didUserCancel = true;
+        cancelledByUser = true;
       } else {
         throw WindowsException(hResult);
       }
     } else {
-      final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
-      hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
+      using((Arena arena) {
+        final Pointer<Pointer<COMObject>> ppsi = arena<Pointer<COMObject>>();
+        hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
+        if (FAILED(hResult)) {
+          throw WindowsException(hResult);
+        }
 
-      final IShellItem item = IShellItem(ppsi.cast());
-      final Pointer<IntPtr> pathPtrPtr = calloc<IntPtr>();
+        final IShellItem item = IShellItem(ppsi.cast());
+        final Pointer<IntPtr> pathPtrPtr = arena<IntPtr>();
 
-      hResult = _fileOpenDialogAPI.getDisplayName(item, pathPtrPtr);
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
+        hResult = _fileOpenDialogAPI.getDisplayName(item, pathPtrPtr);
+        if (FAILED(hResult)) {
+          throw WindowsException(hResult);
+        }
 
-      userSelectedPath = _fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr);
-      hResult = _fileOpenDialogAPI.releaseItem(item);
+        userSelectedPath = _fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr);
+        hResult = _fileOpenDialogAPI.releaseItem(item);
+      });
 
       if (FAILED(hResult)) {
         throw WindowsException(hResult);
@@ -172,11 +178,7 @@ class DartFileSelectorAPI extends FileDialog {
     }
 
     CoUninitialize();
-    if (didUserCancel) {
-      return null;
-    } else {
-      return userSelectedPath;
-    }
+    return cancelledByUser ? null : userSelectedPath;
   }
 
   /// Add confirmation button text.
