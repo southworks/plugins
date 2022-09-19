@@ -199,6 +199,7 @@ class DartFileSelectorAPI extends FileDialog {
 
       if (selectionOptions.allowMultiple) {
         hResult = _fileOpenDialogAPI.getResults(ppsi, dialog);
+        _validateResult(hResult);
         final IShellItemArray iShellItemArray =
             _shellItemAPI.createShellItemArray(ppsi);
         final Pointer<Uint32> numberOfSelectedElements = arena<Uint32>();

@@ -302,6 +302,11 @@ void main() {
   });
 
   group('#Multi file selection', () {
+    final SelectionOptions multipleFileSelectionOptions = SelectionOptions(
+      allowMultiple: true,
+      selectFolders: false,
+      allowedTypes: <TypeGroup?>[],
+    );
     setUp(() {
       api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       options = calloc<Uint32>();
@@ -316,13 +321,10 @@ void main() {
         'returnSelectedElement should call dialog getResults and return the paths',
         () {
       mockGetCount(mockShellItemAPI, 1);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedPaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedPaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockFileOpenDialogAPI.getResults(any, any)).called(1);
     });
 
@@ -330,25 +332,19 @@ void main() {
         'returnSelectedElement should call createShellItemArray and return the paths',
         () {
       mockGetCount(mockShellItemAPI, 1);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedPaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedPaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.createShellItemArray(any)).called(1);
     });
 
     test('returnSelectedElement should call getCount and return the paths', () {
       mockGetCount(mockShellItemAPI, 1);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedPaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedPaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.getCount(any, any)).called(1);
     });
 
@@ -356,79 +352,114 @@ void main() {
         () {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedMultiplePaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedMultiplePaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.getItemAt(any, any, any)).called(selectedFiles);
     });
 
     test('returnSelectedElement should call release and return the paths', () {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedMultiplePaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedMultiplePaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.release(any)).called(selectedFiles);
     });
 
     test('returnSelectedElement should call createShellItem', () {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedMultiplePaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedMultiplePaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.createShellItem(any)).called(selectedFiles);
     });
 
     test('returnSelectedElement should call getDisplayName', () {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedMultiplePaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedMultiplePaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.getDisplayName(any, any)).called(selectedFiles);
     });
 
     test('returnSelectedElement should call getUserSelectedPath', () {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedMultiplePaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedMultiplePaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.getUserSelectedPath(any)).called(selectedFiles);
     });
 
     test('returnSelectedElement should call releaseItem', () {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
-      final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: false,
-        allowedTypes: <TypeGroup?>[],
-      );
-      expect(expectedMultiplePaths,
-          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      expect(
+          expectedMultiplePaths,
+          api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog));
       verify(mockShellItemAPI.releaseItem(any)).called(selectedFiles);
+    });
+
+    test(
+        'returnSelectedElement should throw if dialog getResults returns an error',
+        () {
+      when(mockFileOpenDialogAPI.getResults(any, any)).thenReturn(-1);
+
+      expect(
+          () => api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
+
+      verifyNever(mockShellItemAPI.createShellItemArray(any));
+    });
+
+    test('returnSelectedElement should throw if getItemAt returns an error',
+        () {
+      mockGetCount(mockShellItemAPI, 1);
+      when(mockShellItemAPI.getItemAt(any, any, any)).thenReturn(-1);
+
+      expect(
+          () => api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
+
+      verifyNever(mockShellItemAPI.createShellItem(any));
+    });
+
+    test(
+        'returnSelectedElement should throw if getDisplayName returns an error',
+        () {
+      mockGetCount(mockShellItemAPI, 1);
+      when(mockShellItemAPI.getDisplayName(any, any)).thenReturn(-1);
+
+      expect(
+          () => api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
+
+      verifyNever(mockShellItemAPI.getUserSelectedPath(any));
+    });
+
+    test('returnSelectedElement should throw if releaseItem returns an error',
+        () {
+      mockGetCount(mockShellItemAPI, 1);
+      when(mockShellItemAPI.releaseItem(any)).thenReturn(-1);
+
+      expect(
+          () => api.returnSelectedElement(
+              hResult, multipleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
+
+      verifyNever(mockShellItemAPI.release(any));
     });
   });
 
