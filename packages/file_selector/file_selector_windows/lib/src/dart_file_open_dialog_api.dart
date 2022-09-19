@@ -62,22 +62,6 @@ class FileOpenDialogAPI {
     return dialog.getResults(ppsi);
   }
 
-  /// Gets display name for an item.
-  int getDisplayName(IShellItem item, Pointer<IntPtr> pathPtr) {
-    return item.getDisplayName(SIGDN.SIGDN_FILESYSPATH, pathPtr.cast());
-  }
-
-  /// Returns the selected path by the user.
-  String getUserSelectedPath(Pointer<IntPtr> pathPtrPtr) {
-    final Pointer<Utf16> pathPtr = Pointer<Utf16>.fromAddress(pathPtrPtr.value);
-    return pathPtr.toDartString();
-  }
-
-  /// Releases an IShellItem.
-  int releaseItem(IShellItem item) {
-    return item.release();
-  }
-
   /// Sets the initial directory for a dialog
   int setFolder(Pointer<Pointer<COMObject>> dirPath, IFileOpenDialog dialog) {
     return dialog.setFolder(dirPath.value);

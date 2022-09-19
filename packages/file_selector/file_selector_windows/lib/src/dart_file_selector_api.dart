@@ -7,16 +7,21 @@ import 'package:win32/win32.dart';
 
 import 'dart_file_dialog.dart';
 import 'dart_file_open_dialog_api.dart';
+import 'dart_shell_item_api.dart';
 
 /// Dart native implementation of FileSelectorAPI
 class DartFileSelectorAPI extends FileDialog {
   /// We need the file to exist. This value is default to `false`.
-  DartFileSelectorAPI([FileOpenDialogAPI? fileOpenDialogAPI]) : super() {
+  DartFileSelectorAPI(
+      [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemApi? shellItemAPI])
+      : super() {
     fileMustExist = true;
     _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();
+    _shellItemAPI = shellItemAPI ?? ShellItemApi();
   }
 
   late FileOpenDialogAPI _fileOpenDialogAPI;
+  late ShellItemApi _shellItemAPI;
 
   /// Returns directory path from user selection.
   String? getDirectoryPath({
@@ -195,19 +200,21 @@ class DartFileSelectorAPI extends FileDialog {
 
       if (selectionOptions.allowMultiple) {
         hResult = _fileOpenDialogAPI.getResults(ppsi, dialog);
-        final IShellItemArray iShellItemArray = IShellItemArray(ppsi.cast());
+        final IShellItemArray iShellItemArray =
+            _shellItemAPI.createShellItemArray(ppsi);
         final Pointer<Uint32> numberOfSelectedElements = arena<Uint32>();
-        iShellItemArray.getCount(numberOfSelectedElements);
+        _shellItemAPI.getCount(numberOfSelectedElements, iShellItemArray);
 
         for (int i = 0; i < numberOfSelectedElements.value; i++) {
           final Pointer<Pointer<COMObject>> item = arena<Pointer<COMObject>>();
 
-          iShellItemArray.getItemAt(i, item);
+          hResult = _shellItemAPI.getItemAt(i, item, iShellItemArray);
+          _validateResult(hResult);
 
           hResult =
               _addSelectedPathFromPpsi(item, arena, hResult, selectedElements);
 
-          iShellItemArray.release();
+          _shellItemAPI.release(iShellItemArray);
         }
       } else {
         hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
@@ -224,14 +231,14 @@ class DartFileSelectorAPI extends FileDialog {
 
   int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ppsi, Arena arena,
       int hResult, List<String> selectedElements) {
-    final IShellItem item = IShellItem(ppsi.cast());
+    final IShellItem item = _shellItemAPI.createShellItem(ppsi);
     final Pointer<IntPtr> pathPtrPtr = arena<IntPtr>();
 
-    hResult = _fileOpenDialogAPI.getDisplayName(item, pathPtrPtr);
+    hResult = _shellItemAPI.getDisplayName(item, pathPtrPtr);
     _validateResult(hResult);
 
-    selectedElements.add(_fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr));
-    hResult = _fileOpenDialogAPI.releaseItem(item);
+    selectedElements.add(_shellItemAPI.getUserSelectedPath(pathPtrPtr));
+    hResult = _shellItemAPI.releaseItem(item);
     _validateResult(hResult);
 
     return hResult;
