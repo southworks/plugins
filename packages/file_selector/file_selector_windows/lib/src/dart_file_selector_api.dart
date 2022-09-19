@@ -18,7 +18,7 @@ class DartFileSelectorAPI extends FileDialog {
 
   late FileOpenDialogAPI _fileOpenDialogAPI;
 
-  /// Returns directory path from user selection
+  /// Returns directory path from user selection.
   String? getDirectoryPath({
     String? initialDirectory,
     String? confirmButtonText,
@@ -28,13 +28,15 @@ class DartFileSelectorAPI extends FileDialog {
         confirmButtonText: confirmButtonText);
   }
 
-  /// Returns a file.
-  String? getFile(SelectionOptions selectionOptions, String? initialDirectory,
-      String? confirmButtonText) {
+  /// Returns a list of file paths.
+  List<String> getFile(SelectionOptions selectionOptions,
+      String? initialDirectory, String? confirmButtonText) {
     int hResult = initializeComLibrary();
     final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
     using((Arena arena) {
       final Pointer<Uint32> options = arena<Uint32>();
+
+      /// aca hay que mandar la configuracion de multi file.
       hResult = getOptions(options, hResult, fileDialog);
       hResult = setFileOptions(options, hResult, fileDialog);
     });
@@ -43,6 +45,7 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = addFileFilters(hResult, fileDialog, selectionOptions);
     hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
+
     return returnSelectedElement(hResult, fileDialog);
   }
 
@@ -92,6 +95,7 @@ class DartFileSelectorAPI extends FileDialog {
     if (isDirectoryFixed) {
       options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
     }
+
     return options;
   }
 
@@ -154,7 +158,9 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = setInitialDirectory(initialDirectory, dialog);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
-    return returnSelectedElement(hResult, dialog);
+
+    final List<String> selectedPaths = returnSelectedElement(hResult, dialog);
+    return selectedPaths.isEmpty ? null : selectedPaths.first;
   }
 
   /// Initialices the com library
@@ -170,13 +176,10 @@ class DartFileSelectorAPI extends FileDialog {
 
   /// Returns a directory path from user interaction.
   @visibleForTesting
-  String? returnSelectedElement(int hResult, FileOpenDialog dialog) {
-    bool cancelledByUser = false;
-    late String userSelectedPath;
+  List<String> returnSelectedElement(int hResult, FileOpenDialog dialog) {
+    final List<String> selectedElements = <String>[];
     if (FAILED(hResult)) {
-      if (hResult == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
-        cancelledByUser = true;
-      } else {
+      if (hResult != HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
         throw WindowsException(hResult);
       }
     } else {
@@ -195,7 +198,8 @@ class DartFileSelectorAPI extends FileDialog {
           throw WindowsException(hResult);
         }
 
-        userSelectedPath = _fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr);
+        selectedElements
+            .add(_fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr));
         hResult = _fileOpenDialogAPI.releaseItem(item);
       });
 
@@ -210,7 +214,7 @@ class DartFileSelectorAPI extends FileDialog {
     }
 
     CoUninitialize();
-    return cancelledByUser ? null : userSelectedPath;
+    return selectedElements;
   }
 
   /// Add confirmation button text.

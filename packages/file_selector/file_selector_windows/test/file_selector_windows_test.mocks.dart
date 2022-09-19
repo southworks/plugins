@@ -149,10 +149,12 @@ class MockDartFileSelectorAPI extends _i1.Mock
       super.noSuchMethod(Invocation.setter(#hWndOwner, _hWndOwner),
           returnValueForMissingStub: null);
   @override
-  String? getFile(_i3.SelectionOptions? selectionOptions,
+  List<String> getFile(_i3.SelectionOptions? selectionOptions,
           String? initialDirectory, String? confirmButtonText) =>
-      (super.noSuchMethod(Invocation.method(#getFile,
-          [selectionOptions, initialDirectory, confirmButtonText])) as String?);
+      (super.noSuchMethod(
+          Invocation.method(#getFile,
+              [selectionOptions, initialDirectory, confirmButtonText]),
+          returnValue: <String>[]) as List<String>);
   @override
   int getOptions(_i6.Pointer<_i6.Uint32>? pfos, int? hResult,
           _i7.IFileOpenDialog? dialog) =>
@@ -176,10 +178,11 @@ class MockDartFileSelectorAPI extends _i1.Mock
       (super.noSuchMethod(Invocation.method(#initializeComLibrary, []),
           returnValue: 0) as int);
   @override
-  String? returnSelectedElement(int? hResult, _i7.FileOpenDialog? dialog) =>
+  List<String> returnSelectedElement(
+          int? hResult, _i7.FileOpenDialog? dialog) =>
       (super.noSuchMethod(
-              Invocation.method(#returnSelectedElement, [hResult, dialog]))
-          as String?);
+          Invocation.method(#returnSelectedElement, [hResult, dialog]),
+          returnValue: <String>[]) as List<String>);
   @override
   int addConfirmButtonLabel(
           _i7.FileOpenDialog? dialog, String? confirmButtonText) =>

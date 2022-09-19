@@ -19,6 +19,7 @@ void main() {
   const int defaultReturnValue = 1;
   const int successReturnValue = 0;
   const String defaultPath = 'C:';
+  const List<String> expectedPaths = <String>[defaultPath];
   TestWidgetsFlutterBinding.ensureInitialized();
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
   late DartFileSelectorAPI api;
@@ -36,7 +37,8 @@ void main() {
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
-      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue, successReturnValue, defaultPath);
+      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue,
+          successReturnValue, defaultPath);
     });
 
     test('setDirectoryOptions should call dialog setOptions', () {
@@ -102,7 +104,7 @@ void main() {
     test(
         'returnSelectedElement should call dialog getResult and should return selected path',
         () {
-      expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
     });
 
@@ -173,7 +175,9 @@ void main() {
         'returnSelectedElement should return without a path when the user cancels interaction',
         () {
       const int cancelledhResult = -2147023673;
-      expect(null, api.returnSelectedElement(cancelledhResult, dialog));
+
+      expect(<String>[], api.returnSelectedElement(cancelledhResult, dialog));
+
       verifyNever(mockFileOpenDialogAPI.getResult(any, dialog));
       verifyNever(mockFileOpenDialogAPI.getDisplayName(any, any));
       verifyNever(mockFileOpenDialogAPI.getUserSelectedPath(any));
@@ -181,24 +185,23 @@ void main() {
     });
 
     test('returnSelectedElement should call dialog release', () {
-      expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
       verify(mockFileOpenDialogAPI.release(dialog)).called(1);
     });
 
     test('returnSelectedElement should call dialog getDisplayName', () {
-      expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
       verify(mockFileOpenDialogAPI.getDisplayName(any, any)).called(1);
     });
 
     test('returnSelectedElement should call dialog getUserSelectedPath', () {
-      expect(defaultPath, api.returnSelectedElement(hResult, dialog));
+      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
       verify(mockFileOpenDialogAPI.getUserSelectedPath(any)).called(1);
     });
 
     test('setInitialDirectory should return param if initialDirectory is empty',
         () {
-      expect(successReturnValue,
-          api.setInitialDirectory('', dialog));
+      expect(successReturnValue, api.setInitialDirectory('', dialog));
     });
 
     test(
@@ -248,7 +251,8 @@ void main() {
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
-      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue, successReturnValue, defaultPath);
+      setDefaultMocks(mockFileOpenDialogAPI, defaultReturnValue,
+          successReturnValue, defaultPath);
     });
 
     test('getDirectory should return selected path', () {
@@ -264,7 +268,7 @@ void main() {
         selectFolders: true,
         allowedTypes: <TypeGroup?>[typeGroup],
       );
-      expect(defaultPath,
+      expect(expectedPaths,
           api.getFile(selectionOptions, 'C://Directory', 'Choose'));
     });
   });
