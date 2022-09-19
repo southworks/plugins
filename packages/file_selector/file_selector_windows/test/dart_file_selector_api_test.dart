@@ -21,6 +21,7 @@ void main() {
   const int successReturnValue = 0;
   const String defaultPath = 'C:';
   const List<String> expectedPaths = <String>[defaultPath];
+  const List<String> expectedMultiplePaths = <String>[defaultPath, defaultPath];
   TestWidgetsFlutterBinding.ensureInitialized();
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
   final MockShellItemAPI mockShellItemAPI = MockShellItemAPI();
@@ -314,12 +315,7 @@ void main() {
     test(
         'returnSelectedElement should call dialog getResults and return the paths',
         () {
-      when(mockShellItemAPI.getCount(any, any))
-          .thenAnswer((Invocation realInvocation) {
-        final Pointer<Uint32> pointer =
-            realInvocation.positionalArguments.first as Pointer<Uint32>;
-        pointer.value = 1;
-      });
+      mockGetCount(mockShellItemAPI, 1);
       final SelectionOptions selectionOptions = SelectionOptions(
         allowMultiple: true,
         selectFolders: false,
@@ -328,6 +324,59 @@ void main() {
       expect(expectedPaths,
           api.returnSelectedElement(hResult, selectionOptions, dialog));
       verify(mockFileOpenDialogAPI.getResults(any, any)).called(1);
+    });
+
+    test(
+        'returnSelectedElement should call createShellItemArray and return the paths',
+        () {
+      mockGetCount(mockShellItemAPI, 1);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedPaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.createShellItemArray(any)).called(1);
+    });
+
+    test('returnSelectedElement should call getCount and return the paths', () {
+      mockGetCount(mockShellItemAPI, 1);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedPaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.getCount(any, any)).called(1);
+    });
+
+    test('returnSelectedElement should call getItemAt and return the paths',
+        () {
+      const int selectedFiles = 2;
+      mockGetCount(mockShellItemAPI, selectedFiles);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedMultiplePaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.getItemAt(any, any, any)).called(selectedFiles);
+    });
+
+    test('returnSelectedElement should call release and return the paths', () {
+      const int selectedFiles = 2;
+      mockGetCount(mockShellItemAPI, selectedFiles);
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedMultiplePaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockShellItemAPI.release(any)).called(selectedFiles);
     });
   });
 
@@ -358,6 +407,29 @@ void main() {
       expect(expectedPaths,
           api.getFile(selectionOptions, 'C://Directory', 'Choose'));
     });
+
+    test('getFile with multiple selection should return selected paths', () {
+      mockGetCount(mockShellItemAPI, 2);
+      final TypeGroup typeGroup =
+          TypeGroup(extensions: <String?>['jpg'], label: 'Images');
+
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[typeGroup],
+      );
+      expect(expectedMultiplePaths,
+          api.getFile(selectionOptions, 'C://Directory', 'Choose'));
+    });
+  });
+}
+
+void mockGetCount(MockShellItemAPI mockShellItemAPI, int numberOfElements) {
+  when(mockShellItemAPI.getCount(any, any))
+      .thenAnswer((Invocation realInvocation) {
+    final Pointer<Uint32> pointer =
+        realInvocation.positionalArguments.first as Pointer<Uint32>;
+    pointer.value = numberOfElements;
   });
 }
 
