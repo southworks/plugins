@@ -226,7 +226,7 @@ void main() {
     test('setInitialDirectory should throw Error 0x80070002 when initialDirectory is an inexistent path',
         () {
       expect(
-          () => api.setInitialDirectory(defaultReturnValue, r'C:\INEXISTENT_DIR', dialog),
+          () => api.setInitialDirectory(defaultReturnValue, 'INEXISTENT_DIR', dialog),
           throwsA(predicate((e) =>
               e is WindowsException &&
               e.toString() == 'Error 0x80070002: The system cannot find the file specified.')));
