@@ -41,7 +41,6 @@ class DartFileSelectorAPI extends FileDialog {
     using((Arena arena) {
       final Pointer<Uint32> options = arena<Uint32>();
 
-      /// aca hay que mandar la configuracion de multi file.
       hResult = getOptions(options, hResult, fileDialog);
       hResult =
           setDialogOptions(options, hResult, selectionOptions, fileDialog);

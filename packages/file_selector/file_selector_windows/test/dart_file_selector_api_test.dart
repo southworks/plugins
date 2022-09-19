@@ -300,6 +300,37 @@ void main() {
     });
   });
 
+  group('#Multi file selection', () {
+    setUp(() {
+      api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
+      options = calloc<Uint32>();
+      hResult = 0;
+      api.initializeComLibrary();
+      dialog = FileOpenDialog.createInstance();
+      setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
+          defaultReturnValue, defaultPath);
+    });
+
+    test(
+        'returnSelectedElement should call dialog getResults and return the paths',
+        () {
+      when(mockShellItemAPI.getCount(any, any))
+          .thenAnswer((Invocation realInvocation) {
+        final Pointer<Uint32> pointer =
+            realInvocation.positionalArguments.first as Pointer<Uint32>;
+        pointer.value = 1;
+      });
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[],
+      );
+      expect(expectedPaths,
+          api.returnSelectedElement(hResult, selectionOptions, dialog));
+      verify(mockFileOpenDialogAPI.getResults(any, any)).called(1);
+    });
+  });
+
   group('#Public facing functions', () {
     setUp(() {
       api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
@@ -347,15 +378,23 @@ void setDefaultMocks(
   when(mockFileOpenDialogAPI.show(any, any)).thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.getResult(any, any))
       .thenReturn(defaultReturnValue);
+  when(mockFileOpenDialogAPI.getResults(any, any))
+      .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.release(any)).thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.setFolder(any, any))
       .thenReturn(successReturnValue);
   final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
   when(mockShellItemAPI.createShellItem(any))
       .thenReturn(IShellItem(ppsi.cast()));
+  when(mockShellItemAPI.createShellItemArray(any))
+      .thenReturn(IShellItemArray(ppsi.cast()));
   free(ppsi);
   when(mockShellItemAPI.getDisplayName(any, any))
       .thenReturn(defaultReturnValue);
   when(mockShellItemAPI.getUserSelectedPath(any)).thenReturn(defaultPath);
   when(mockShellItemAPI.releaseItem(any)).thenReturn(defaultReturnValue);
+  //when(mockShellItemAPI.getCount(any, any));
+  when(mockShellItemAPI.getItemAt(any, any, any))
+      .thenReturn(defaultReturnValue);
+  //when(mockShellItemAPI.release(any));
 }
