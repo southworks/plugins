@@ -31,6 +31,14 @@ void main() {
     reset(mockFileOpenDialogAPI);
   });
   group('#Isolated functions', () {
+    final TypeGroup imagesTypeGroup =
+        TypeGroup(extensions: <String?>[], label: 'Images');
+    final SelectionOptions singleFileSelectionOptions = SelectionOptions(
+      allowMultiple: false,
+      selectFolders: false,
+      allowedTypes: <TypeGroup?>[imagesTypeGroup],
+    );
+
     setUp(() {
       api = DartFileSelectorAPI(mockFileOpenDialogAPI);
       options = calloc<Uint32>();
@@ -108,7 +116,10 @@ void main() {
     test(
         'returnSelectedElement should call dialog getResult and should return selected path',
         () {
-      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
+      expect(
+          expectedPaths,
+          api.returnSelectedElement(
+              hResult, singleFileSelectionOptions, dialog));
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
     });
 
@@ -117,7 +128,7 @@ void main() {
         () {
       when(mockFileOpenDialogAPI.getResult(any, any)).thenReturn(-1);
       try {
-        api.returnSelectedElement(hResult, dialog);
+        api.returnSelectedElement(hResult, singleFileSelectionOptions, dialog);
         expect(false, true);
       } on WindowsException catch (_) {
         expect(true, true);
@@ -132,7 +143,7 @@ void main() {
         () {
       when(mockFileOpenDialogAPI.getDisplayName(any, any)).thenReturn(-1);
       try {
-        api.returnSelectedElement(hResult, dialog);
+        api.returnSelectedElement(hResult, singleFileSelectionOptions, dialog);
         expect(false, true);
       } on WindowsException catch (_) {
         expect(true, true);
@@ -147,7 +158,7 @@ void main() {
         () {
       when(mockFileOpenDialogAPI.releaseItem(any)).thenReturn(-1);
       try {
-        api.returnSelectedElement(hResult, dialog);
+        api.returnSelectedElement(hResult, singleFileSelectionOptions, dialog);
         expect(false, true);
       } on WindowsException catch (_) {
         expect(true, true);
@@ -163,7 +174,7 @@ void main() {
         () {
       when(mockFileOpenDialogAPI.release(any)).thenReturn(-1);
       try {
-        api.returnSelectedElement(hResult, dialog);
+        api.returnSelectedElement(hResult, singleFileSelectionOptions, dialog);
         expect(false, true);
       } on WindowsException catch (_) {
         expect(true, true);
@@ -180,7 +191,10 @@ void main() {
         () {
       const int cancelledhResult = -2147023673;
 
-      expect(<String>[], api.returnSelectedElement(cancelledhResult, dialog));
+      expect(
+          <String>[],
+          api.returnSelectedElement(
+              cancelledhResult, singleFileSelectionOptions, dialog));
 
       verifyNever(mockFileOpenDialogAPI.getResult(any, dialog));
       verifyNever(mockFileOpenDialogAPI.getDisplayName(any, any));
@@ -189,17 +203,26 @@ void main() {
     });
 
     test('returnSelectedElement should call dialog release', () {
-      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
+      expect(
+          expectedPaths,
+          api.returnSelectedElement(
+              hResult, singleFileSelectionOptions, dialog));
       verify(mockFileOpenDialogAPI.release(dialog)).called(1);
     });
 
     test('returnSelectedElement should call dialog getDisplayName', () {
-      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
+      expect(
+          expectedPaths,
+          api.returnSelectedElement(
+              hResult, singleFileSelectionOptions, dialog));
       verify(mockFileOpenDialogAPI.getDisplayName(any, any)).called(1);
     });
 
     test('returnSelectedElement should call dialog getUserSelectedPath', () {
-      expect(expectedPaths, api.returnSelectedElement(hResult, dialog));
+      expect(
+          expectedPaths,
+          api.returnSelectedElement(
+              hResult, singleFileSelectionOptions, dialog));
       verify(mockFileOpenDialogAPI.getUserSelectedPath(any)).called(1);
     });
 
@@ -268,8 +291,8 @@ void main() {
           TypeGroup(extensions: <String?>['jpg'], label: 'Images');
 
       final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: true,
-        selectFolders: true,
+        allowMultiple: false,
+        selectFolders: false,
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(expectedPaths,

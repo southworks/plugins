@@ -63,6 +63,11 @@ class MockFileOpenDialogAPI extends _i1.Mock implements _i2.FileOpenDialogAPI {
       (super.noSuchMethod(Invocation.method(#getResult, [ppsi, dialog]),
           returnValue: 0) as int);
   @override
+  int getResults(_i4.Pointer<_i4.Pointer<_i3.COMObject>>? ppsi,
+          _i3.IFileOpenDialog? dialog) =>
+      (super.noSuchMethod(Invocation.method(#getResults, [ppsi, dialog]),
+          returnValue: 0) as int);
+  @override
   int getDisplayName(_i3.IShellItem? item, _i4.Pointer<_i4.IntPtr>? pathPtr) =>
       (super.noSuchMethod(Invocation.method(#getDisplayName, [item, pathPtr]),
           returnValue: 0) as int);

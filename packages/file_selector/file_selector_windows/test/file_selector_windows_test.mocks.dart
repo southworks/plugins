@@ -186,10 +186,11 @@ class MockDartFileSelectorAPI extends _i1.Mock
       (super.noSuchMethod(Invocation.method(#initializeComLibrary, []),
           returnValue: 0) as int);
   @override
-  List<String> returnSelectedElement(
-          int? hResult, _i7.FileOpenDialog? dialog) =>
+  List<String> returnSelectedElement(int? hResult,
+          _i3.SelectionOptions? selectionOptions, _i7.FileOpenDialog? dialog) =>
       (super.noSuchMethod(
-          Invocation.method(#returnSelectedElement, [hResult, dialog]),
+          Invocation.method(
+              #returnSelectedElement, [hResult, selectionOptions, dialog]),
           returnValue: <String>[]) as List<String>);
   @override
   int addConfirmButtonLabel(

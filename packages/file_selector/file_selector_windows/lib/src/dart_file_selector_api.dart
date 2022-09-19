@@ -46,16 +46,14 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
 
-    return returnSelectedElement(hResult, fileDialog);
+    return returnSelectedElement(hResult, selectionOptions, fileDialog);
   }
 
   /// Returns dialog options.
   @visibleForTesting
   int getOptions(Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
     hResult = _fileOpenDialogAPI.getOptions(pfos, dialog);
-    if (FAILED(hResult)) {
-      throw WindowsException(hResult);
-    }
+    _validateResult(hResult);
 
     return hResult;
   }
@@ -70,9 +68,7 @@ class DartFileSelectorAPI extends FileDialog {
 
     hResult = _fileOpenDialogAPI.setOptions(options, dialog);
 
-    if (FAILED(hResult)) {
-      throw WindowsException(hResult);
-    }
+    _validateResult(hResult);
 
     return hResult;
   }
@@ -113,9 +109,7 @@ class DartFileSelectorAPI extends FileDialog {
 
     hResult = _fileOpenDialogAPI.setOptions(options, dialog);
 
-    if (FAILED(hResult)) {
-      throw WindowsException(hResult);
-    }
+    _validateResult(hResult);
 
     return hResult;
   }
@@ -153,21 +147,22 @@ class DartFileSelectorAPI extends FileDialog {
     String? initialDirectory,
     String? confirmButtonText,
   }) {
-    final SelectionOptions selectOptions = SelectionOptions(
+    final SelectionOptions selectionOptions = SelectionOptions(
         allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     int hResult = initializeComLibrary();
     final FileOpenDialog dialog = FileOpenDialog.createInstance();
     using((Arena arena) {
       final Pointer<Uint32> options = arena<Uint32>();
       hResult = getOptions(options, hResult, dialog);
-      hResult = setDirectoryOptions(options, hResult, selectOptions, dialog);
+      hResult = setDirectoryOptions(options, hResult, selectionOptions, dialog);
     });
 
     hResult = setInitialDirectory(initialDirectory, dialog);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
 
-    final List<String> selectedPaths = returnSelectedElement(hResult, dialog);
+    final List<String> selectedPaths =
+        returnSelectedElement(hResult, selectionOptions, dialog);
     return selectedPaths.isEmpty ? null : selectedPaths.first;
   }
 
@@ -176,53 +171,84 @@ class DartFileSelectorAPI extends FileDialog {
   int initializeComLibrary() {
     final int hResult = CoInitializeEx(
         nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (FAILED(hResult)) {
-      throw WindowsException(hResult);
-    }
+    _validateResult(hResult);
     return hResult;
   }
 
   /// Returns a directory path from user interaction.
   @visibleForTesting
-  List<String> returnSelectedElement(int hResult, FileOpenDialog dialog) {
+  List<String> returnSelectedElement(
+      int hResult, SelectionOptions selectionOptions, FileOpenDialog dialog) {
     final List<String> selectedElements = <String>[];
     if (FAILED(hResult)) {
       if (hResult != HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
         throw WindowsException(hResult);
       }
     } else {
-      using((Arena arena) {
-        final Pointer<Pointer<COMObject>> ppsi = arena<Pointer<COMObject>>();
-        hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
-        if (FAILED(hResult)) {
-          throw WindowsException(hResult);
-        }
-
-        final IShellItem item = IShellItem(ppsi.cast());
-        final Pointer<IntPtr> pathPtrPtr = arena<IntPtr>();
-
-        hResult = _fileOpenDialogAPI.getDisplayName(item, pathPtrPtr);
-        if (FAILED(hResult)) {
-          throw WindowsException(hResult);
-        }
-
-        selectedElements
-            .add(_fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr));
-        hResult = _fileOpenDialogAPI.releaseItem(item);
-      });
-
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
+      hResult = _getSelectedPathsFromUserInput(
+          selectionOptions, hResult, dialog, selectedElements);
     }
 
     hResult = _fileOpenDialogAPI.release(dialog);
-    if (FAILED(hResult)) {
-      throw WindowsException(hResult);
-    }
+    _validateResult(hResult);
 
     CoUninitialize();
     return selectedElements;
+  }
+
+  void _validateResult(int hResult) {
+    if (FAILED(hResult)) {
+      throw WindowsException(hResult);
+    }
+  }
+
+  int _getSelectedPathsFromUserInput(SelectionOptions selectionOptions,
+      int hResult, FileOpenDialog dialog, List<String> selectedElements) {
+    using((Arena arena) {
+      final Pointer<Pointer<COMObject>> ppsi = arena<Pointer<COMObject>>();
+
+      if (selectionOptions.allowMultiple) {
+        hResult = _fileOpenDialogAPI.getResults(ppsi, dialog);
+        final IShellItemArray iShellItemArray = IShellItemArray(ppsi.cast());
+        final Pointer<Uint32> numberOfSelectedElements = arena<Uint32>();
+        iShellItemArray.getCount(numberOfSelectedElements);
+
+        for (int i = 0; i < numberOfSelectedElements.value; i++) {
+          final Pointer<Pointer<COMObject>> item = arena<Pointer<COMObject>>();
+
+          iShellItemArray.getItemAt(i, item);
+
+          hResult =
+              _addSelectedPathFromPpsi(item, arena, hResult, selectedElements);
+
+          iShellItemArray.release();
+        }
+      } else {
+        hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
+        _validateResult(hResult);
+        hResult =
+            _addSelectedPathFromPpsi(ppsi, arena, hResult, selectedElements);
+      }
+    });
+
+    _validateResult(hResult);
+
+    return hResult;
+  }
+
+  int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ppsi, Arena arena,
+      int hResult, List<String> selectedElements) {
+    final IShellItem item = IShellItem(ppsi.cast());
+    final Pointer<IntPtr> pathPtrPtr = arena<IntPtr>();
+
+    hResult = _fileOpenDialogAPI.getDisplayName(item, pathPtrPtr);
+    _validateResult(hResult);
+
+    selectedElements.add(_fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr));
+    hResult = _fileOpenDialogAPI.releaseItem(item);
+    _validateResult(hResult);
+
+    return hResult;
   }
 
   /// Add confirmation button text.
@@ -256,9 +282,7 @@ class DartFileSelectorAPI extends FileDialog {
       hResult = _fileOpenDialogAPI.setFileTypes(
           filterSpecification, hResult, fileDialog);
 
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
+      _validateResult(hResult);
     }
 
     return hResult;

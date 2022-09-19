@@ -57,6 +57,11 @@ class FileOpenDialogAPI {
     return dialog.getResult(ppsi);
   }
 
+  /// Return results from a dialog, this should be used when selecting multiple items.
+  int getResults(Pointer<Pointer<COMObject>> ppsi, IFileOpenDialog dialog) {
+    return dialog.getResults(ppsi);
+  }
+
   /// Gets display name for an item.
   int getDisplayName(IShellItem item, Pointer<IntPtr> pathPtr) {
     return item.getDisplayName(SIGDN.SIGDN_FILESYSPATH, pathPtr.cast());
