@@ -10,16 +10,16 @@ import 'src/messages.g.dart';
 class FileSelectorWindows extends FileSelectorPlatform {
   /// Constructor for filePicker.
   FileSelectorWindows([this._filePicker]) {
-    _filePicker = _filePicker ?? OpenFilePicker();
+    _filePicker = _filePicker ?? DartFileSelectorAPI();
     _internalFilePicker = _filePicker!;
   }
 
   final FileSelectorApi _hostApi = FileSelectorApi();
-  late OpenFilePicker _internalFilePicker;
-  late OpenFilePicker? _filePicker;
+  late DartFileSelectorAPI _internalFilePicker;
+  late DartFileSelectorAPI? _filePicker;
 
   /// Registers the Windows implementation.
-  static void registerWith([OpenFilePicker? filePicker]) {
+  static void registerWith([DartFileSelectorAPI? filePicker]) {
     FileSelectorPlatform.instance = FileSelectorWindows(filePicker);
   }
 
@@ -29,7 +29,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showOpenDialog(
+    final String? path = _internalFilePicker.getFile(
         SelectionOptions(
           allowMultiple: false,
           selectFolders: false,
@@ -37,7 +37,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
         ),
         initialDirectory,
         confirmButtonText);
-    return paths.isEmpty ? null : XFile(paths.first!);
+    return path == null ? null : XFile(path);
   }
 
   @override
@@ -81,17 +81,10 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    _internalFilePicker.hidePinnedPlaces = true;
-    _internalFilePicker.title = 'Select a directory';
-
     final String? path = _internalFilePicker.getDirectoryPath(
         initialDirectory: initialDirectory,
         confirmButtonText: confirmButtonText);
-    if (path != null) {
-      return Future<String>.value(path);
-    }
-
-    return null;
+    return path == null ? null : Future<String>.value(path);
   }
 }
 

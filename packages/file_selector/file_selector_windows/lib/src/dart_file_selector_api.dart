@@ -1,18 +1,22 @@
 import 'dart:ffi';
-import 'dart:io';
 
 import 'package:ffi/ffi.dart';
+import 'package:file_selector_windows/src/messages.g.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
 import 'dart_file_dialog.dart';
-import 'dart_place.dart';
+import 'dart_file_open_dialog_api.dart';
 
 /// Dart native implementation of FileSelectorAPI
-class OpenFilePicker extends FileDialog {
+class DartFileSelectorAPI extends FileDialog {
   /// We need the file to exist. This value is default to `false`.
-  OpenFilePicker() : super() {
+  DartFileSelectorAPI([FileOpenDialogAPI? fileOpenDialogAPI]) : super() {
     fileMustExist = true;
+    _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();
   }
+
+  late FileOpenDialogAPI _fileOpenDialogAPI;
 
   /// Returns directory path from user selection
   String? getDirectoryPath({
@@ -20,29 +24,58 @@ class OpenFilePicker extends FileDialog {
     String? confirmButtonText,
   }) {
     return _getDirectory(
-            initialDirectory: initialDirectory,
-            confirmButtonText: confirmButtonText)
-        ?.path;
+        initialDirectory: initialDirectory,
+        confirmButtonText: confirmButtonText);
   }
 
-  /// Sets the dialog's title.
-  int _setDialogTitle(int hResult, FileOpenDialog dialog) {
-    if (title.isNotEmpty) {
-      hResult = dialog.setTitle(TEXT(title));
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
+  /// Returns a file.
+  String? getFile(SelectionOptions selectionOptions, String? initialDirectory,
+      String? confirmButtonText) {
+    int hResult = initializeComLibrary();
+    final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
+    using((Arena arena) {
+      final Pointer<Uint32> options = arena<Uint32>();
+      hResult = getOptions(options, hResult, fileDialog);
+      hResult = setFileOptions(options, hResult, fileDialog);
+    });
+
+    hResult = addFileFilters(hResult, fileDialog, selectionOptions);
+    hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
+    hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
+    return returnSelectedElement(hResult, fileDialog);
+  }
+
+  /// Returns dialog options.
+  @visibleForTesting
+  int getOptions(Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
+    hResult = _fileOpenDialogAPI.getOptions(pfos, dialog);
+    if (FAILED(hResult)) {
+      throw WindowsException(hResult);
     }
+
     return hResult;
   }
 
   /// Sets and checks options for the dialog.
-  int _setGetDirectoryOptions(
-      Pointer<Uint32> pfos, int hResult, FileOpenDialog dialog) {
+  @visibleForTesting
+  int setDirectoryOptions(
+      Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
     int options = pfos.value;
 
     options |= FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS;
 
+    options = _getFileOptions(options);
+
+    hResult = _fileOpenDialogAPI.setOptions(options, dialog);
+
+    if (FAILED(hResult)) {
+      throw WindowsException(hResult);
+    }
+
+    return hResult;
+  }
+
+  int _getFileOptions(int options) {
     if (hidePinnedPlaces) {
       options |= FILEOPENDIALOGOPTIONS.FOS_HIDEPINNEDPLACES;
     }
@@ -58,15 +91,43 @@ class OpenFilePicker extends FileDialog {
     if (isDirectoryFixed) {
       options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
     }
+    return options;
+  }
 
-    hResult = dialog.setOptions(options);
+  /// Sets and checks options for the dialog.
+  @visibleForTesting
+  int setFileOptions(
+      Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
+    final int options = _getFileOptions(pfos.value);
+
+    hResult = _fileOpenDialogAPI.setOptions(options, dialog);
+
     if (FAILED(hResult)) {
       throw WindowsException(hResult);
     }
+
     return hResult;
   }
 
-  int _initializeComLibrary() {
+  String? _getDirectory({
+    String? initialDirectory,
+    String? confirmButtonText,
+  }) {
+    int hResult = initializeComLibrary();
+    final FileOpenDialog dialog = FileOpenDialog.createInstance();
+    using((Arena arena) {
+      final Pointer<Uint32> options = arena<Uint32>();
+      hResult = getOptions(options, hResult, dialog);
+      hResult = setDirectoryOptions(options, hResult, dialog);
+    });
+    hResult = addConfirmButtonLabel(dialog, confirmButtonText);
+    hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
+    return returnSelectedElement(hResult, dialog);
+  }
+
+  /// Initialices the com library
+  @visibleForTesting
+  int initializeComLibrary() {
     final int hResult = CoInitializeEx(
         nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (FAILED(hResult)) {
@@ -75,87 +136,87 @@ class OpenFilePicker extends FileDialog {
     return hResult;
   }
 
-  Directory? _getDirectory({
-    String? initialDirectory,
-    String? confirmButtonText,
-  }) {
-    bool didUserCancel = false;
+  /// Returns a directory path from user interaction.
+  @visibleForTesting
+  String? returnSelectedElement(int hResult, FileOpenDialog dialog) {
+    bool cancelledByUser = false;
     late String userSelectedPath;
-
-    int hResult = _initializeComLibrary();
-
-    final FileOpenDialog dialog = FileOpenDialog.createInstance();
-
-    final Pointer<Uint32> options = calloc<Uint32>();
-    hResult = dialog.getOptions(options);
-    if (FAILED(hResult)) {
-      throw WindowsException(hResult);
-    }
-
-    hResult = _setGetDirectoryOptions(options, hResult, dialog);
-
-    hResult = _setDialogTitle(hResult, dialog);
-    dialog.setOkButtonLabel(TEXT(confirmButtonText ?? 'Pick'));
-
-    for (final CustomPlace place in customPlaces) {
-      final Pointer<NativeType> shellItem =
-          Pointer<NativeType>.fromAddress(place.item.ptr.cast<IntPtr>().value);
-      if (place.place == Place.bottom) {
-        hResult = dialog.addPlace(shellItem.cast(), FDAP.FDAP_BOTTOM);
-      } else {
-        hResult = dialog.addPlace(shellItem.cast(), FDAP.FDAP_TOP);
-      }
-
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
-    }
-
-    hResult = dialog.show(hWndOwner);
     if (FAILED(hResult)) {
       if (hResult == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
-        didUserCancel = true;
+        cancelledByUser = true;
       } else {
         throw WindowsException(hResult);
       }
     } else {
-      final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
-      hResult = dialog.getResult(ppsi);
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
+      using((Arena arena) {
+        final Pointer<Pointer<COMObject>> ppsi = arena<Pointer<COMObject>>();
+        hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
+        if (FAILED(hResult)) {
+          throw WindowsException(hResult);
+        }
 
-      final IShellItem item = IShellItem(ppsi.cast());
-      final Pointer<IntPtr> pathPtrPtr = calloc<IntPtr>();
-      hResult = item.getDisplayName(SIGDN.SIGDN_FILESYSPATH, pathPtrPtr.cast());
-      if (FAILED(hResult)) {
-        throw WindowsException(hResult);
-      }
+        final IShellItem item = IShellItem(ppsi.cast());
+        final Pointer<IntPtr> pathPtrPtr = arena<IntPtr>();
 
-      final Pointer<Utf16> pathPtr =
-          Pointer<Utf16>.fromAddress(pathPtrPtr.value);
-      // MAX_PATH is the normal maximum, but if the process is set to support
-      // long file paths and the user selects a path with length > MAX_PATH
-      // characters, it could be longer. In this case, the file name will be
-      // truncated.
-      userSelectedPath = pathPtr.toDartString();
+        hResult = _fileOpenDialogAPI.getDisplayName(item, pathPtrPtr);
+        if (FAILED(hResult)) {
+          throw WindowsException(hResult);
+        }
 
-      hResult = item.release();
+        userSelectedPath = _fileOpenDialogAPI.getUserSelectedPath(pathPtrPtr);
+        hResult = _fileOpenDialogAPI.releaseItem(item);
+      });
+
       if (FAILED(hResult)) {
         throw WindowsException(hResult);
       }
     }
 
-    hResult = dialog.release();
+    hResult = _fileOpenDialogAPI.release(dialog);
     if (FAILED(hResult)) {
       throw WindowsException(hResult);
     }
 
     CoUninitialize();
-    if (didUserCancel) {
-      return null;
-    } else {
-      return Directory(userSelectedPath);
+    return cancelledByUser ? null : userSelectedPath;
+  }
+
+  /// Add confirmation button text.
+  @visibleForTesting
+  int addConfirmButtonLabel(FileOpenDialog dialog, String? confirmButtonText) {
+    return _fileOpenDialogAPI.setOkButtonLabel(confirmButtonText, dialog);
+  }
+
+  /// Adds file type filters.
+  @visibleForTesting
+  int addFileFilters(int hResult, FileOpenDialog fileDialog,
+      SelectionOptions selectionOptions) {
+    for (final TypeGroup? option in selectionOptions.allowedTypes) {
+      if (option == null ||
+          option.extensions == null ||
+          option.extensions.isEmpty) {
+        continue;
+      }
+
+      final String label = option.label;
+      String extensionsForLabel = '';
+      for (final String? extensionFile in option.extensions) {
+        if (extensionFile != null) {
+          extensionsForLabel += '*.$extensionFile;';
+        }
+      }
+      filterSpecification[label] = extensionsForLabel;
     }
+
+    if (filterSpecification.isNotEmpty) {
+      hResult = _fileOpenDialogAPI.setFileTypes(
+          filterSpecification, hResult, fileDialog);
+
+      if (FAILED(hResult)) {
+        throw WindowsException(hResult);
+      }
+    }
+
+    return hResult;
   }
 }
