@@ -15,23 +15,6 @@ class CustomPlace {
 
 /// An abstract of FileDialog, that allows user to interact with the file system.
 abstract class FileDialog {
-  /// Sets the title of the dialog.
-  String title = '';
-
-  /// Sets the text of the label next to the file name edit box.
-  String fileNameLabel = '';
-
-  /// Sets the file name that appears in the File name edit box when that dialog
-  /// box is opened.
-  String fileName = '';
-
-  /// Sets the default extension to be added to file names.
-  ///
-  /// This string should not include a leading period. For example, "jpg" is
-  /// correct, while ".jpg" is not. if this field is set, the dialog will update
-  /// the default extension automatically when the user chooses a new file type.
-  String? defaultExtension;
-
   /// Sets a filter for the file types shown.
   ///
   /// When using the Open dialog, the file types declared here are used to
@@ -43,26 +26,11 @@ abstract class FileDialog {
   /// separated list (for example `*.jpg;*.jpeg`).
   Map<String, String> filterSpecification = <String, String>{};
 
-  /// Which entry in the [filterSpecification] is shown by default. Typically
-  /// this is the first entry shown.
-  int? defaultFilterIndex;
-
-  /// Hide all of the standard namespace locations (such as Favorites,
-  /// Libraries, Computer, and Network) shown in the navigation pane.
-  bool hidePinnedPlaces = false;
-
-  /// Ensures that returned items are file system items.
-  /// True by default.
-  bool forceFileSystemItems = true;
-
-  /// The item returned must exist. This is a default value for the Open dialog.
-  bool fileMustExist = false;
-
-  /// Don't change the current working directory.
-  bool isDirectoryFixed = false;
-
   /// Set hWnd of dialog
   int hWndOwner = NULL;
+
+  /// Sets is save dialog option, this allows the user to select inixistent files.
+  bool fileMustExists = false;
 
   /// Clears the current filter specification, this way a new filter can be added.
   void clearFilterSpecification() {

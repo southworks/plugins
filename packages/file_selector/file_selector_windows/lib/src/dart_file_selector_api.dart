@@ -15,7 +15,6 @@ class DartFileSelectorAPI extends FileDialog {
   DartFileSelectorAPI(
       [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemAPI? shellItemAPI])
       : super() {
-    fileMustExist = true;
     _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();
     _shellItemAPI = shellItemAPI ?? ShellItemAPI();
   }
@@ -28,6 +27,7 @@ class DartFileSelectorAPI extends FileDialog {
     String? initialDirectory,
     String? confirmButtonText,
   }) {
+    fileMustExists = true;
     final SelectionOptions selectionOptions = SelectionOptions(
         allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     return _getDirectory(
@@ -43,6 +43,7 @@ class DartFileSelectorAPI extends FileDialog {
     String? suggestedFileName,
     SelectionOptions? selectionOptions,
   }) {
+    fileMustExists = false;
     final SelectionOptions defaultSelectionOptions = SelectionOptions(
         allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     return _getDirectory(
@@ -55,6 +56,7 @@ class DartFileSelectorAPI extends FileDialog {
   /// Returns a list of file paths.
   List<String> getFile(SelectionOptions selectionOptions,
       String? initialDirectory, String? confirmButtonText) {
+    fileMustExists = false;
     int hResult = initializeComLibrary();
     final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
     using((Arena arena) {
@@ -83,20 +85,9 @@ class DartFileSelectorAPI extends FileDialog {
   }
 
   int _getDialogOptions(int options, SelectionOptions selectionOptions) {
-    if (hidePinnedPlaces) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_HIDEPINNEDPLACES;
-    }
-
-    if (fileMustExist) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
-    }
-
-    if (forceFileSystemItems) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM;
-    }
-
-    if (isDirectoryFixed) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
+    if (fileMustExists) {
+      options &= ~FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
+      options &= ~FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
     }
 
     if (selectionOptions.selectFolders) {
