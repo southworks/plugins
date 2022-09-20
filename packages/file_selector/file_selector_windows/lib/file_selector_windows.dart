@@ -29,7 +29,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final String? path = _internalFilePicker.getFile(
+    final List<String> paths = _internalFilePicker.getFile(
         SelectionOptions(
           allowMultiple: false,
           selectFolders: false,
@@ -37,7 +37,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
         ),
         initialDirectory,
         confirmButtonText);
-    return path == null ? null : XFile(path);
+    return paths.isEmpty ? null : XFile(paths.first);
   }
 
   @override
@@ -46,7 +46,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showOpenDialog(
+    final List<String?> paths = _internalFilePicker.getFile(
         SelectionOptions(
           allowMultiple: true,
           selectFolders: false,

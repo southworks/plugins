@@ -6,9 +6,10 @@
 import 'dart:ffi' as _i4;
 
 import 'package:file_selector_windows/src/dart_file_open_dialog_api.dart'
-    as _i2;
+    as _i3;
+import 'package:file_selector_windows/src/dart_shell_item_api.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:win32/win32.dart' as _i3;
+import 'package:win32/win32.dart' as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -21,62 +22,119 @@ import 'package:win32/win32.dart' as _i3;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
+class _FakeIShellItem_0 extends _i1.SmartFake implements _i2.IShellItem {
+  _FakeIShellItem_0(Object parent, Invocation parentInvocation)
+      : super(parent, parentInvocation);
+}
+
+class _FakeIShellItemArray_1 extends _i1.SmartFake
+    implements _i2.IShellItemArray {
+  _FakeIShellItemArray_1(Object parent, Invocation parentInvocation)
+      : super(parent, parentInvocation);
+}
+
 /// A class which mocks [FileOpenDialogAPI].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockFileOpenDialogAPI extends _i1.Mock implements _i2.FileOpenDialogAPI {
+class MockFileOpenDialogAPI extends _i1.Mock implements _i3.FileOpenDialogAPI {
   MockFileOpenDialogAPI() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  int setOptions(int? fos, _i3.IFileOpenDialog? dialog) =>
+  int setOptions(int? fos, _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(Invocation.method(#setOptions, [fos, dialog]),
           returnValue: 0) as int);
   @override
-  int getOptions(_i4.Pointer<_i4.Uint32>? fos, _i3.IFileOpenDialog? dialog) =>
+  int getOptions(_i4.Pointer<_i4.Uint32>? fos, _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(Invocation.method(#getOptions, [fos, dialog]),
           returnValue: 0) as int);
   @override
-  int setOkButtonLabel(String? confirmationText, _i3.IFileOpenDialog? dialog) =>
+  int setOkButtonLabel(String? confirmationText, _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(
           Invocation.method(#setOkButtonLabel, [confirmationText, dialog]),
           returnValue: 0) as int);
   @override
   int setFileTypes(Map<String, String>? filterSpecification, int? hResult,
-          _i3.IFileOpenDialog? dialog) =>
+          _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(
           Invocation.method(
               #setFileTypes, [filterSpecification, hResult, dialog]),
           returnValue: 0) as int);
   @override
-  int show(int? hwndOwner, _i3.IFileOpenDialog? dialog) =>
+  int show(int? hwndOwner, _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(Invocation.method(#show, [hwndOwner, dialog]),
           returnValue: 0) as int);
   @override
-  int release(_i3.IFileOpenDialog? dialog) =>
+  int release(_i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(Invocation.method(#release, [dialog]), returnValue: 0)
           as int);
   @override
-  int getResult(_i4.Pointer<_i4.Pointer<_i3.COMObject>>? ppsi,
-          _i3.IFileOpenDialog? dialog) =>
+  int getResult(_i4.Pointer<_i4.Pointer<_i2.COMObject>>? ppsi,
+          _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(Invocation.method(#getResult, [ppsi, dialog]),
           returnValue: 0) as int);
   @override
-  int getDisplayName(_i3.IShellItem? item, _i4.Pointer<_i4.IntPtr>? pathPtr) =>
-      (super.noSuchMethod(Invocation.method(#getDisplayName, [item, pathPtr]),
+  int getResults(_i4.Pointer<_i4.Pointer<_i2.COMObject>>? ppsi,
+          _i2.IFileOpenDialog? dialog) =>
+      (super.noSuchMethod(Invocation.method(#getResults, [ppsi, dialog]),
+          returnValue: 0) as int);
+  @override
+  int setFolder(_i4.Pointer<_i4.Pointer<_i2.COMObject>>? dirPath,
+          _i2.IFileOpenDialog? dialog) =>
+      (super.noSuchMethod(Invocation.method(#setFolder, [dirPath, dialog]),
+          returnValue: 0) as int);
+}
+
+/// A class which mocks [ShellItemAPI].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockShellItemAPI extends _i1.Mock implements _i5.ShellItemAPI {
+  MockShellItemAPI() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.IShellItem createShellItem(
+          _i4.Pointer<_i4.Pointer<_i2.COMObject>>? ppsi) =>
+      (super.noSuchMethod(Invocation.method(#createShellItem, [ppsi]),
+              returnValue: _FakeIShellItem_0(
+                  this, Invocation.method(#createShellItem, [ppsi])))
+          as _i2.IShellItem);
+  @override
+  _i2.IShellItemArray createShellItemArray(
+          _i4.Pointer<_i4.Pointer<_i2.COMObject>>? ppsi) =>
+      (super.noSuchMethod(Invocation.method(#createShellItemArray, [ppsi]),
+              returnValue: _FakeIShellItemArray_1(
+                  this, Invocation.method(#createShellItemArray, [ppsi])))
+          as _i2.IShellItemArray);
+  @override
+  int getDisplayName(_i4.Pointer<_i4.IntPtr>? pathPtr, _i2.IShellItem? item) =>
+      (super.noSuchMethod(Invocation.method(#getDisplayName, [pathPtr, item]),
           returnValue: 0) as int);
   @override
   String getUserSelectedPath(_i4.Pointer<_i4.IntPtr>? pathPtrPtr) =>
       (super.noSuchMethod(Invocation.method(#getUserSelectedPath, [pathPtrPtr]),
           returnValue: '') as String);
   @override
-  int releaseItem(_i3.IShellItem? item) => (super
+  int releaseItem(_i2.IShellItem? item) => (super
           .noSuchMethod(Invocation.method(#releaseItem, [item]), returnValue: 0)
       as int);
   @override
-  int setFolder(_i4.Pointer<_i4.Pointer<_i3.COMObject>>? dirPath,
-          _i3.IFileOpenDialog? dialog) =>
-      (super.noSuchMethod(Invocation.method(#setFolder, [dirPath, dialog]),
+  void getCount(_i4.Pointer<_i4.Uint32>? numberOfSelectedElements,
+          _i2.IShellItemArray? iShellItemArray) =>
+      super.noSuchMethod(
+          Invocation.method(
+              #getCount, [numberOfSelectedElements, iShellItemArray]),
+          returnValueForMissingStub: null);
+  @override
+  int getItemAt(int? i, _i4.Pointer<_i4.Pointer<_i2.COMObject>>? item,
+          _i2.IShellItemArray? iShellItemArray) =>
+      (super.noSuchMethod(
+          Invocation.method(#getItemAt, [i, item, iShellItemArray]),
           returnValue: 0) as int);
+  @override
+  void release(_i2.IShellItemArray? iShellItemArray) =>
+      super.noSuchMethod(Invocation.method(#release, [iShellItemArray]),
+          returnValueForMissingStub: null);
 }
