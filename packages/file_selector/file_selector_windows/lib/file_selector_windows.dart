@@ -14,7 +14,6 @@ class FileSelectorWindows extends FileSelectorPlatform {
     _internalFilePicker = _filePicker!;
   }
 
-  final FileSelectorApi _hostApi = FileSelectorApi();
   late DartFileSelectorAPI _internalFilePicker;
   late DartFileSelectorAPI? _filePicker;
 
@@ -64,16 +63,17 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? suggestedName,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showSaveDialog(
-        SelectionOptions(
-          allowMultiple: false,
-          selectFolders: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        suggestedName,
-        confirmButtonText);
-    return paths.isEmpty ? null : paths.first!;
+    final String? path = _internalFilePicker.getSavePath(
+      initialDirectory: initialDirectory,
+      suggestedFileName: suggestedName,
+      confirmButtonText: confirmButtonText,
+      selectionOptions: SelectionOptions(
+        allowMultiple: false,
+        selectFolders: false,
+        allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+      ),
+    );
+    return path == null ? null : Future<String>.value(path);
   }
 
   @override
