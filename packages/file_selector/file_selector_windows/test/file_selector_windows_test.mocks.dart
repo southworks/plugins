@@ -61,34 +61,6 @@ class MockDartFileSelectorAPI extends _i1.Mock
   }
 
   @override
-  String get title =>
-      (super.noSuchMethod(Invocation.getter(#title), returnValue: '')
-          as String);
-  @override
-  set title(String? _title) =>
-      super.noSuchMethod(Invocation.setter(#title, _title),
-          returnValueForMissingStub: null);
-  @override
-  String get fileNameLabel =>
-      (super.noSuchMethod(Invocation.getter(#fileNameLabel), returnValue: '')
-          as String);
-  @override
-  set fileNameLabel(String? _fileNameLabel) =>
-      super.noSuchMethod(Invocation.setter(#fileNameLabel, _fileNameLabel),
-          returnValueForMissingStub: null);
-  @override
-  String get fileName =>
-      (super.noSuchMethod(Invocation.getter(#fileName), returnValue: '')
-          as String);
-  @override
-  set fileName(String? _fileName) =>
-      super.noSuchMethod(Invocation.setter(#fileName, _fileName),
-          returnValueForMissingStub: null);
-  @override
-  set defaultExtension(String? _defaultExtension) => super.noSuchMethod(
-      Invocation.setter(#defaultExtension, _defaultExtension),
-      returnValueForMissingStub: null);
-  @override
   Map<String, String> get filterSpecification =>
       (super.noSuchMethod(Invocation.getter(#filterSpecification),
           returnValue: <String, String>{}) as Map<String, String>);
@@ -98,48 +70,20 @@ class MockDartFileSelectorAPI extends _i1.Mock
           Invocation.setter(#filterSpecification, _filterSpecification),
           returnValueForMissingStub: null);
   @override
-  set defaultFilterIndex(int? _defaultFilterIndex) => super.noSuchMethod(
-      Invocation.setter(#defaultFilterIndex, _defaultFilterIndex),
-      returnValueForMissingStub: null);
-  @override
-  bool get hidePinnedPlaces =>
-      (super.noSuchMethod(Invocation.getter(#hidePinnedPlaces),
-          returnValue: false) as bool);
-  @override
-  set hidePinnedPlaces(bool? _hidePinnedPlaces) => super.noSuchMethod(
-      Invocation.setter(#hidePinnedPlaces, _hidePinnedPlaces),
-      returnValueForMissingStub: null);
-  @override
-  bool get forceFileSystemItems =>
-      (super.noSuchMethod(Invocation.getter(#forceFileSystemItems),
-          returnValue: false) as bool);
-  @override
-  set forceFileSystemItems(bool? _forceFileSystemItems) => super.noSuchMethod(
-      Invocation.setter(#forceFileSystemItems, _forceFileSystemItems),
-      returnValueForMissingStub: null);
-  @override
-  bool get fileMustExist =>
-      (super.noSuchMethod(Invocation.getter(#fileMustExist), returnValue: false)
-          as bool);
-  @override
-  set fileMustExist(bool? _fileMustExist) =>
-      super.noSuchMethod(Invocation.setter(#fileMustExist, _fileMustExist),
-          returnValueForMissingStub: null);
-  @override
-  bool get isDirectoryFixed =>
-      (super.noSuchMethod(Invocation.getter(#isDirectoryFixed),
-          returnValue: false) as bool);
-  @override
-  set isDirectoryFixed(bool? _isDirectoryFixed) => super.noSuchMethod(
-      Invocation.setter(#isDirectoryFixed, _isDirectoryFixed),
-      returnValueForMissingStub: null);
-  @override
   int get hWndOwner =>
       (super.noSuchMethod(Invocation.getter(#hWndOwner), returnValue: 0)
           as int);
   @override
   set hWndOwner(int? _hWndOwner) =>
       super.noSuchMethod(Invocation.setter(#hWndOwner, _hWndOwner),
+          returnValueForMissingStub: null);
+  @override
+  bool get fileMustExists => (super
+          .noSuchMethod(Invocation.getter(#fileMustExists), returnValue: false)
+      as bool);
+  @override
+  set fileMustExists(bool? _fileMustExists) =>
+      super.noSuchMethod(Invocation.setter(#fileMustExists, _fileMustExists),
           returnValueForMissingStub: null);
   @override
   List<String> getFile(_i3.SelectionOptions? selectionOptions,
@@ -153,6 +97,11 @@ class MockDartFileSelectorAPI extends _i1.Mock
           _i6.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(
           Invocation.method(#getOptions, [pfos, hResult, dialog]),
+          returnValue: 0) as int);
+  @override
+  int getDialogOptions(int? options, _i3.SelectionOptions? selectionOptions) =>
+      (super.noSuchMethod(
+          Invocation.method(#getDialogOptions, [options, selectionOptions]),
           returnValue: 0) as int);
   @override
   int setDialogOptions(
@@ -194,6 +143,13 @@ class MockDartFileSelectorAPI extends _i1.Mock
       (super.noSuchMethod(
           Invocation.method(
               #addFileFilters, [hResult, fileDialog, selectionOptions]),
+          returnValue: 0) as int);
+  @override
+  int setSuggestedFileName(String? suggestedFileName, int? hResult,
+          _i6.FileOpenDialog? fileDialog) =>
+      (super.noSuchMethod(
+          Invocation.method(
+              #setSuggestedFileName, [suggestedFileName, hResult, fileDialog]),
           returnValue: 0) as int);
   @override
   void clearFilterSpecification() =>

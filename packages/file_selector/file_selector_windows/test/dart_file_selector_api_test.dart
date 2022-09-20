@@ -55,15 +55,13 @@ void main() {
     });
 
     test('setDirectoryOptions should call dialog setOptions', () {
-      const int expectedDirectoryOptions = 2144;
       final SelectionOptions selectOptions = SelectionOptions(
           allowMultiple: false,
           selectFolders: true,
           allowedTypes: <TypeGroup>[]);
       expect(defaultReturnValue,
           api.setDialogOptions(options, hResult, selectOptions, dialog));
-      verify(mockFileOpenDialogAPI.setOptions(expectedDirectoryOptions, dialog))
-          .called(1);
+      verify(mockFileOpenDialogAPI.setOptions(any, any)).called(1);
     });
 
     test('getOptions should call dialog getOptions', () {
@@ -299,6 +297,49 @@ void main() {
               e.toString() ==
                   'Error 0x80070057: The parameter is incorrect.')));
     });
+
+    test('getSavePath should call setFileName', () {
+      expect(
+          defaultPath,
+          api.getSavePath(
+            suggestedFileName: 'FileName',
+            confirmButtonText: 'Choose',
+            initialDirectory: defaultPath,
+          ));
+      verify(mockFileOpenDialogAPI.setFileName(any, any)).called(1);
+    });
+
+    test('getSavePath should not call setFileName without a suggestedFileName',
+        () {
+      expect(
+          defaultPath,
+          api.getSavePath(
+            confirmButtonText: 'Choose',
+            initialDirectory: defaultPath,
+          ));
+      verifyNever(mockFileOpenDialogAPI.setFileName(any, any));
+    });
+
+    test('getOptions should return 6152 if fileMustExists is true', () {
+      const int options = 6152;
+      api.fileMustExists = true;
+      expect(6152, api.getDialogOptions(options, singleFileSelectionOptions));
+    });
+
+    test('getOptions should return 8 if fileMustExists is false', () {
+      const int options = 6152;
+      expect(8, api.getDialogOptions(options, singleFileSelectionOptions));
+    });
+
+    test('getSavePath should call setFolder', () {
+      expect(
+          defaultPath,
+          api.getSavePath(
+            confirmButtonText: 'Choose',
+            initialDirectory: defaultPath,
+          ));
+      verify(mockFileOpenDialogAPI.setFolder(any, any)).called(1);
+    });
   });
 
   group('#Multi file selection', () {
@@ -504,6 +545,28 @@ void main() {
       expect(
           expectedMultiplePaths, api.getFile(selectionOptions, null, 'Choose'));
     });
+
+    test('getSavePath should return full path with file name and extension',
+        () {
+      const String fileName = 'file.txt';
+      when(mockShellItemAPI.getUserSelectedPath(any))
+          .thenReturn('$defaultPath$fileName');
+      final TypeGroup typeGroup =
+          TypeGroup(extensions: <String?>['txt'], label: 'Text');
+
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[typeGroup],
+      );
+      expect(
+          '$defaultPath$fileName',
+          api.getSavePath(
+              confirmButtonText: 'Choose',
+              initialDirectory: defaultPath,
+              selectionOptions: selectionOptions,
+              suggestedFileName: fileName));
+    });
   });
 }
 
@@ -538,6 +601,8 @@ void setDefaultMocks(
   when(mockFileOpenDialogAPI.release(any)).thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.setFolder(any, any))
       .thenReturn(successReturnValue);
+  when(mockFileOpenDialogAPI.setFileName(any, any))
+      .thenReturn(defaultReturnValue);
   final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
   when(mockShellItemAPI.createShellItem(any))
       .thenReturn(IShellItem(ppsi.cast()));

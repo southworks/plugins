@@ -84,7 +84,9 @@ class DartFileSelectorAPI extends FileDialog {
     return hResult;
   }
 
-  int _getDialogOptions(int options, SelectionOptions selectionOptions) {
+  /// Returns the dialog option based on conditions.
+  @visibleForTesting
+  int getDialogOptions(int options, SelectionOptions selectionOptions) {
     if (!fileMustExists) {
       options &= ~FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
       options &= ~FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
@@ -105,7 +107,7 @@ class DartFileSelectorAPI extends FileDialog {
   @visibleForTesting
   int setDialogOptions(Pointer<Uint32> pfos, int hResult,
       SelectionOptions selectionOptions, IFileOpenDialog dialog) {
-    final int options = _getDialogOptions(pfos.value, selectionOptions);
+    final int options = getDialogOptions(pfos.value, selectionOptions);
 
     hResult = _fileOpenDialogAPI.setOptions(options, dialog);
 
@@ -160,7 +162,7 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = setInitialDirectory(initialDirectory, dialog);
     hResult = addFileFilters(hResult, dialog, selectionOptions);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
-    hResult = _setSuggestedFileName(suggestedFileName, hResult, dialog);
+    hResult = setSuggestedFileName(suggestedFileName, hResult, dialog);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
 
     final List<String> selectedPaths =
@@ -294,10 +296,12 @@ class DartFileSelectorAPI extends FileDialog {
     return hResult;
   }
 
-  int _setSuggestedFileName(
+  /// Set the suggested file name of the given dialog.
+  @visibleForTesting
+  int setSuggestedFileName(
       String? suggestedFileName, int hResult, FileOpenDialog fileDialog) {
     if (suggestedFileName != null && suggestedFileName.isNotEmpty) {
-      hResult = fileDialog.setFileName(TEXT(suggestedFileName));
+      hResult = _fileOpenDialogAPI.setFileName(suggestedFileName, fileDialog);
     }
 
     return hResult;
