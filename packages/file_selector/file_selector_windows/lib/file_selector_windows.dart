@@ -37,7 +37,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
         ),
         initialDirectory,
         confirmButtonText);
-    return paths.isEmpty == null ? null : XFile(paths.first);
+    return paths.isEmpty ? null : XFile(paths.first);
   }
 
   @override
