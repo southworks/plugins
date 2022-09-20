@@ -85,7 +85,7 @@ class DartFileSelectorAPI extends FileDialog {
   }
 
   int _getDialogOptions(int options, SelectionOptions selectionOptions) {
-    if (fileMustExists) {
+    if (!fileMustExists) {
       options &= ~FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
       options &= ~FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
     }
