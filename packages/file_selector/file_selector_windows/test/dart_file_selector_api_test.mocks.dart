@@ -79,6 +79,11 @@ class MockFileOpenDialogAPI extends _i1.Mock implements _i3.FileOpenDialogAPI {
           _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(Invocation.method(#getResults, [ppsi, dialog]),
           returnValue: 0) as int);
+  @override
+  int setFolder(_i4.Pointer<_i4.Pointer<_i2.COMObject>>? dirPath,
+          _i2.IFileOpenDialog? dialog) =>
+      (super.noSuchMethod(Invocation.method(#setFolder, [dirPath, dialog]),
+          returnValue: 0) as int);
 }
 
 /// A class which mocks [ShellItemAPI].
@@ -116,10 +121,6 @@ class MockShellItemAPI extends _i1.Mock implements _i5.ShellItemAPI {
           .noSuchMethod(Invocation.method(#releaseItem, [item]), returnValue: 0)
       as int);
   @override
-  int setFolder(_i4.Pointer<_i4.Pointer<_i3.COMObject>>? dirPath,
-          _i3.IFileOpenDialog? dialog) =>
-      (super.noSuchMethod(Invocation.method(#setFolder, [dirPath, dialog]),
-          returnValue: 0) as int);
   void getCount(_i4.Pointer<_i4.Uint32>? numberOfSelectedElements,
           _i2.IShellItemArray? iShellItemArray) =>
       super.noSuchMethod(

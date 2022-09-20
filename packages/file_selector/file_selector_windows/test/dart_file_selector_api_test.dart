@@ -283,7 +283,7 @@ void main() {
         () {
       expect(
           () => api.setInitialDirectory('INEXISTENT_DIR', dialog),
-          throwsA(predicate((e) =>
+          throwsA(predicate((Object? e) =>
               e is WindowsException &&
               e.toString() ==
                   'Error 0x80070002: The system cannot find the file specified.')));
@@ -294,7 +294,7 @@ void main() {
         () {
       expect(
           () => api.setInitialDirectory(':/', dialog),
-          throwsA(predicate((e) =>
+          throwsA(predicate((Object? e) =>
               e is WindowsException &&
               e.toString() ==
                   'Error 0x80070057: The parameter is incorrect.')));
@@ -314,7 +314,7 @@ void main() {
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
-          defaultReturnValue, defaultPath);
+          successReturnValue, defaultReturnValue, defaultPath);
     });
 
     test(
@@ -488,8 +488,7 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[typeGroup],
       );
-      expect(expectedPaths,
-          api.getFile(selectionOptions, 'C://Directory', 'Choose'));
+      expect(expectedPaths, api.getFile(selectionOptions, null, 'Choose'));
     });
 
     test('getFile with multiple selection should return selected paths', () {
@@ -502,8 +501,8 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[typeGroup],
       );
-      expect(expectedMultiplePaths,
-          api.getFile(selectionOptions, 'C://Directory', 'Choose'));
+      expect(
+          expectedMultiplePaths, api.getFile(selectionOptions, null, 'Choose'));
     });
   });
 }
