@@ -11,7 +11,7 @@ import 'dart_shell_item_api.dart';
 
 /// Dart native implementation of FileSelectorAPI
 class DartFileSelectorAPI extends FileDialog {
-  /// We need the file to exist. This value is default to `false`.
+  /// We need the file to exist. This value defaults to `false`.
   DartFileSelectorAPI(
       [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemAPI? shellItemAPI])
       : super() {
@@ -51,7 +51,7 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = addConfirmButtonLabel(fileDialog, confirmButtonText);
     hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
 
-    return returnSelectedElement(hResult, selectionOptions, fileDialog);
+    return returnSelectedElements(hResult, selectionOptions, fileDialog);
   }
 
   /// Returns dialog options.
@@ -152,7 +152,7 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
 
     final List<String> selectedPaths =
-        returnSelectedElement(hResult, selectionOptions, dialog);
+        returnSelectedElements(hResult, selectionOptions, dialog);
     return selectedPaths.isEmpty ? null : selectedPaths.first;
   }
 
@@ -165,9 +165,9 @@ class DartFileSelectorAPI extends FileDialog {
     return hResult;
   }
 
-  /// Returns a directory path from user interaction.
+  /// Returns a list directory paths from user interaction.
   @visibleForTesting
-  List<String> returnSelectedElement(
+  List<String> returnSelectedElements(
       int hResult, SelectionOptions selectionOptions, FileOpenDialog dialog) {
     final List<String> selectedElements = <String>[];
     if (FAILED(hResult)) {
