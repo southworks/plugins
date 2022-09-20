@@ -23,14 +23,31 @@ class DartFileSelectorAPI extends FileDialog {
   late FileOpenDialogAPI _fileOpenDialogAPI;
   late ShellItemAPI _shellItemAPI;
 
-  /// Returns directory path from user selection.
+  /// Returns a directory path from user selection.
   String? getDirectoryPath({
     String? initialDirectory,
     String? confirmButtonText,
   }) {
+    final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     return _getDirectory(
         initialDirectory: initialDirectory,
-        confirmButtonText: confirmButtonText);
+        confirmButtonText: confirmButtonText,
+        selectionOptions: selectionOptions);
+  }
+
+  /// Returns a full path, including file name and it's extension, from user selection.
+  String? getSavePath({
+    String? initialDirectory,
+    String? confirmButtonText,
+    String? suggestedFileName,
+    SelectionOptions? selectionOptions,
+  }) {
+    return _getDirectory(
+        initialDirectory: initialDirectory,
+        confirmButtonText: confirmButtonText,
+        suggestedFileName: suggestedFileName,
+        selectionOptions: selectionOptions);
   }
 
   /// Returns a list of file paths.
@@ -136,9 +153,9 @@ class DartFileSelectorAPI extends FileDialog {
   String? _getDirectory({
     String? initialDirectory,
     String? confirmButtonText,
+    String? suggestedFileName,
+    SelectionOptions? selectionOptions,
   }) {
-    final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     int hResult = initializeComLibrary();
     final FileOpenDialog dialog = FileOpenDialog.createInstance();
     using((Arena arena) {
@@ -149,6 +166,7 @@ class DartFileSelectorAPI extends FileDialog {
 
     hResult = setInitialDirectory(initialDirectory, dialog);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
+    hResult = _setSuggestedFileName(suggestedFileName, dialog);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
 
     final List<String> selectedPaths =
@@ -277,6 +295,15 @@ class DartFileSelectorAPI extends FileDialog {
           filterSpecification, hResult, fileDialog);
 
       _validateResult(hResult);
+    }
+
+    return hResult;
+  }
+
+  int _setSuggestedFileName(
+      String? suggestedFileName, int hResult, FileOpenDialog fileDialog) {
+    if (fileName.isNotEmpty) {
+      hResult = fileDialog.setFileName(TEXT(suggestedFileName));
     }
 
     return hResult;
