@@ -158,6 +158,7 @@ class DartFileSelectorAPI extends FileDialog {
     });
 
     hResult = setInitialDirectory(initialDirectory, dialog);
+    hResult = addFileFilters(hResult, dialog, selectionOptions);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
     hResult = _setSuggestedFileName(suggestedFileName, hResult, dialog);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
