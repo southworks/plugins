@@ -280,28 +280,25 @@ void main() {
     });
 
     test('getSavePath should call setFileName', () {
-      const String fileName = 'file.txt';
-      when(mockShellItemAPI.getUserSelectedPath(any))
-          .thenReturn('$defaultPath$fileName');
+      const String fileName = 'fileName';
       expect(
-          '$defaultPath$fileName',
+          defaultPath,
           api.getSavePath(
             suggestedFileName: fileName,
-            confirmButtonText: 'Choose',
-            initialDirectory: defaultPath,
           ));
-      verify(mockFileOpenDialogAPI.setFileName(any, any)).called(1);
+      verify(mockFileOpenDialogAPI.setFileName(fileName, any)).called(1);
     });
 
     test('getSavePath should not call setFileName without a suggestedFileName',
         () {
+      const String fileName = 'fileName';
       expect(
           defaultPath,
           api.getSavePath(
             confirmButtonText: 'Choose',
             initialDirectory: defaultPath,
           ));
-      verifyNever(mockFileOpenDialogAPI.setFileName(any, any));
+      verifyNever(mockFileOpenDialogAPI.setFileName(fileName, any));
     });
 
     test('getOptions should return 8 if fileMustExist is false', () {
