@@ -26,7 +26,7 @@ void main() {
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
   final MockShellItemAPI mockShellItemAPI = MockShellItemAPI();
   late DartFileSelectorAPI api;
-  late Pointer<Uint32> options;
+  late Pointer<Uint32> ptrOptions;
   late int hResult;
   late FileOpenDialog dialog;
 
@@ -46,7 +46,7 @@ void main() {
 
     setUp(() {
       api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
-      options = calloc<Uint32>();
+      ptrOptions = calloc<Uint32>();
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
@@ -60,13 +60,13 @@ void main() {
           selectFolders: true,
           allowedTypes: <TypeGroup>[]);
       expect(defaultReturnValue,
-          api.setDialogOptions(hResult, options, selectOptions, dialog));
+          api.setDialogOptions(ptrOptions, selectOptions, dialog));
       verify(mockFileOpenDialogAPI.setOptions(any, any)).called(1);
     });
 
     test('getOptions should call dialog getOptions', () {
       final Pointer<Uint32> pfos = calloc<Uint32>();
-      expect(defaultReturnValue, api.getOptions(hResult, pfos, dialog));
+      expect(defaultReturnValue, api.getOptions(pfos, dialog));
       verify(mockFileOpenDialogAPI.getOptions(pfos, dialog))
           .called(defaultReturnValue);
     });
@@ -93,8 +93,7 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(defaultReturnValue,
-          api.addFileFilters(hResult, selectionOptions, dialog));
+      expect(defaultReturnValue, api.addFileFilters(selectionOptions, dialog));
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(1);
     });
@@ -115,10 +114,8 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(defaultReturnValue,
-          api.addFileFilters(hResult, selectionOptions, dialog));
-      expect(defaultReturnValue,
-          api.addFileFilters(hResult, selectionOptions, dialog));
+      expect(defaultReturnValue, api.addFileFilters(selectionOptions, dialog));
+      expect(defaultReturnValue, api.addFileFilters(selectionOptions, dialog));
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(2);
     });
@@ -135,7 +132,7 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
 
-      expect(hResult, api.addFileFilters(hResult, selectionOptions, dialog));
+      expect(successReturnValue, api.addFileFilters(selectionOptions, dialog));
       verifyNever(mockFileOpenDialogAPI.setFileTypes(any, dialog));
     });
 
@@ -397,7 +394,7 @@ void main() {
     );
     setUp(() {
       api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
-      options = calloc<Uint32>();
+      ptrOptions = calloc<Uint32>();
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
@@ -555,7 +552,7 @@ void main() {
   group('#Public facing functions', () {
     setUp(() {
       api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
-      options = calloc<Uint32>();
+      ptrOptions = calloc<Uint32>();
       hResult = 0;
       api.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
