@@ -53,18 +53,20 @@ class FileOpenDialogAPI {
   }
 
   /// Return a result from a dialog.
-  int getResult(Pointer<Pointer<COMObject>> ppsi, IFileOpenDialog dialog) {
-    return dialog.getResult(ppsi);
+  int getResult(
+      Pointer<Pointer<COMObject>> ptrCOMObject, IFileOpenDialog dialog) {
+    return dialog.getResult(ptrCOMObject);
   }
 
   /// Return results from a dialog, this should be used when selecting multiple items.
-  int getResults(Pointer<Pointer<COMObject>> ppsi, IFileOpenDialog dialog) {
-    return dialog.getResults(ppsi);
+  int getResults(
+      Pointer<Pointer<COMObject>> ptrCOMObject, IFileOpenDialog dialog) {
+    return dialog.getResults(ptrCOMObject);
   }
 
   /// Sets the initial directory for a dialog.
-  int setFolder(Pointer<Pointer<COMObject>> dirPath, IFileOpenDialog dialog) {
-    return dialog.setFolder(dirPath.value);
+  int setFolder(Pointer<Pointer<COMObject>> ptrPath, IFileOpenDialog dialog) {
+    return dialog.setFolder(ptrPath.value);
   }
 
   /// Sets the file name for a dialog.
@@ -73,9 +75,9 @@ class FileOpenDialogAPI {
   }
 
   /// Creates item from a given initial directory. This throws if the directory does not exist.
-  int createItemFromParsingName(String initialDirectory, Pointer<GUID> guid,
-      Pointer<Pointer<NativeType>> ptrDirPath) {
+  int createItemFromParsingName(String initialDirectory, Pointer<GUID> ptrGuid,
+      Pointer<Pointer<NativeType>> ptrPath) {
     return SHCreateItemFromParsingName(
-        TEXT(initialDirectory), nullptr, guid, ptrDirPath);
+        TEXT(initialDirectory), nullptr, ptrGuid, ptrPath);
   }
 }

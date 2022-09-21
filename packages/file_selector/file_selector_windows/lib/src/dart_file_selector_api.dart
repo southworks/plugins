@@ -62,11 +62,11 @@ class DartFileSelectorAPI extends FileDialog {
     int hResult = initializeComLibrary();
     final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
     using((Arena arena) {
-      final Pointer<Uint32> options = arena<Uint32>();
+      final Pointer<Uint32> ptrOptions = arena<Uint32>();
 
-      hResult = getOptions(options, hResult, fileDialog);
+      hResult = getOptions(ptrOptions, hResult, fileDialog);
       hResult =
-          setDialogOptions(options, hResult, selectionOptions, fileDialog);
+          setDialogOptions(ptrOptions, hResult, selectionOptions, fileDialog);
     });
 
     hResult = setInitialDirectory(initialDirectory, fileDialog);
@@ -79,8 +79,9 @@ class DartFileSelectorAPI extends FileDialog {
 
   /// Returns dialog options.
   @visibleForTesting
-  int getOptions(Pointer<Uint32> pfos, int hResult, IFileOpenDialog dialog) {
-    hResult = _fileOpenDialogAPI.getOptions(pfos, dialog);
+  int getOptions(
+      Pointer<Uint32> ptrOptions, int hResult, IFileOpenDialog dialog) {
+    hResult = _fileOpenDialogAPI.getOptions(ptrOptions, dialog);
     _validateResult(hResult);
 
     return hResult;
@@ -107,9 +108,9 @@ class DartFileSelectorAPI extends FileDialog {
 
   /// Sets and checks options for the dialog.
   @visibleForTesting
-  int setDialogOptions(Pointer<Uint32> pfos, int hResult,
+  int setDialogOptions(Pointer<Uint32> ptrOptions, int hResult,
       SelectionOptions selectionOptions, IFileOpenDialog dialog) {
-    final int options = getDialogOptions(pfos.value, selectionOptions);
+    final int options = getDialogOptions(ptrOptions.value, selectionOptions);
 
     hResult = _fileOpenDialogAPI.setOptions(options, dialog);
 
@@ -128,14 +129,14 @@ class DartFileSelectorAPI extends FileDialog {
     }
 
     using((Arena arena) {
-      final Pointer<GUID> guid = GUIDFromString(IID_IShellItem);
-      final Pointer<Pointer<COMObject>> dirPath = arena<Pointer<COMObject>>();
+      final Pointer<GUID> ptrGuid = GUIDFromString(IID_IShellItem);
+      final Pointer<Pointer<COMObject>> ptrPath = arena<Pointer<COMObject>>();
       result = _fileOpenDialogAPI.createItemFromParsingName(
-          initialDirectory, guid, dirPath);
+          initialDirectory, ptrGuid, ptrPath);
 
       _validateResult(result);
 
-      result = _fileOpenDialogAPI.setFolder(dirPath, dialog);
+      result = _fileOpenDialogAPI.setFolder(ptrPath, dialog);
 
       _validateResult(result);
     });
@@ -152,9 +153,9 @@ class DartFileSelectorAPI extends FileDialog {
     int hResult = initializeComLibrary();
     final FileOpenDialog dialog = FileOpenDialog.createInstance();
     using((Arena arena) {
-      final Pointer<Uint32> options = arena<Uint32>();
-      hResult = getOptions(options, hResult, dialog);
-      hResult = setDialogOptions(options, hResult, selectionOptions, dialog);
+      final Pointer<Uint32> ptrOptions = arena<Uint32>();
+      hResult = getOptions(ptrOptions, hResult, dialog);
+      hResult = setDialogOptions(ptrOptions, hResult, selectionOptions, dialog);
     });
 
     hResult = setInitialDirectory(initialDirectory, dialog);
@@ -207,32 +208,37 @@ class DartFileSelectorAPI extends FileDialog {
   int _getSelectedPathsFromUserInput(SelectionOptions selectionOptions,
       int hResult, FileOpenDialog dialog, List<String> selectedElements) {
     using((Arena arena) {
-      final Pointer<Pointer<COMObject>> ppsi = arena<Pointer<COMObject>>();
+      final Pointer<Pointer<COMObject>> ptrShellItemArray =
+          arena<Pointer<COMObject>>();
 
       if (selectionOptions.allowMultiple) {
-        hResult = _fileOpenDialogAPI.getResults(ppsi, dialog);
+        hResult = _fileOpenDialogAPI.getResults(ptrShellItemArray, dialog);
         _validateResult(hResult);
         final IShellItemArray iShellItemArray =
-            _shellItemAPI.createShellItemArray(ppsi);
-        final Pointer<Uint32> numberOfSelectedElements = arena<Uint32>();
-        _shellItemAPI.getCount(numberOfSelectedElements, iShellItemArray);
+            _shellItemAPI.createShellItemArray(ptrShellItemArray);
+        final Pointer<Uint32> ptrNumberOfSelectedElements = arena<Uint32>();
+        _shellItemAPI.getCount(ptrNumberOfSelectedElements, iShellItemArray);
 
-        for (int i = 0; i < numberOfSelectedElements.value; i++) {
-          final Pointer<Pointer<COMObject>> item = arena<Pointer<COMObject>>();
-
-          hResult = _shellItemAPI.getItemAt(i, item, iShellItemArray);
-          _validateResult(hResult);
+        for (int index = 0;
+            index < ptrNumberOfSelectedElements.value;
+            index++) {
+          final Pointer<Pointer<COMObject>> ptrShellItem =
+              arena<Pointer<COMObject>>();
 
           hResult =
-              _addSelectedPathFromPpsi(item, arena, hResult, selectedElements);
+              _shellItemAPI.getItemAt(index, ptrShellItem, iShellItemArray);
+          _validateResult(hResult);
+
+          hResult = _addSelectedPathFromPpsi(
+              ptrShellItem, arena, hResult, selectedElements);
 
           _shellItemAPI.release(iShellItemArray);
         }
       } else {
-        hResult = _fileOpenDialogAPI.getResult(ppsi, dialog);
+        hResult = _fileOpenDialogAPI.getResult(ptrShellItemArray, dialog);
         _validateResult(hResult);
-        hResult =
-            _addSelectedPathFromPpsi(ppsi, arena, hResult, selectedElements);
+        hResult = _addSelectedPathFromPpsi(
+            ptrShellItemArray, arena, hResult, selectedElements);
       }
     });
 
@@ -241,16 +247,16 @@ class DartFileSelectorAPI extends FileDialog {
     return hResult;
   }
 
-  int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ppsi, Arena arena,
-      int hResult, List<String> selectedElements) {
-    final IShellItem item = _shellItemAPI.createShellItem(ppsi);
-    final Pointer<IntPtr> pathPtrPtr = arena<IntPtr>();
+  int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ptrShellItem,
+      Arena arena, int hResult, List<String> selectedElements) {
+    final IShellItem shellItem = _shellItemAPI.createShellItem(ptrShellItem);
+    final Pointer<IntPtr> ptrPath = arena<IntPtr>();
 
-    hResult = _shellItemAPI.getDisplayName(pathPtrPtr, item);
+    hResult = _shellItemAPI.getDisplayName(ptrPath, shellItem);
     _validateResult(hResult);
 
-    selectedElements.add(_shellItemAPI.getUserSelectedPath(pathPtrPtr));
-    hResult = _shellItemAPI.releaseItem(item);
+    selectedElements.add(_shellItemAPI.getUserSelectedPath(ptrPath));
+    hResult = _shellItemAPI.releaseItem(shellItem);
     _validateResult(hResult);
 
     return hResult;
