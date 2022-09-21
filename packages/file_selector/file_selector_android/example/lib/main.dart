@@ -1,64 +1,41 @@
-import 'package:flutter/material.dart';
-import 'dart:async';
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-import 'package:flutter/services.dart';
-import 'package:file_selector_android/file_selector_android.dart';
+import 'package:flutter/material.dart';
+import 'get_directory_page.dart';
+import 'home_page.dart';
+import 'open_image_page.dart';
+import 'open_multiple_images_page.dart';
+import 'open_text_page.dart';
+import 'save_text_page.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+/// MyApp is the Main Application.
+class MyApp extends StatelessWidget {
+  /// Default Constructor
   const MyApp({Key? key}) : super(key: key);
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
-  final _fileSelectorAndroidPlugin = FileSelectorAndroid();
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-
-    var a = await _fileSelectorAndroidPlugin.getDirectoryPath();
-    try {
-      platformVersion = a ?? "no paso nada";
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
-        ),
+      title: 'File Selector Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      home: const HomePage(),
+      routes: <String, WidgetBuilder>{
+        '/open/text': (BuildContext context) => const OpenTextPage(),
+        '/open/image': (BuildContext context) => const OpenImagePage(),
+        '/open/images': (BuildContext context) =>
+            const OpenMultipleImagesPage(),
+        '/save/text': (BuildContext context) => SaveTextPage(),
+        '/directory': (BuildContext context) => const GetDirectoryPage(),
+      },
     );
   }
 }
