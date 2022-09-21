@@ -62,8 +62,20 @@ class FileOpenDialogAPI {
     return dialog.getResults(ppsi);
   }
 
-  /// Sets the initial directory for a dialog
+  /// Sets the initial directory for a dialog.
   int setFolder(Pointer<Pointer<COMObject>> dirPath, IFileOpenDialog dialog) {
     return dialog.setFolder(dirPath.value);
+  }
+
+  /// Sets the file name for a dialog.
+  int setFileName(String suggestedFileName, IFileOpenDialog dialog) {
+    return dialog.setFileName(TEXT(suggestedFileName));
+  }
+
+  /// Creates item from a given initial directory. This throws if the directory does not exist.
+  int createItemFromParsingName(String initialDirectory, Pointer<GUID> guid,
+      Pointer<Pointer<NativeType>> ptrDirPath) {
+    return SHCreateItemFromParsingName(
+        TEXT(initialDirectory), nullptr, guid, ptrDirPath);
   }
 }

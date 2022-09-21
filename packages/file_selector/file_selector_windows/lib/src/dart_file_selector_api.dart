@@ -15,7 +15,6 @@ class DartFileSelectorAPI extends FileDialog {
   DartFileSelectorAPI(
       [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemAPI? shellItemAPI])
       : super() {
-    fileMustExist = true;
     _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();
     _shellItemAPI = shellItemAPI ?? ShellItemAPI();
   }
@@ -23,19 +22,43 @@ class DartFileSelectorAPI extends FileDialog {
   late FileOpenDialogAPI _fileOpenDialogAPI;
   late ShellItemAPI _shellItemAPI;
 
-  /// Returns directory path from user selection.
+  /// Returns a directory path from user selection.
   String? getDirectoryPath({
     String? initialDirectory,
     String? confirmButtonText,
   }) {
+    fileMustExist = true;
+    final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     return _getDirectory(
         initialDirectory: initialDirectory,
-        confirmButtonText: confirmButtonText);
+        confirmButtonText: confirmButtonText,
+        selectionOptions: selectionOptions);
+  }
+
+  /// Returns a full path, including file name and it's extension, from user selection.
+  String? getSavePath({
+    String? initialDirectory,
+    String? confirmButtonText,
+    String? suggestedFileName,
+    SelectionOptions? selectionOptions,
+  }) {
+    fileMustExist = false;
+    final SelectionOptions defaultSelectionOptions = SelectionOptions(
+        allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
+    return _getDirectory(
+        initialDirectory: initialDirectory,
+        confirmButtonText: confirmButtonText,
+        suggestedFileName: suggestedFileName,
+        selectionOptions: selectionOptions ?? defaultSelectionOptions);
   }
 
   /// Returns a list of file paths.
-  List<String> getFile(SelectionOptions selectionOptions,
-      String? initialDirectory, String? confirmButtonText) {
+  List<String> getFile(
+      {String? initialDirectory,
+      String? confirmButtonText,
+      required SelectionOptions selectionOptions}) {
+    fileMustExist = false;
     int hResult = initializeComLibrary();
     final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
     using((Arena arena) {
@@ -63,21 +86,12 @@ class DartFileSelectorAPI extends FileDialog {
     return hResult;
   }
 
-  int _getDialogOptions(int options, SelectionOptions selectionOptions) {
-    if (hidePinnedPlaces) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_HIDEPINNEDPLACES;
-    }
-
-    if (fileMustExist) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
-    }
-
-    if (forceFileSystemItems) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_FORCEFILESYSTEM;
-    }
-
-    if (isDirectoryFixed) {
-      options |= FILEOPENDIALOGOPTIONS.FOS_NOCHANGEDIR;
+  /// Returns the dialog option based on conditions.
+  @visibleForTesting
+  int getDialogOptions(int options, SelectionOptions selectionOptions) {
+    if (!fileMustExist) {
+      options &= ~FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
+      options &= ~FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
     }
 
     if (selectionOptions.selectFolders) {
@@ -95,7 +109,7 @@ class DartFileSelectorAPI extends FileDialog {
   @visibleForTesting
   int setDialogOptions(Pointer<Uint32> pfos, int hResult,
       SelectionOptions selectionOptions, IFileOpenDialog dialog) {
-    final int options = _getDialogOptions(pfos.value, selectionOptions);
+    final int options = getDialogOptions(pfos.value, selectionOptions);
 
     hResult = _fileOpenDialogAPI.setOptions(options, dialog);
 
@@ -116,18 +130,14 @@ class DartFileSelectorAPI extends FileDialog {
     using((Arena arena) {
       final Pointer<GUID> guid = GUIDFromString(IID_IShellItem);
       final Pointer<Pointer<COMObject>> dirPath = arena<Pointer<COMObject>>();
-      result = SHCreateItemFromParsingName(
-          TEXT(initialDirectory), nullptr, guid, dirPath);
+      result = _fileOpenDialogAPI.createItemFromParsingName(
+          initialDirectory, guid, dirPath);
 
-      if (FAILED(result)) {
-        throw WindowsException(result);
-      }
+      _validateResult(result);
 
       result = _fileOpenDialogAPI.setFolder(dirPath, dialog);
 
-      if (FAILED(result)) {
-        throw WindowsException(result);
-      }
+      _validateResult(result);
     });
 
     return result;
@@ -136,9 +146,9 @@ class DartFileSelectorAPI extends FileDialog {
   String? _getDirectory({
     String? initialDirectory,
     String? confirmButtonText,
+    String? suggestedFileName,
+    required SelectionOptions selectionOptions,
   }) {
-    final SelectionOptions selectionOptions = SelectionOptions(
-        allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     int hResult = initializeComLibrary();
     final FileOpenDialog dialog = FileOpenDialog.createInstance();
     using((Arena arena) {
@@ -148,7 +158,9 @@ class DartFileSelectorAPI extends FileDialog {
     });
 
     hResult = setInitialDirectory(initialDirectory, dialog);
+    hResult = addFileFilters(hResult, dialog, selectionOptions);
     hResult = addConfirmButtonLabel(dialog, confirmButtonText);
+    hResult = setSuggestedFileName(suggestedFileName, hResult, dialog);
     hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
 
     final List<String> selectedPaths =
@@ -277,6 +289,17 @@ class DartFileSelectorAPI extends FileDialog {
           filterSpecification, hResult, fileDialog);
 
       _validateResult(hResult);
+    }
+
+    return hResult;
+  }
+
+  /// Set the suggested file name of the given dialog.
+  @visibleForTesting
+  int setSuggestedFileName(
+      String? suggestedFileName, int hResult, FileOpenDialog fileDialog) {
+    if (suggestedFileName != null && suggestedFileName.isNotEmpty) {
+      hResult = _fileOpenDialogAPI.setFileName(suggestedFileName, fileDialog);
     }
 
     return hResult;

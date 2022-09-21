@@ -55,15 +55,13 @@ void main() {
     });
 
     test('setDirectoryOptions should call dialog setOptions', () {
-      const int expectedDirectoryOptions = 2144;
       final SelectionOptions selectOptions = SelectionOptions(
           allowMultiple: false,
           selectFolders: true,
           allowedTypes: <TypeGroup>[]);
       expect(defaultReturnValue,
           api.setDialogOptions(options, hResult, selectOptions, dialog));
-      verify(mockFileOpenDialogAPI.setOptions(expectedDirectoryOptions, dialog))
-          .called(1);
+      verify(mockFileOpenDialogAPI.setOptions(any, any)).called(1);
     });
 
     test('getOptions should call dialog getOptions', () {
@@ -267,37 +265,129 @@ void main() {
       expect(successReturnValue, api.setInitialDirectory(null, dialog));
     });
 
-    test(
-        'setInitialDirectory should return successReturnValue if initialDirectory is null',
-        () {
-      expect(successReturnValue, api.setInitialDirectory(null, dialog));
-    });
-
     test('setInitialDirectory should success when initialDirectory is valid',
         () {
       expect(successReturnValue, api.setInitialDirectory(defaultPath, dialog));
     });
 
     test(
-        'setInitialDirectory should throw Error 0x80070002 when initialDirectory is an inexistent path',
+        'setInitialDirectory should throw WindowsException when initialDirectory is invalid',
         () {
+      when(mockFileOpenDialogAPI.createItemFromParsingName(any, any, any))
+          .thenReturn(-1);
+      expect(() => api.setInitialDirectory(':/', dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
+    });
+
+    test('getSavePath should call setFileName', () {
+      const String fileName = 'fileName';
       expect(
-          () => api.setInitialDirectory('INEXISTENT_DIR', dialog),
-          throwsA(predicate((Object? e) =>
-              e is WindowsException &&
-              e.toString() ==
-                  'Error 0x80070002: The system cannot find the file specified.')));
+          defaultPath,
+          api.getSavePath(
+            suggestedFileName: fileName,
+          ));
+      verify(mockFileOpenDialogAPI.setFileName(fileName, any)).called(1);
+    });
+
+    test('getSavePath should not call setFileName without a suggestedFileName',
+        () {
+      const String fileName = 'fileName';
+      expect(
+          defaultPath,
+          api.getSavePath(
+            confirmButtonText: 'Choose',
+            initialDirectory: defaultPath,
+          ));
+      verifyNever(mockFileOpenDialogAPI.setFileName(fileName, any));
+    });
+
+    test('getOptions should return 8 if fileMustExist is false', () {
+      const int options = 6152;
+      expect(8, api.getDialogOptions(options, singleFileSelectionOptions));
     });
 
     test(
-        'setInitialDirectory should throw Error 0x80070057 when initialDirectory is invalid',
+        'getOptions should return 520 if fileMustExist is false and allowMultiple is true',
         () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      expect(520, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 40 if fileMustExist is false and selectFolders is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: true,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      expect(40, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test('getOptions should return 6152 if fileMustExist is true', () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExist = true;
+      expect(6152, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 6664 if fileMustExist is true and allowMultiple is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExist = true;
+      expect(6664, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 6184 if fileMustExist is true and selectFolders is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: true,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExist = true;
+      expect(6184, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 6696 if fileMustExist is true, allowMultiple is true and selectFolders is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: true,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExist = true;
+      expect(6696, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test('getSavePath should call setFolder', () {
       expect(
-          () => api.setInitialDirectory(':/', dialog),
-          throwsA(predicate((Object? e) =>
-              e is WindowsException &&
-              e.toString() ==
-                  'Error 0x80070057: The parameter is incorrect.')));
+          defaultPath,
+          api.getSavePath(
+            confirmButtonText: 'Choose',
+            initialDirectory: defaultPath,
+          ));
+      verify(mockFileOpenDialogAPI.setFolder(any, any)).called(1);
     });
   });
 
@@ -488,7 +578,12 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[typeGroup],
       );
-      expect(expectedPaths, api.getFile(selectionOptions, null, 'Choose'));
+      expect(
+          expectedPaths,
+          api.getFile(
+              selectionOptions: selectionOptions,
+              initialDirectory: 'c:',
+              confirmButtonText: 'Choose'));
     });
 
     test('getFile with multiple selection should return selected paths', () {
@@ -502,7 +597,33 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          expectedMultiplePaths, api.getFile(selectionOptions, null, 'Choose'));
+          expectedMultiplePaths,
+          api.getFile(
+              selectionOptions: selectionOptions,
+              initialDirectory: 'c:',
+              confirmButtonText: 'Choose'));
+    });
+
+    test('getSavePath should return full path with file name and extension',
+        () {
+      const String fileName = 'file.txt';
+      when(mockShellItemAPI.getUserSelectedPath(any))
+          .thenReturn('$defaultPath$fileName');
+      final TypeGroup typeGroup =
+          TypeGroup(extensions: <String?>['txt'], label: 'Text');
+
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[typeGroup],
+      );
+      expect(
+          '$defaultPath$fileName',
+          api.getSavePath(
+              confirmButtonText: 'Choose',
+              initialDirectory: defaultPath,
+              selectionOptions: selectionOptions,
+              suggestedFileName: fileName));
     });
   });
 }
@@ -538,6 +659,10 @@ void setDefaultMocks(
   when(mockFileOpenDialogAPI.release(any)).thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.setFolder(any, any))
       .thenReturn(successReturnValue);
+  when(mockFileOpenDialogAPI.setFileName(any, any))
+      .thenReturn(defaultReturnValue);
+  when(mockFileOpenDialogAPI.createItemFromParsingName(any, any, any))
+      .thenReturn(defaultReturnValue);
   final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
   when(mockShellItemAPI.createShellItem(any))
       .thenReturn(IShellItem(ppsi.cast()));

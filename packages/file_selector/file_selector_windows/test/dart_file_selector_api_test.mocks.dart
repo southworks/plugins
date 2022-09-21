@@ -84,6 +84,20 @@ class MockFileOpenDialogAPI extends _i1.Mock implements _i3.FileOpenDialogAPI {
           _i2.IFileOpenDialog? dialog) =>
       (super.noSuchMethod(Invocation.method(#setFolder, [dirPath, dialog]),
           returnValue: 0) as int);
+  @override
+  int setFileName(String? suggestedFileName, _i2.IFileOpenDialog? dialog) =>
+      (super.noSuchMethod(
+          Invocation.method(#setFileName, [suggestedFileName, dialog]),
+          returnValue: 0) as int);
+  @override
+  int createItemFromParsingName(
+          String? initialDirectory,
+          _i4.Pointer<_i2.GUID>? guid,
+          _i4.Pointer<_i4.Pointer<_i4.NativeType>>? ptrDirPath) =>
+      (super.noSuchMethod(
+          Invocation.method(
+              #createItemFromParsingName, [initialDirectory, guid, ptrDirPath]),
+          returnValue: 0) as int);
 }
 
 /// A class which mocks [ShellItemAPI].
