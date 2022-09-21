@@ -59,22 +59,22 @@ void main() {
           allowMultiple: false,
           selectFolders: true,
           allowedTypes: <TypeGroup>[]);
-      expect(defaultReturnValue,
-          api.setDialogOptions(ptrOptions, selectOptions, dialog));
+      expect(api.setDialogOptions(ptrOptions, selectOptions, dialog),
+          defaultReturnValue);
       verify(mockFileOpenDialogAPI.setOptions(any, any)).called(1);
     });
 
     test('getOptions should call dialog getOptions', () {
       final Pointer<Uint32> pfos = calloc<Uint32>();
-      expect(defaultReturnValue, api.getOptions(pfos, dialog));
+      expect(api.getOptions(pfos, dialog), defaultReturnValue);
       verify(mockFileOpenDialogAPI.getOptions(pfos, dialog))
           .called(defaultReturnValue);
     });
 
     test('addConfirmButtonLabel should call dialog setOkButtonLabel', () {
       const String confirmationText = 'Text';
-      expect(defaultReturnValue,
-          api.addConfirmButtonLabel(confirmationText, dialog));
+      expect(api.addConfirmButtonLabel(confirmationText, dialog),
+          defaultReturnValue);
       verify(mockFileOpenDialogAPI.setOkButtonLabel(confirmationText, dialog))
           .called(defaultReturnValue);
     });
@@ -93,7 +93,7 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(defaultReturnValue, api.addFileFilters(selectionOptions, dialog));
+      expect(api.addFileFilters(selectionOptions, dialog), defaultReturnValue);
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(1);
     });
@@ -114,8 +114,8 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(defaultReturnValue, api.addFileFilters(selectionOptions, dialog));
-      expect(defaultReturnValue, api.addFileFilters(selectionOptions, dialog));
+      expect(api.addFileFilters(selectionOptions, dialog), defaultReturnValue);
+      expect(api.addFileFilters(selectionOptions, dialog), defaultReturnValue);
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(2);
     });
@@ -132,7 +132,7 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
 
-      expect(successReturnValue, api.addFileFilters(selectionOptions, dialog));
+      expect(api.addFileFilters(selectionOptions, dialog), successReturnValue);
       verifyNever(mockFileOpenDialogAPI.setFileTypes(any, dialog));
     });
 
@@ -140,9 +140,9 @@ void main() {
         'returnSelectedElements should call dialog getResult and should return selected path',
         () {
       expect(
-          expectedPaths,
           api.returnSelectedElements(
-              hResult, singleFileSelectionOptions, dialog));
+              hResult, singleFileSelectionOptions, dialog),
+          expectedPaths);
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
     });
 
@@ -215,9 +215,9 @@ void main() {
       const int cancelledhResult = -2147023673;
 
       expect(
-          <String>[],
           api.returnSelectedElements(
-              cancelledhResult, singleFileSelectionOptions, dialog));
+              cancelledhResult, singleFileSelectionOptions, dialog),
+          <String>[]);
 
       verifyNever(mockFileOpenDialogAPI.getResult(any, dialog));
       verifyNever(mockShellItemAPI.getDisplayName(any, any));
@@ -227,42 +227,42 @@ void main() {
 
     test('returnSelectedElements should call dialog release', () {
       expect(
-          expectedPaths,
           api.returnSelectedElements(
-              hResult, singleFileSelectionOptions, dialog));
+              hResult, singleFileSelectionOptions, dialog),
+          expectedPaths);
       verify(mockFileOpenDialogAPI.release(dialog)).called(1);
     });
 
     test('returnSelectedElements should call dialog getDisplayName', () {
       expect(
-          expectedPaths,
           api.returnSelectedElements(
-              hResult, singleFileSelectionOptions, dialog));
+              hResult, singleFileSelectionOptions, dialog),
+          expectedPaths);
       verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
     });
 
     test('returnSelectedElements should call dialog getUserSelectedPath', () {
       expect(
-          expectedPaths,
           api.returnSelectedElements(
-              hResult, singleFileSelectionOptions, dialog));
+              hResult, singleFileSelectionOptions, dialog),
+          expectedPaths);
       verify(mockShellItemAPI.getUserSelectedPath(any)).called(1);
     });
 
     test('setInitialDirectory should return param if initialDirectory is empty',
         () {
-      expect(successReturnValue, api.setInitialDirectory('', dialog));
+      expect(api.setInitialDirectory('', dialog), successReturnValue);
     });
 
     test(
         'setInitialDirectory should return successReturnValue if initialDirectory is null',
         () {
-      expect(successReturnValue, api.setInitialDirectory(null, dialog));
+      expect(api.setInitialDirectory(null, dialog), successReturnValue);
     });
 
     test('setInitialDirectory should success when initialDirectory is valid',
         () {
-      expect(successReturnValue, api.setInitialDirectory(defaultPath, dialog));
+      expect(api.setInitialDirectory(defaultPath, dialog), successReturnValue);
     });
 
     test(
@@ -277,10 +277,10 @@ void main() {
     test('getSavePath should call setFileName', () {
       const String fileName = 'fileName';
       expect(
-          defaultPath,
           api.getSavePath(
             suggestedFileName: fileName,
-          ));
+          ),
+          defaultPath);
       verify(mockFileOpenDialogAPI.setFileName(fileName, any)).called(1);
     });
 
@@ -288,17 +288,17 @@ void main() {
         () {
       const String fileName = 'fileName';
       expect(
-          defaultPath,
           api.getSavePath(
             confirmButtonText: 'Choose',
             initialDirectory: defaultPath,
-          ));
+          ),
+          defaultPath);
       verifyNever(mockFileOpenDialogAPI.setFileName(fileName, any));
     });
 
     test('getOptions should return 8 if fileMustExist is false', () {
       const int options = 6152;
-      expect(8, api.getDialogOptions(options, singleFileSelectionOptions));
+      expect(api.getDialogOptions(options, singleFileSelectionOptions), 8);
     });
 
     test(
@@ -310,7 +310,7 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      expect(520, api.getDialogOptions(options, selectionOptions));
+      expect(api.getDialogOptions(options, selectionOptions), 520);
     });
 
     test(
@@ -322,7 +322,7 @@ void main() {
         selectFolders: true,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      expect(40, api.getDialogOptions(options, selectionOptions));
+      expect(api.getDialogOptions(options, selectionOptions), 40);
     });
 
     test('getOptions should return 6152 if fileMustExist is true', () {
@@ -333,7 +333,7 @@ void main() {
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
       api.fileMustExist = true;
-      expect(6152, api.getDialogOptions(options, selectionOptions));
+      expect(api.getDialogOptions(options, selectionOptions), 6152);
     });
 
     test(
@@ -346,7 +346,7 @@ void main() {
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
       api.fileMustExist = true;
-      expect(6664, api.getDialogOptions(options, selectionOptions));
+      expect(api.getDialogOptions(options, selectionOptions), 6664);
     });
 
     test(
@@ -359,7 +359,7 @@ void main() {
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
       api.fileMustExist = true;
-      expect(6184, api.getDialogOptions(options, selectionOptions));
+      expect(api.getDialogOptions(options, selectionOptions), 6184);
     });
 
     test(
@@ -372,16 +372,16 @@ void main() {
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
       api.fileMustExist = true;
-      expect(6696, api.getDialogOptions(options, selectionOptions));
+      expect(api.getDialogOptions(options, selectionOptions), 6696);
     });
 
     test('getSavePath should call setFolder', () {
       expect(
-          defaultPath,
           api.getSavePath(
             confirmButtonText: 'Choose',
             initialDirectory: defaultPath,
-          ));
+          ),
+          defaultPath);
       verify(mockFileOpenDialogAPI.setFolder(any, any)).called(1);
     });
   });
@@ -407,9 +407,9 @@ void main() {
         () {
       mockGetCount(mockShellItemAPI, 1);
       expect(
-          expectedPaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedPaths);
       verify(mockFileOpenDialogAPI.getResults(any, any)).called(1);
     });
 
@@ -418,9 +418,9 @@ void main() {
         () {
       mockGetCount(mockShellItemAPI, 1);
       expect(
-          expectedPaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedPaths);
       verify(mockShellItemAPI.createShellItemArray(any)).called(1);
     });
 
@@ -428,9 +428,9 @@ void main() {
         () {
       mockGetCount(mockShellItemAPI, 1);
       expect(
-          expectedPaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedPaths);
       verify(mockShellItemAPI.getCount(any, any)).called(1);
     });
 
@@ -439,9 +439,9 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          expectedMultiplePaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedMultiplePaths);
       verify(mockShellItemAPI.getItemAt(any, any, any)).called(selectedFiles);
     });
 
@@ -449,9 +449,9 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          expectedMultiplePaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedMultiplePaths);
       verify(mockShellItemAPI.release(any)).called(selectedFiles);
     });
 
@@ -459,9 +459,9 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          expectedMultiplePaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedMultiplePaths);
       verify(mockShellItemAPI.createShellItem(any)).called(selectedFiles);
     });
 
@@ -469,9 +469,9 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          expectedMultiplePaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedMultiplePaths);
       verify(mockShellItemAPI.getDisplayName(any, any)).called(selectedFiles);
     });
 
@@ -479,9 +479,9 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          expectedMultiplePaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedMultiplePaths);
       verify(mockShellItemAPI.getUserSelectedPath(any)).called(selectedFiles);
     });
 
@@ -489,9 +489,9 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          expectedMultiplePaths,
           api.returnSelectedElements(
-              hResult, multipleFileSelectionOptions, dialog));
+              hResult, multipleFileSelectionOptions, dialog),
+          expectedMultiplePaths);
       verify(mockShellItemAPI.releaseItem(any)).called(selectedFiles);
     });
 
@@ -574,11 +574,11 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          expectedPaths,
           api.getFiles(
               selectionOptions: selectionOptions,
               initialDirectory: 'c:',
-              confirmButtonText: 'Choose'));
+              confirmButtonText: 'Choose'),
+          expectedPaths);
     });
 
     test('getFile with multiple selection should return selected paths', () {
@@ -592,11 +592,11 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          expectedMultiplePaths,
           api.getFiles(
               selectionOptions: selectionOptions,
               initialDirectory: 'c:',
-              confirmButtonText: 'Choose'));
+              confirmButtonText: 'Choose'),
+          expectedMultiplePaths);
     });
 
     test('getSavePath should return full path with file name and extension',
@@ -613,12 +613,12 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          '$defaultPath$fileName',
           api.getSavePath(
               confirmButtonText: 'Choose',
               initialDirectory: defaultPath,
               selectionOptions: selectionOptions,
-              suggestedFileName: fileName));
+              suggestedFileName: fileName),
+          '$defaultPath$fileName');
     });
   });
 }

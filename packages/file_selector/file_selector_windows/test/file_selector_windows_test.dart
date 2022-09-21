@@ -218,42 +218,42 @@ void main() {
     });
   });
 
-  const String returnedPath = 'c://folder/foo';
+  const String mockedPath = 'c://folder/foo';
   const String confirmText = 'Open Directory';
   const String initialDirectory = 'c://example/directory';
   group('#getDirectoryPath', () {
     setUp(() {
-      when(mockDartFileSelectorAPI.getDirectoryPath()).thenReturn(returnedPath);
+      when(mockDartFileSelectorAPI.getDirectoryPath()).thenReturn(mockedPath);
       when(mockDartFileSelectorAPI.getDirectoryPath(
               confirmButtonText: confirmText))
-          .thenReturn(returnedPath);
+          .thenReturn(mockedPath);
       when(mockDartFileSelectorAPI.getDirectoryPath(
               initialDirectory: initialDirectory))
-          .thenReturn(returnedPath);
+          .thenReturn(mockedPath);
     });
 
     test('simple call works', () async {
-      final String? path = await plugin.getDirectoryPath();
+      final String? actualPath = await plugin.getDirectoryPath();
 
-      expect(path, returnedPath);
+      expect(actualPath, mockedPath);
       verify(mockDartFileSelectorAPI.getDirectoryPath());
     });
 
     test('passes initialDirectory correctly', () async {
-      final String? path =
+      final String? actualPath =
           await plugin.getDirectoryPath(initialDirectory: initialDirectory);
 
       verify(mockDartFileSelectorAPI.getDirectoryPath(
           initialDirectory: initialDirectory));
-      expect(path, returnedPath);
+      expect(actualPath, mockedPath);
     });
 
     test('passes confirmButtonText correctly', () async {
-      final String? path =
+      final String? actualPath =
           await plugin.getDirectoryPath(confirmButtonText: confirmText);
       verify(mockDartFileSelectorAPI.getDirectoryPath(
           confirmButtonText: confirmText));
-      expect(path, returnedPath);
+      expect(actualPath, mockedPath);
     });
   });
 
@@ -264,13 +264,13 @@ void main() {
               confirmButtonText: anyNamed('confirmButtonText'),
               initialDirectory: anyNamed('initialDirectory'),
               suggestedFileName: anyNamed('suggestedFileName')))
-          .thenReturn(returnedPath);
+          .thenReturn(mockedPath);
     });
 
     test('simple call works', () async {
-      final String? path = await plugin.getSavePath();
+      final String? actualPath = await plugin.getSavePath();
 
-      expect(path, returnedPath);
+      expect(actualPath, mockedPath);
       final VerificationResult result = verify(
           mockDartFileSelectorAPI.getSavePath(
               selectionOptions: captureAnyNamed('selectionOptions'),
