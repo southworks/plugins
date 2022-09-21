@@ -19,19 +19,15 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late FileSelectorWindows plugin;
-  late MockTestFileSelectorApi mockApi;
   late MockDartFileSelectorAPI mockDartFileSelectorAPI;
 
   setUp(() {
     mockDartFileSelectorAPI = MockDartFileSelectorAPI();
-    mockApi = MockTestFileSelectorApi();
     plugin = FileSelectorWindows(mockDartFileSelectorAPI);
-    TestFileSelectorApi.setup(mockApi);
   });
 
   tearDown(() {
     reset(mockDartFileSelectorAPI);
-    reset(mockApi);
   });
 
   test('registered instance', () {
