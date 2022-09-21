@@ -54,8 +54,10 @@ class DartFileSelectorAPI extends FileDialog {
   }
 
   /// Returns a list of file paths.
-  List<String> getFile(SelectionOptions selectionOptions,
-      String? initialDirectory, String? confirmButtonText) {
+  List<String> getFile(
+      {String? initialDirectory,
+      String? confirmButtonText,
+      required SelectionOptions selectionOptions}) {
     fileMustExists = false;
     int hResult = initializeComLibrary();
     final FileOpenDialog fileDialog = FileOpenDialog.createInstance();

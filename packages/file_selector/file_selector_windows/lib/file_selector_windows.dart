@@ -29,13 +29,13 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? confirmButtonText,
   }) async {
     final List<String> paths = _internalFilePicker.getFile(
-        SelectionOptions(
+        selectionOptions: SelectionOptions(
           allowMultiple: false,
           selectFolders: false,
           allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
         ),
-        initialDirectory,
-        confirmButtonText);
+        initialDirectory: initialDirectory,
+        confirmButtonText: confirmButtonText);
     return paths.isEmpty ? null : XFile(paths.first);
   }
 
@@ -46,13 +46,13 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? confirmButtonText,
   }) async {
     final List<String?> paths = _internalFilePicker.getFile(
-        SelectionOptions(
+        selectionOptions: SelectionOptions(
           allowMultiple: true,
           selectFolders: false,
           allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
         ),
-        initialDirectory,
-        confirmButtonText);
+        initialDirectory: initialDirectory,
+        confirmButtonText: confirmButtonText);
     return paths.map((String? path) => XFile(path!)).toList();
   }
 

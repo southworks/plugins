@@ -265,12 +265,6 @@ void main() {
       expect(successReturnValue, api.setInitialDirectory(null, dialog));
     });
 
-    test(
-        'setInitialDirectory should return successReturnValue if initialDirectory is null',
-        () {
-      expect(successReturnValue, api.setInitialDirectory(null, dialog));
-    });
-
     test('setInitialDirectory should success when initialDirectory is valid',
         () {
       expect(successReturnValue, api.setInitialDirectory(defaultPath, dialog));
@@ -529,7 +523,12 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[typeGroup],
       );
-      expect(expectedPaths, api.getFile(selectionOptions, null, 'Choose'));
+      expect(
+          expectedPaths,
+          api.getFile(
+              selectionOptions: selectionOptions,
+              initialDirectory: 'c:',
+              confirmButtonText: 'Choose'));
     });
 
     test('getFile with multiple selection should return selected paths', () {
@@ -543,7 +542,11 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          expectedMultiplePaths, api.getFile(selectionOptions, null, 'Choose'));
+          expectedMultiplePaths,
+          api.getFile(
+              selectionOptions: selectionOptions,
+              initialDirectory: 'c:',
+              confirmButtonText: 'Choose'));
     });
 
     test('getSavePath should return full path with file name and extension',
