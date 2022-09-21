@@ -314,15 +314,83 @@ void main() {
       verifyNever(mockFileOpenDialogAPI.setFileName(any, any));
     });
 
-    test('getOptions should return 6152 if fileMustExists is true', () {
-      const int options = 6152;
-      api.fileMustExists = true;
-      expect(6152, api.getDialogOptions(options, singleFileSelectionOptions));
-    });
-
     test('getOptions should return 8 if fileMustExists is false', () {
       const int options = 6152;
       expect(8, api.getDialogOptions(options, singleFileSelectionOptions));
+    });
+
+    test(
+        'getOptions should return 520 if fileMustExists is false and allowMultiple is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      expect(520, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 40 if fileMustExists is false and selectFolders is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: true,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      expect(40, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test('getOptions should return 6152 if fileMustExists is true', () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExists = true;
+      expect(6152, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 6664 if fileMustExists is true and allowMultiple is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: false,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExists = true;
+      expect(6664, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 6184 if fileMustExists is true and selectFolders is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: false,
+        selectFolders: true,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExists = true;
+      expect(6184, api.getDialogOptions(options, selectionOptions));
+    });
+
+    test(
+        'getOptions should return 6696 if fileMustExists is true, allowMultiple is true and selectFolders is true',
+        () {
+      const int options = 6152;
+      final SelectionOptions selectionOptions = SelectionOptions(
+        allowMultiple: true,
+        selectFolders: true,
+        allowedTypes: <TypeGroup?>[imagesTypeGroup],
+      );
+      api.fileMustExists = true;
+      expect(6696, api.getDialogOptions(options, selectionOptions));
     });
 
     test('getSavePath should call setFolder', () {
