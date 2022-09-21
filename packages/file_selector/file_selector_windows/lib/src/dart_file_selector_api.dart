@@ -54,7 +54,7 @@ class DartFileSelectorAPI extends FileDialog {
   }
 
   /// Returns a list of file paths.
-  List<String> getFile(
+  List<String> getFiles(
       {String? initialDirectory,
       String? confirmButtonText,
       required SelectionOptions selectionOptions}) {
@@ -144,31 +144,6 @@ class DartFileSelectorAPI extends FileDialog {
     return result;
   }
 
-  String? _getDirectory({
-    String? initialDirectory,
-    String? confirmButtonText,
-    String? suggestedFileName,
-    required SelectionOptions selectionOptions,
-  }) {
-    int hResult = initializeComLibrary();
-    final FileOpenDialog dialog = FileOpenDialog.createInstance();
-    using((Arena arena) {
-      final Pointer<Uint32> ptrOptions = arena<Uint32>();
-      hResult = getOptions(ptrOptions, hResult, dialog);
-      hResult = setDialogOptions(ptrOptions, hResult, selectionOptions, dialog);
-    });
-
-    hResult = setInitialDirectory(initialDirectory, dialog);
-    hResult = addFileFilters(hResult, dialog, selectionOptions);
-    hResult = addConfirmButtonLabel(dialog, confirmButtonText);
-    hResult = setSuggestedFileName(suggestedFileName, hResult, dialog);
-    hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
-
-    final List<String> selectedPaths =
-        returnSelectedElements(hResult, selectionOptions, dialog);
-    return selectedPaths.isEmpty ? null : selectedPaths.first;
-  }
-
   /// Initialices the com library
   @visibleForTesting
   int initializeComLibrary() {
@@ -197,6 +172,79 @@ class DartFileSelectorAPI extends FileDialog {
 
     CoUninitialize();
     return selectedElements;
+  }
+
+  /// Add confirmation button text.
+  @visibleForTesting
+  int addConfirmButtonLabel(FileOpenDialog dialog, String? confirmButtonText) {
+    return _fileOpenDialogAPI.setOkButtonLabel(confirmButtonText, dialog);
+  }
+
+  /// Adds file type filters.
+  @visibleForTesting
+  int addFileFilters(int hResult, FileOpenDialog fileDialog,
+      SelectionOptions selectionOptions) {
+    clearFilterSpecification();
+    for (final TypeGroup? option in selectionOptions.allowedTypes) {
+      if (option == null ||
+          option.extensions == null ||
+          option.extensions.isEmpty) {
+        continue;
+      }
+
+      final String label = option.label;
+      String extensionsForLabel = '';
+      for (final String? extensionFile in option.extensions) {
+        if (extensionFile != null) {
+          extensionsForLabel += '*.$extensionFile;';
+        }
+      }
+      filterSpecification[label] = extensionsForLabel;
+    }
+
+    if (filterSpecification.isNotEmpty) {
+      hResult =
+          _fileOpenDialogAPI.setFileTypes(filterSpecification, fileDialog);
+      _validateResult(hResult);
+    }
+
+    return hResult;
+  }
+
+  /// Set the suggested file name of the given dialog.
+  @visibleForTesting
+  int setSuggestedFileName(
+      String? suggestedFileName, int hResult, FileOpenDialog fileDialog) {
+    if (suggestedFileName != null && suggestedFileName.isNotEmpty) {
+      hResult = _fileOpenDialogAPI.setFileName(suggestedFileName, fileDialog);
+    }
+
+    return hResult;
+  }
+
+  String? _getDirectory({
+    String? initialDirectory,
+    String? confirmButtonText,
+    String? suggestedFileName,
+    required SelectionOptions selectionOptions,
+  }) {
+    int hResult = initializeComLibrary();
+    final FileOpenDialog dialog = FileOpenDialog.createInstance();
+    using((Arena arena) {
+      final Pointer<Uint32> ptrOptions = arena<Uint32>();
+      hResult = getOptions(ptrOptions, hResult, dialog);
+      hResult = setDialogOptions(ptrOptions, hResult, selectionOptions, dialog);
+    });
+
+    hResult = setInitialDirectory(initialDirectory, dialog);
+    hResult = addFileFilters(hResult, dialog, selectionOptions);
+    hResult = addConfirmButtonLabel(dialog, confirmButtonText);
+    hResult = setSuggestedFileName(suggestedFileName, hResult, dialog);
+    hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
+
+    final List<String> selectedPaths =
+        returnSelectedElements(hResult, selectionOptions, dialog);
+    return selectedPaths.isEmpty ? null : selectedPaths.first;
   }
 
   void _validateResult(int hResult) {
@@ -258,55 +306,6 @@ class DartFileSelectorAPI extends FileDialog {
     selectedElements.add(_shellItemAPI.getUserSelectedPath(ptrPath));
     hResult = _shellItemAPI.releaseItem(shellItem);
     _validateResult(hResult);
-
-    return hResult;
-  }
-
-  /// Add confirmation button text.
-  @visibleForTesting
-  int addConfirmButtonLabel(FileOpenDialog dialog, String? confirmButtonText) {
-    return _fileOpenDialogAPI.setOkButtonLabel(confirmButtonText, dialog);
-  }
-
-  /// Adds file type filters.
-  @visibleForTesting
-  int addFileFilters(int hResult, FileOpenDialog fileDialog,
-      SelectionOptions selectionOptions) {
-    clearFilterSpecification();
-    for (final TypeGroup? option in selectionOptions.allowedTypes) {
-      if (option == null ||
-          option.extensions == null ||
-          option.extensions.isEmpty) {
-        continue;
-      }
-
-      final String label = option.label;
-      String extensionsForLabel = '';
-      for (final String? extensionFile in option.extensions) {
-        if (extensionFile != null) {
-          extensionsForLabel += '*.$extensionFile;';
-        }
-      }
-      filterSpecification[label] = extensionsForLabel;
-    }
-
-    if (filterSpecification.isNotEmpty) {
-      hResult = _fileOpenDialogAPI.setFileTypes(
-          filterSpecification, hResult, fileDialog);
-
-      _validateResult(hResult);
-    }
-
-    return hResult;
-  }
-
-  /// Set the suggested file name of the given dialog.
-  @visibleForTesting
-  int setSuggestedFileName(
-      String? suggestedFileName, int hResult, FileOpenDialog fileDialog) {
-    if (suggestedFileName != null && suggestedFileName.isNotEmpty) {
-      hResult = _fileOpenDialogAPI.setFileName(suggestedFileName, fileDialog);
-    }
 
     return hResult;
   }

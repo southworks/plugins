@@ -6,13 +6,13 @@ import 'package:win32/win32.dart';
 /// FileOpenDialogAPI provider, it used to interact with an IFileOpenDialogInstance.
 class FileOpenDialogAPI {
   /// Sets dialog options.
-  int setOptions(int fos, IFileOpenDialog dialog) {
-    return dialog.setOptions(fos);
+  int setOptions(int options, IFileOpenDialog dialog) {
+    return dialog.setOptions(options);
   }
 
   /// Returns dialog options.
-  int getOptions(Pointer<Uint32> fos, IFileOpenDialog dialog) {
-    return dialog.getOptions(fos);
+  int getOptions(Pointer<Uint32> ptrOptions, IFileOpenDialog dialog) {
+    return dialog.getOptions(ptrOptions);
   }
 
   /// Set confirmation button text on dialog.
@@ -21,25 +21,21 @@ class FileOpenDialogAPI {
   }
 
   /// Sets allowed file type extensions.
-  int setFileTypes(Map<String, String> filterSpecification, int hResult,
-      IFileOpenDialog dialog) {
-    if (filterSpecification.isEmpty) {
-      return hResult;
-    }
-
-    final Pointer<COMDLG_FILTERSPEC> rgSpec =
+  int setFileTypes(
+      Map<String, String> filterSpecification, IFileOpenDialog dialog) {
+    final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
         calloc<COMDLG_FILTERSPEC>(filterSpecification.length);
 
     int index = 0;
     for (final String key in filterSpecification.keys) {
-      rgSpec[index]
+      registerFilterSpecification[index]
         ..pszName = TEXT(key)
         ..pszSpec = TEXT(filterSpecification[key]!);
       index++;
     }
 
-    hResult = dialog.setFileTypes(filterSpecification.length, rgSpec);
-    return hResult;
+    return dialog.setFileTypes(
+        filterSpecification.length, registerFilterSpecification);
   }
 
   /// Shows a dialog.

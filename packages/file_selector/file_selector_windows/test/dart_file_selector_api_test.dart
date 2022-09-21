@@ -95,8 +95,7 @@ void main() {
 
       expect(defaultReturnValue,
           api.addFileFilters(hResult, dialog, selectionOptions));
-      verify(mockFileOpenDialogAPI.setFileTypes(
-              filterSpecification, hResult, dialog))
+      verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(1);
     });
 
@@ -120,8 +119,7 @@ void main() {
           api.addFileFilters(hResult, dialog, selectionOptions));
       expect(defaultReturnValue,
           api.addFileFilters(hResult, dialog, selectionOptions));
-      verify(mockFileOpenDialogAPI.setFileTypes(
-              filterSpecification, hResult, dialog))
+      verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(2);
     });
 
@@ -138,7 +136,7 @@ void main() {
       );
 
       expect(hResult, api.addFileFilters(hResult, dialog, selectionOptions));
-      verifyNever(mockFileOpenDialogAPI.setFileTypes(any, hResult, dialog));
+      verifyNever(mockFileOpenDialogAPI.setFileTypes(any, dialog));
     });
 
     test(
@@ -580,7 +578,7 @@ void main() {
       );
       expect(
           expectedPaths,
-          api.getFile(
+          api.getFiles(
               selectionOptions: selectionOptions,
               initialDirectory: 'c:',
               confirmButtonText: 'Choose'));
@@ -598,7 +596,7 @@ void main() {
       );
       expect(
           expectedMultiplePaths,
-          api.getFile(
+          api.getFiles(
               selectionOptions: selectionOptions,
               initialDirectory: 'c:',
               confirmButtonText: 'Choose'));
@@ -649,7 +647,7 @@ void setDefaultMocks(
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.setOkButtonLabel(any, any))
       .thenReturn(defaultReturnValue);
-  when(mockFileOpenDialogAPI.setFileTypes(any, any, any))
+  when(mockFileOpenDialogAPI.setFileTypes(any, any))
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.show(any, any)).thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.getResult(any, any))
