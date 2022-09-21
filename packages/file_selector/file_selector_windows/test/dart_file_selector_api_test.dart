@@ -280,10 +280,13 @@ void main() {
     });
 
     test('getSavePath should call setFileName', () {
+      const String fileName = 'file.txt';
+      when(mockShellItemAPI.getUserSelectedPath(any))
+          .thenReturn('$defaultPath$fileName');
       expect(
-          defaultPath,
+          '$defaultPath$fileName',
           api.getSavePath(
-            suggestedFileName: 'FileName',
+            suggestedFileName: fileName,
             confirmButtonText: 'Choose',
             initialDirectory: defaultPath,
           ));
