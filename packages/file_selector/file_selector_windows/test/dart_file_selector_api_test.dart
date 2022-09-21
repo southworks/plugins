@@ -60,13 +60,13 @@ void main() {
           selectFolders: true,
           allowedTypes: <TypeGroup>[]);
       expect(defaultReturnValue,
-          api.setDialogOptions(options, hResult, selectOptions, dialog));
+          api.setDialogOptions(hResult, options, selectOptions, dialog));
       verify(mockFileOpenDialogAPI.setOptions(any, any)).called(1);
     });
 
     test('getOptions should call dialog getOptions', () {
       final Pointer<Uint32> pfos = calloc<Uint32>();
-      expect(defaultReturnValue, api.getOptions(pfos, hResult, dialog));
+      expect(defaultReturnValue, api.getOptions(hResult, pfos, dialog));
       verify(mockFileOpenDialogAPI.getOptions(pfos, dialog))
           .called(defaultReturnValue);
     });
@@ -74,7 +74,7 @@ void main() {
     test('addConfirmButtonLabel should call dialog setOkButtonLabel', () {
       const String confirmationText = 'Text';
       expect(defaultReturnValue,
-          api.addConfirmButtonLabel(dialog, confirmationText));
+          api.addConfirmButtonLabel(confirmationText, dialog));
       verify(mockFileOpenDialogAPI.setOkButtonLabel(confirmationText, dialog))
           .called(defaultReturnValue);
     });
@@ -94,7 +94,7 @@ void main() {
       };
 
       expect(defaultReturnValue,
-          api.addFileFilters(hResult, dialog, selectionOptions));
+          api.addFileFilters(hResult, selectionOptions, dialog));
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(1);
     });
@@ -116,9 +116,9 @@ void main() {
       };
 
       expect(defaultReturnValue,
-          api.addFileFilters(hResult, dialog, selectionOptions));
+          api.addFileFilters(hResult, selectionOptions, dialog));
       expect(defaultReturnValue,
-          api.addFileFilters(hResult, dialog, selectionOptions));
+          api.addFileFilters(hResult, selectionOptions, dialog));
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(2);
     });
@@ -135,7 +135,7 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
 
-      expect(hResult, api.addFileFilters(hResult, dialog, selectionOptions));
+      expect(hResult, api.addFileFilters(hResult, selectionOptions, dialog));
       verifyNever(mockFileOpenDialogAPI.setFileTypes(any, dialog));
     });
 
