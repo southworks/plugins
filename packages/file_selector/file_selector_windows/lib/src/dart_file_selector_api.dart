@@ -27,7 +27,7 @@ class DartFileSelectorAPI extends FileDialog {
     String? initialDirectory,
     String? confirmButtonText,
   }) {
-    fileMustExists = true;
+    fileMustExist = true;
     final SelectionOptions selectionOptions = SelectionOptions(
         allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     return _getDirectory(
@@ -43,7 +43,7 @@ class DartFileSelectorAPI extends FileDialog {
     String? suggestedFileName,
     SelectionOptions? selectionOptions,
   }) {
-    fileMustExists = false;
+    fileMustExist = false;
     final SelectionOptions defaultSelectionOptions = SelectionOptions(
         allowMultiple: false, selectFolders: true, allowedTypes: <TypeGroup>[]);
     return _getDirectory(
@@ -58,7 +58,7 @@ class DartFileSelectorAPI extends FileDialog {
       {String? initialDirectory,
       String? confirmButtonText,
       required SelectionOptions selectionOptions}) {
-    fileMustExists = false;
+    fileMustExist = false;
     int hResult = initializeComLibrary();
     final FileOpenDialog fileDialog = FileOpenDialog.createInstance();
     using((Arena arena) {
@@ -89,7 +89,7 @@ class DartFileSelectorAPI extends FileDialog {
   /// Returns the dialog option based on conditions.
   @visibleForTesting
   int getDialogOptions(int options, SelectionOptions selectionOptions) {
-    if (!fileMustExists) {
+    if (!fileMustExist) {
       options &= ~FILEOPENDIALOGOPTIONS.FOS_PATHMUSTEXIST;
       options &= ~FILEOPENDIALOGOPTIONS.FOS_FILEMUSTEXIST;
     }
@@ -130,18 +130,14 @@ class DartFileSelectorAPI extends FileDialog {
     using((Arena arena) {
       final Pointer<GUID> guid = GUIDFromString(IID_IShellItem);
       final Pointer<Pointer<COMObject>> dirPath = arena<Pointer<COMObject>>();
-      result = SHCreateItemFromParsingName(
-          TEXT(initialDirectory), nullptr, guid, dirPath);
+      result = _fileOpenDialogAPI.createItemFromParsingName(
+          initialDirectory, guid, dirPath);
 
-      if (FAILED(result)) {
-        throw WindowsException(result);
-      }
+      _validateResult(result);
 
       result = _fileOpenDialogAPI.setFolder(dirPath, dialog);
 
-      if (FAILED(result)) {
-        throw WindowsException(result);
-      }
+      _validateResult(result);
     });
 
     return result;

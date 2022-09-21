@@ -271,25 +271,12 @@ void main() {
     });
 
     test(
-        'setInitialDirectory should throw Error 0x80070002 when initialDirectory is an inexistent path',
+        'setInitialDirectory should throw WindowsException when initialDirectory is invalid',
         () {
-      expect(
-          () => api.setInitialDirectory('INEXISTENT_DIR', dialog),
-          throwsA(predicate((Object? e) =>
-              e is WindowsException &&
-              e.toString() ==
-                  'Error 0x80070002: The system cannot find the file specified.')));
-    });
-
-    test(
-        'setInitialDirectory should throw Error 0x80070057 when initialDirectory is invalid',
-        () {
-      expect(
-          () => api.setInitialDirectory(':/', dialog),
-          throwsA(predicate((Object? e) =>
-              e is WindowsException &&
-              e.toString() ==
-                  'Error 0x80070057: The parameter is incorrect.')));
+      when(mockFileOpenDialogAPI.createItemFromParsingName(any, any, any))
+          .thenReturn(-1);
+      expect(() => api.setInitialDirectory(':/', dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
     });
 
     test('getSavePath should call setFileName', () {
@@ -314,13 +301,13 @@ void main() {
       verifyNever(mockFileOpenDialogAPI.setFileName(any, any));
     });
 
-    test('getOptions should return 8 if fileMustExists is false', () {
+    test('getOptions should return 8 if fileMustExist is false', () {
       const int options = 6152;
       expect(8, api.getDialogOptions(options, singleFileSelectionOptions));
     });
 
     test(
-        'getOptions should return 520 if fileMustExists is false and allowMultiple is true',
+        'getOptions should return 520 if fileMustExist is false and allowMultiple is true',
         () {
       const int options = 6152;
       final SelectionOptions selectionOptions = SelectionOptions(
@@ -332,7 +319,7 @@ void main() {
     });
 
     test(
-        'getOptions should return 40 if fileMustExists is false and selectFolders is true',
+        'getOptions should return 40 if fileMustExist is false and selectFolders is true',
         () {
       const int options = 6152;
       final SelectionOptions selectionOptions = SelectionOptions(
@@ -343,19 +330,19 @@ void main() {
       expect(40, api.getDialogOptions(options, selectionOptions));
     });
 
-    test('getOptions should return 6152 if fileMustExists is true', () {
+    test('getOptions should return 6152 if fileMustExist is true', () {
       const int options = 6152;
       final SelectionOptions selectionOptions = SelectionOptions(
         allowMultiple: false,
         selectFolders: false,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExists = true;
+      api.fileMustExist = true;
       expect(6152, api.getDialogOptions(options, selectionOptions));
     });
 
     test(
-        'getOptions should return 6664 if fileMustExists is true and allowMultiple is true',
+        'getOptions should return 6664 if fileMustExist is true and allowMultiple is true',
         () {
       const int options = 6152;
       final SelectionOptions selectionOptions = SelectionOptions(
@@ -363,12 +350,12 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExists = true;
+      api.fileMustExist = true;
       expect(6664, api.getDialogOptions(options, selectionOptions));
     });
 
     test(
-        'getOptions should return 6184 if fileMustExists is true and selectFolders is true',
+        'getOptions should return 6184 if fileMustExist is true and selectFolders is true',
         () {
       const int options = 6152;
       final SelectionOptions selectionOptions = SelectionOptions(
@@ -376,12 +363,12 @@ void main() {
         selectFolders: true,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExists = true;
+      api.fileMustExist = true;
       expect(6184, api.getDialogOptions(options, selectionOptions));
     });
 
     test(
-        'getOptions should return 6696 if fileMustExists is true, allowMultiple is true and selectFolders is true',
+        'getOptions should return 6696 if fileMustExist is true, allowMultiple is true and selectFolders is true',
         () {
       const int options = 6152;
       final SelectionOptions selectionOptions = SelectionOptions(
@@ -389,7 +376,7 @@ void main() {
         selectFolders: true,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExists = true;
+      api.fileMustExist = true;
       expect(6696, api.getDialogOptions(options, selectionOptions));
     });
 
@@ -673,6 +660,8 @@ void setDefaultMocks(
   when(mockFileOpenDialogAPI.setFolder(any, any))
       .thenReturn(successReturnValue);
   when(mockFileOpenDialogAPI.setFileName(any, any))
+      .thenReturn(defaultReturnValue);
+  when(mockFileOpenDialogAPI.createItemFromParsingName(any, any, any))
       .thenReturn(defaultReturnValue);
   final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
   when(mockShellItemAPI.createShellItem(any))

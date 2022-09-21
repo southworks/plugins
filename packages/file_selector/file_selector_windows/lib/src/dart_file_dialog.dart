@@ -30,7 +30,7 @@ abstract class FileDialog {
   int hWndOwner = NULL;
 
   /// Sets is save dialog option, this allows the user to select inixistent files.
-  bool fileMustExists = false;
+  bool fileMustExist = false;
 
   /// Clears the current filter specification, this way a new filter can be added.
   void clearFilterSpecification() {
