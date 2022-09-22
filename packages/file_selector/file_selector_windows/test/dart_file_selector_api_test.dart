@@ -25,7 +25,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
   final MockShellItemAPI mockShellItemAPI = MockShellItemAPI();
-  late DartFileSelectorAPI api;
+  late DartFileSelectorAPI dartFileSelectorAPI;
   late Pointer<Uint32> ptrOptions;
   late int hResult;
   late FileOpenDialog dialog;
@@ -45,35 +45,39 @@ void main() {
     );
 
     setUp(() {
-      api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
+      dartFileSelectorAPI =
+          DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       ptrOptions = calloc<Uint32>();
       hResult = 0;
-      api.initializeComLibrary();
+      dartFileSelectorAPI.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
           successReturnValue, defaultReturnValue, defaultPath);
     });
 
     test('setDirectoryOptions should call dialog setOptions', () {
-      final SelectionOptions selectOptions = SelectionOptions(
+      final SelectionOptions selectionOptions = SelectionOptions(
           allowMultiple: false,
           selectFolders: true,
           allowedTypes: <TypeGroup>[]);
-      expect(api.setDialogOptions(ptrOptions, selectOptions, dialog),
+      expect(
+          dartFileSelectorAPI.setDialogOptions(
+              ptrOptions, selectionOptions, dialog),
           defaultReturnValue);
       verify(mockFileOpenDialogAPI.setOptions(any, any)).called(1);
     });
 
     test('getOptions should call dialog getOptions', () {
-      final Pointer<Uint32> pfos = calloc<Uint32>();
-      expect(api.getOptions(pfos, dialog), defaultReturnValue);
-      verify(mockFileOpenDialogAPI.getOptions(pfos, dialog))
+      expect(dartFileSelectorAPI.getOptions(ptrOptions, dialog),
+          defaultReturnValue);
+      verify(mockFileOpenDialogAPI.getOptions(ptrOptions, dialog))
           .called(defaultReturnValue);
     });
 
     test('addConfirmButtonLabel should call dialog setOkButtonLabel', () {
       const String confirmationText = 'Text';
-      expect(api.addConfirmButtonLabel(confirmationText, dialog),
+      expect(
+          dartFileSelectorAPI.addConfirmButtonLabel(confirmationText, dialog),
           defaultReturnValue);
       verify(mockFileOpenDialogAPI.setOkButtonLabel(confirmationText, dialog))
           .called(defaultReturnValue);
@@ -93,7 +97,8 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(api.addFileFilters(selectionOptions, dialog), defaultReturnValue);
+      expect(dartFileSelectorAPI.addFileFilters(selectionOptions, dialog),
+          defaultReturnValue);
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(1);
     });
@@ -114,8 +119,10 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(api.addFileFilters(selectionOptions, dialog), defaultReturnValue);
-      expect(api.addFileFilters(selectionOptions, dialog), defaultReturnValue);
+      expect(dartFileSelectorAPI.addFileFilters(selectionOptions, dialog),
+          defaultReturnValue);
+      expect(dartFileSelectorAPI.addFileFilters(selectionOptions, dialog),
+          defaultReturnValue);
       verify(mockFileOpenDialogAPI.setFileTypes(filterSpecification, dialog))
           .called(2);
     });
@@ -132,7 +139,8 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
 
-      expect(api.addFileFilters(selectionOptions, dialog), successReturnValue);
+      expect(dartFileSelectorAPI.addFileFilters(selectionOptions, dialog),
+          successReturnValue);
       verifyNever(mockFileOpenDialogAPI.setFileTypes(any, dialog));
     });
 
@@ -140,7 +148,7 @@ void main() {
         'returnSelectedElements should call dialog getResult and should return selected path',
         () {
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, singleFileSelectionOptions, dialog),
           expectedPaths);
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
@@ -150,12 +158,10 @@ void main() {
         'returnSelectedElements should throw if dialog getResult returns an error',
         () {
       when(mockFileOpenDialogAPI.getResult(any, any)).thenReturn(-1);
-      try {
-        api.returnSelectedElements(hResult, singleFileSelectionOptions, dialog);
-        expect(false, true);
-      } on WindowsException catch (_) {
-        expect(true, true);
-      }
+      expect(
+          () => dartFileSelectorAPI.returnSelectedElements(
+              hResult, singleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
       verifyNever(mockShellItemAPI.getDisplayName(any, any));
@@ -165,12 +171,10 @@ void main() {
         'returnSelectedElements should throw if dialog getDisplayName returns an error',
         () {
       when(mockShellItemAPI.getDisplayName(any, any)).thenReturn(-1);
-      try {
-        api.returnSelectedElements(hResult, singleFileSelectionOptions, dialog);
-        expect(false, true);
-      } on WindowsException catch (_) {
-        expect(true, true);
-      }
+      expect(
+          () => dartFileSelectorAPI.returnSelectedElements(
+              hResult, singleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
       verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
@@ -180,12 +184,10 @@ void main() {
         'returnSelectedElements should throw if dialog releaseItem returns an error',
         () {
       when(mockShellItemAPI.releaseItem(any)).thenReturn(-1);
-      try {
-        api.returnSelectedElements(hResult, singleFileSelectionOptions, dialog);
-        expect(false, true);
-      } on WindowsException catch (_) {
-        expect(true, true);
-      }
+      expect(
+          () => dartFileSelectorAPI.returnSelectedElements(
+              hResult, singleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
       verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
@@ -196,12 +198,10 @@ void main() {
         'returnSelectedElements should throw if dialog release returns an error',
         () {
       when(mockFileOpenDialogAPI.release(any)).thenReturn(-1);
-      try {
-        api.returnSelectedElements(hResult, singleFileSelectionOptions, dialog);
-        expect(false, true);
-      } on WindowsException catch (_) {
-        expect(true, true);
-      }
+      expect(
+          () => dartFileSelectorAPI.returnSelectedElements(
+              hResult, singleFileSelectionOptions, dialog),
+          throwsA(predicate((Object? e) => e is WindowsException)));
 
       verify(mockFileOpenDialogAPI.getResult(any, dialog)).called(1);
       verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
@@ -215,7 +215,7 @@ void main() {
       const int cancelledhResult = -2147023673;
 
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               cancelledhResult, singleFileSelectionOptions, dialog),
           <String>[]);
 
@@ -227,7 +227,7 @@ void main() {
 
     test('returnSelectedElements should call dialog release', () {
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, singleFileSelectionOptions, dialog),
           expectedPaths);
       verify(mockFileOpenDialogAPI.release(dialog)).called(1);
@@ -235,7 +235,7 @@ void main() {
 
     test('returnSelectedElements should call dialog getDisplayName', () {
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, singleFileSelectionOptions, dialog),
           expectedPaths);
       verify(mockShellItemAPI.getDisplayName(any, any)).called(1);
@@ -243,7 +243,7 @@ void main() {
 
     test('returnSelectedElements should call dialog getUserSelectedPath', () {
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, singleFileSelectionOptions, dialog),
           expectedPaths);
       verify(mockShellItemAPI.getUserSelectedPath(any)).called(1);
@@ -251,18 +251,21 @@ void main() {
 
     test('setInitialDirectory should return param if initialDirectory is empty',
         () {
-      expect(api.setInitialDirectory('', dialog), successReturnValue);
+      expect(dartFileSelectorAPI.setInitialDirectory('', dialog),
+          successReturnValue);
     });
 
     test(
         'setInitialDirectory should return successReturnValue if initialDirectory is null',
         () {
-      expect(api.setInitialDirectory(null, dialog), successReturnValue);
+      expect(dartFileSelectorAPI.setInitialDirectory(null, dialog),
+          successReturnValue);
     });
 
     test('setInitialDirectory should success when initialDirectory is valid',
         () {
-      expect(api.setInitialDirectory(defaultPath, dialog), successReturnValue);
+      expect(dartFileSelectorAPI.setInitialDirectory(defaultPath, dialog),
+          successReturnValue);
     });
 
     test(
@@ -270,14 +273,14 @@ void main() {
         () {
       when(mockFileOpenDialogAPI.createItemFromParsingName(any, any, any))
           .thenReturn(-1);
-      expect(() => api.setInitialDirectory(':/', dialog),
+      expect(() => dartFileSelectorAPI.setInitialDirectory(':/', dialog),
           throwsA(predicate((Object? e) => e is WindowsException)));
     });
 
     test('getSavePath should call setFileName', () {
       const String fileName = 'fileName';
       expect(
-          api.getSavePath(
+          dartFileSelectorAPI.getSavePath(
             suggestedFileName: fileName,
           ),
           defaultPath);
@@ -288,7 +291,7 @@ void main() {
         () {
       const String fileName = 'fileName';
       expect(
-          api.getSavePath(
+          dartFileSelectorAPI.getSavePath(
             confirmButtonText: 'Choose',
             initialDirectory: defaultPath,
           ),
@@ -298,7 +301,10 @@ void main() {
 
     test('getOptions should return 8 if fileMustExist is false', () {
       const int options = 6152;
-      expect(api.getDialogOptions(options, singleFileSelectionOptions), 8);
+      expect(
+          dartFileSelectorAPI.getDialogOptions(
+              options, singleFileSelectionOptions),
+          8);
     });
 
     test(
@@ -310,7 +316,8 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      expect(api.getDialogOptions(options, selectionOptions), 520);
+      expect(
+          dartFileSelectorAPI.getDialogOptions(options, selectionOptions), 520);
     });
 
     test(
@@ -322,7 +329,8 @@ void main() {
         selectFolders: true,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      expect(api.getDialogOptions(options, selectionOptions), 40);
+      expect(
+          dartFileSelectorAPI.getDialogOptions(options, selectionOptions), 40);
     });
 
     test('getOptions should return 6152 if fileMustExist is true', () {
@@ -332,8 +340,9 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExist = true;
-      expect(api.getDialogOptions(options, selectionOptions), 6152);
+      dartFileSelectorAPI.fileMustExist = true;
+      expect(dartFileSelectorAPI.getDialogOptions(options, selectionOptions),
+          6152);
     });
 
     test(
@@ -345,8 +354,9 @@ void main() {
         selectFolders: false,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExist = true;
-      expect(api.getDialogOptions(options, selectionOptions), 6664);
+      dartFileSelectorAPI.fileMustExist = true;
+      expect(dartFileSelectorAPI.getDialogOptions(options, selectionOptions),
+          6664);
     });
 
     test(
@@ -358,8 +368,9 @@ void main() {
         selectFolders: true,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExist = true;
-      expect(api.getDialogOptions(options, selectionOptions), 6184);
+      dartFileSelectorAPI.fileMustExist = true;
+      expect(dartFileSelectorAPI.getDialogOptions(options, selectionOptions),
+          6184);
     });
 
     test(
@@ -371,13 +382,14 @@ void main() {
         selectFolders: true,
         allowedTypes: <TypeGroup?>[imagesTypeGroup],
       );
-      api.fileMustExist = true;
-      expect(api.getDialogOptions(options, selectionOptions), 6696);
+      dartFileSelectorAPI.fileMustExist = true;
+      expect(dartFileSelectorAPI.getDialogOptions(options, selectionOptions),
+          6696);
     });
 
     test('getSavePath should call setFolder', () {
       expect(
-          api.getSavePath(
+          dartFileSelectorAPI.getSavePath(
             confirmButtonText: 'Choose',
             initialDirectory: defaultPath,
           ),
@@ -393,10 +405,11 @@ void main() {
       allowedTypes: <TypeGroup?>[],
     );
     setUp(() {
-      api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
+      dartFileSelectorAPI =
+          DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       ptrOptions = calloc<Uint32>();
       hResult = 0;
-      api.initializeComLibrary();
+      dartFileSelectorAPI.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
           successReturnValue, defaultReturnValue, defaultPath);
@@ -407,7 +420,7 @@ void main() {
         () {
       mockGetCount(mockShellItemAPI, 1);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedPaths);
       verify(mockFileOpenDialogAPI.getResults(any, any)).called(1);
@@ -418,7 +431,7 @@ void main() {
         () {
       mockGetCount(mockShellItemAPI, 1);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedPaths);
       verify(mockShellItemAPI.createShellItemArray(any)).called(1);
@@ -428,7 +441,7 @@ void main() {
         () {
       mockGetCount(mockShellItemAPI, 1);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedPaths);
       verify(mockShellItemAPI.getCount(any, any)).called(1);
@@ -439,7 +452,7 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedMultiplePaths);
       verify(mockShellItemAPI.getItemAt(any, any, any)).called(selectedFiles);
@@ -449,7 +462,7 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedMultiplePaths);
       verify(mockShellItemAPI.release(any)).called(selectedFiles);
@@ -459,7 +472,7 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedMultiplePaths);
       verify(mockShellItemAPI.createShellItem(any)).called(selectedFiles);
@@ -469,7 +482,7 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedMultiplePaths);
       verify(mockShellItemAPI.getDisplayName(any, any)).called(selectedFiles);
@@ -479,7 +492,7 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedMultiplePaths);
       verify(mockShellItemAPI.getUserSelectedPath(any)).called(selectedFiles);
@@ -489,7 +502,7 @@ void main() {
       const int selectedFiles = 2;
       mockGetCount(mockShellItemAPI, selectedFiles);
       expect(
-          api.returnSelectedElements(
+          dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           expectedMultiplePaths);
       verify(mockShellItemAPI.releaseItem(any)).called(selectedFiles);
@@ -501,7 +514,7 @@ void main() {
       when(mockFileOpenDialogAPI.getResults(any, any)).thenReturn(-1);
 
       expect(
-          () => api.returnSelectedElements(
+          () => dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           throwsA(predicate((Object? e) => e is WindowsException)));
 
@@ -514,7 +527,7 @@ void main() {
       when(mockShellItemAPI.getItemAt(any, any, any)).thenReturn(-1);
 
       expect(
-          () => api.returnSelectedElements(
+          () => dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           throwsA(predicate((Object? e) => e is WindowsException)));
 
@@ -528,7 +541,7 @@ void main() {
       when(mockShellItemAPI.getDisplayName(any, any)).thenReturn(-1);
 
       expect(
-          () => api.returnSelectedElements(
+          () => dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           throwsA(predicate((Object? e) => e is WindowsException)));
 
@@ -541,7 +554,7 @@ void main() {
       when(mockShellItemAPI.releaseItem(any)).thenReturn(-1);
 
       expect(
-          () => api.returnSelectedElements(
+          () => dartFileSelectorAPI.returnSelectedElements(
               hResult, multipleFileSelectionOptions, dialog),
           throwsA(predicate((Object? e) => e is WindowsException)));
 
@@ -551,17 +564,18 @@ void main() {
 
   group('#Public facing functions', () {
     setUp(() {
-      api = DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
+      dartFileSelectorAPI =
+          DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       ptrOptions = calloc<Uint32>();
       hResult = 0;
-      api.initializeComLibrary();
+      dartFileSelectorAPI.initializeComLibrary();
       dialog = FileOpenDialog.createInstance();
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
           successReturnValue, defaultReturnValue, defaultPath);
     });
 
     test('getDirectory should return selected path', () {
-      expect(defaultPath, api.getDirectoryPath());
+      expect(defaultPath, dartFileSelectorAPI.getDirectoryPath());
     });
 
     test('getFile should return selected path', () {
@@ -574,7 +588,7 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          api.getFiles(
+          dartFileSelectorAPI.getFiles(
               selectionOptions: selectionOptions,
               initialDirectory: 'c:',
               confirmButtonText: 'Choose'),
@@ -592,7 +606,7 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          api.getFiles(
+          dartFileSelectorAPI.getFiles(
               selectionOptions: selectionOptions,
               initialDirectory: 'c:',
               confirmButtonText: 'Choose'),
@@ -613,7 +627,7 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
       expect(
-          api.getSavePath(
+          dartFileSelectorAPI.getSavePath(
               confirmButtonText: 'Choose',
               initialDirectory: defaultPath,
               selectionOptions: selectionOptions,
