@@ -80,4 +80,15 @@ class FileOpenDialogAPI {
     return SHCreateItemFromParsingName(
         TEXT(initialDirectory), nullptr, ptrGuid, ptrPath);
   }
+
+  /// Initilaize the COM library.
+  int coInitializeEx() {
+    return CoInitializeEx(
+        nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+  }
+
+  /// Creates instance of FileOpenDialog.
+  IFileOpenDialog createInstance() {
+    return FileOpenDialog.createInstance();
+  }
 }

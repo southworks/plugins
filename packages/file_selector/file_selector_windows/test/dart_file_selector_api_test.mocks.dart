@@ -22,14 +22,20 @@ import 'package:win32/win32.dart' as _i2;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeIShellItem_0 extends _i1.SmartFake implements _i2.IShellItem {
-  _FakeIShellItem_0(Object parent, Invocation parentInvocation)
+class _FakeIFileOpenDialog_0 extends _i1.SmartFake
+    implements _i2.IFileOpenDialog {
+  _FakeIFileOpenDialog_0(Object parent, Invocation parentInvocation)
       : super(parent, parentInvocation);
 }
 
-class _FakeIShellItemArray_1 extends _i1.SmartFake
+class _FakeIShellItem_1 extends _i1.SmartFake implements _i2.IShellItem {
+  _FakeIShellItem_1(Object parent, Invocation parentInvocation)
+      : super(parent, parentInvocation);
+}
+
+class _FakeIShellItemArray_2 extends _i1.SmartFake
     implements _i2.IShellItemArray {
-  _FakeIShellItemArray_1(Object parent, Invocation parentInvocation)
+  _FakeIShellItemArray_2(Object parent, Invocation parentInvocation)
       : super(parent, parentInvocation);
 }
 
@@ -99,6 +105,16 @@ class MockFileOpenDialogAPI extends _i1.Mock implements _i3.FileOpenDialogAPI {
           Invocation.method(
               #createItemFromParsingName, [initialDirectory, ptrGuid, ptrPath]),
           returnValue: 0) as int);
+  @override
+  int coInitializeEx() => (super
+          .noSuchMethod(Invocation.method(#coInitializeEx, []), returnValue: 0)
+      as int);
+  @override
+  _i2.IFileOpenDialog createInstance() =>
+      (super.noSuchMethod(Invocation.method(#createInstance, []),
+              returnValue: _FakeIFileOpenDialog_0(
+                  this, Invocation.method(#createInstance, [])))
+          as _i2.IFileOpenDialog);
 }
 
 /// A class which mocks [ShellItemAPI].
@@ -113,7 +129,7 @@ class MockShellItemAPI extends _i1.Mock implements _i5.ShellItemAPI {
   _i2.IShellItem createShellItem(
           _i4.Pointer<_i4.Pointer<_i2.COMObject>>? ptrShellItem) =>
       (super.noSuchMethod(Invocation.method(#createShellItem, [ptrShellItem]),
-              returnValue: _FakeIShellItem_0(
+              returnValue: _FakeIShellItem_1(
                   this, Invocation.method(#createShellItem, [ptrShellItem])))
           as _i2.IShellItem);
   @override
@@ -121,7 +137,7 @@ class MockShellItemAPI extends _i1.Mock implements _i5.ShellItemAPI {
           _i4.Pointer<_i4.Pointer<_i2.COMObject>>? ptrShellItemArray) =>
       (super.noSuchMethod(
               Invocation.method(#createShellItemArray, [ptrShellItemArray]),
-              returnValue: _FakeIShellItemArray_1(
+              returnValue: _FakeIShellItemArray_2(
                   this,
                   Invocation.method(
                       #createShellItemArray, [ptrShellItemArray])))

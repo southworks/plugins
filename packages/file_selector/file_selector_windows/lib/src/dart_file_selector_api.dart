@@ -64,7 +64,7 @@ class DartFileSelectorAPI extends FileDialog {
       required SelectionOptions selectionOptions}) {
     fileMustExist = false;
     int hResult = initializeComLibrary();
-    final IFileOpenDialog fileDialog = FileOpenDialog.createInstance();
+    final IFileOpenDialog fileDialog = _fileOpenDialogAPI.createInstance();
     using((Arena arena) {
       final Pointer<Uint32> ptrOptions = arena<Uint32>();
 
@@ -149,8 +149,7 @@ class DartFileSelectorAPI extends FileDialog {
   /// Initialices the com library
   @visibleForTesting
   int initializeComLibrary() {
-    final int hResult = CoInitializeEx(
-        nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    final int hResult = _fileOpenDialogAPI.coInitializeEx();
     _validateResult(hResult);
     return hResult;
   }
@@ -241,7 +240,7 @@ class DartFileSelectorAPI extends FileDialog {
     required SelectionOptions selectionOptions,
   }) {
     int hResult = initializeComLibrary();
-    final IFileOpenDialog dialog = FileOpenDialog.createInstance();
+    final IFileOpenDialog dialog = _fileOpenDialogAPI.createInstance();
     using((Arena arena) {
       final Pointer<Uint32> ptrOptions = arena<Uint32>();
       hResult = getOptions(ptrOptions, dialog);

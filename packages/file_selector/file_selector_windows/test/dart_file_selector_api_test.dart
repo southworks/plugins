@@ -7,6 +7,7 @@ import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:file_selector_windows/src/dart_file_open_dialog_api.dart';
 import 'package:file_selector_windows/src/dart_file_selector_api.dart';
+import 'package:file_selector_windows/src/dart_open_file_dialog_adapter.dart';
 import 'package:file_selector_windows/src/dart_shell_item_api.dart';
 import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,7 +29,7 @@ void main() {
   late DartFileSelectorAPI dartFileSelectorAPI;
   late Pointer<Uint32> ptrOptions;
   late int hResult;
-  late FileOpenDialog dialog;
+  late IFileOpenDialog dialog;
 
   tearDown(() {
     reset(mockFileOpenDialogAPI);
@@ -48,11 +49,11 @@ void main() {
       dartFileSelectorAPI =
           DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       ptrOptions = calloc<Uint32>();
+      final Pointer<COMObject> ptrCOMObject = calloc<COMObject>();
       hResult = 0;
-      dartFileSelectorAPI.initializeComLibrary();
-      dialog = FileOpenDialog.createInstance();
+      dialog = FileDialogMock(ptrCOMObject);
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
-          successReturnValue, defaultReturnValue, defaultPath);
+          successReturnValue, defaultReturnValue, defaultPath, dialog);
     });
 
     test('setDirectoryOptions should call dialog setOptions', () {
@@ -408,11 +409,11 @@ void main() {
       dartFileSelectorAPI =
           DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
       ptrOptions = calloc<Uint32>();
+      final Pointer<COMObject> ptrCOMObject = calloc<COMObject>();
       hResult = 0;
-      dartFileSelectorAPI.initializeComLibrary();
-      dialog = FileOpenDialog.createInstance();
+      dialog = FileDialogMock(ptrCOMObject);
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
-          successReturnValue, defaultReturnValue, defaultPath);
+          successReturnValue, defaultReturnValue, defaultPath, dialog);
     });
 
     test(
@@ -566,12 +567,8 @@ void main() {
     setUp(() {
       dartFileSelectorAPI =
           DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
-      ptrOptions = calloc<Uint32>();
-      hResult = 0;
-      dartFileSelectorAPI.initializeComLibrary();
-      dialog = FileOpenDialog.createInstance();
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
-          successReturnValue, defaultReturnValue, defaultPath);
+          successReturnValue, defaultReturnValue, defaultPath, dialog);
     });
 
     test('getDirectory should return selected path', () {
@@ -651,7 +648,8 @@ void setDefaultMocks(
     MockShellItemAPI mockShellItemAPI,
     int successReturnValue,
     int defaultReturnValue,
-    String defaultPath) {
+    String defaultPath,
+    IFileOpenDialog dialog) {
   when(mockFileOpenDialogAPI.setOptions(any, any))
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.getOptions(any, any))
@@ -672,6 +670,8 @@ void setDefaultMocks(
       .thenReturn(defaultReturnValue);
   when(mockFileOpenDialogAPI.createItemFromParsingName(any, any, any))
       .thenReturn(defaultReturnValue);
+  when(mockFileOpenDialogAPI.coInitializeEx()).thenReturn(defaultReturnValue);
+  when(mockFileOpenDialogAPI.createInstance()).thenReturn(dialog);
   final Pointer<Pointer<COMObject>> ppsi = calloc<Pointer<COMObject>>();
   when(mockShellItemAPI.createShellItem(any))
       .thenReturn(IShellItem(ppsi.cast()));
