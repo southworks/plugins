@@ -91,4 +91,9 @@ class FileOpenDialogAPI {
   IFileOpenDialog createInstance() {
     return FileOpenDialog.createInstance();
   }
+
+  /// Close the COM library.
+  void coUninitialize() {
+    CoUninitialize();
+  }
 }

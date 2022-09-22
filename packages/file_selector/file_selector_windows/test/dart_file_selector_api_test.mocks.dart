@@ -115,6 +115,10 @@ class MockFileOpenDialogAPI extends _i1.Mock implements _i3.FileOpenDialogAPI {
               returnValue: _FakeIFileOpenDialog_0(
                   this, Invocation.method(#createInstance, [])))
           as _i2.IFileOpenDialog);
+  @override
+  void coUninitialize() =>
+      super.noSuchMethod(Invocation.method(#coUninitialize, []),
+          returnValueForMissingStub: null);
 }
 
 /// A class which mocks [ShellItemAPI].

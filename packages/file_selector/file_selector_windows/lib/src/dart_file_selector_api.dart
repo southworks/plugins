@@ -172,7 +172,7 @@ class DartFileSelectorAPI extends FileDialog {
     hResult = _fileOpenDialogAPI.release(dialog);
     _validateResult(hResult);
 
-    CoUninitialize();
+    _fileOpenDialogAPI.coUninitialize();
     return selectedElements;
   }
 
