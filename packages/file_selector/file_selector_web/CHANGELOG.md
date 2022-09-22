@@ -1,6 +1,5 @@
-## 0.9.0+1
+## NEXT
 
-* Add `// ignore: prefer_const_constructors` to avoid future errors when converting the `XTypeGroup`s constructor to const.
 * Updates minimum Flutter version to 2.10.
 * Fixes avoid_redundant_argument_values lint warnings and minor typos.
 
