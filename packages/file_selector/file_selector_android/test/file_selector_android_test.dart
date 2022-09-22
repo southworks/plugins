@@ -2,7 +2,6 @@ import 'package:file_selector_android/file_selector_android.dart';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

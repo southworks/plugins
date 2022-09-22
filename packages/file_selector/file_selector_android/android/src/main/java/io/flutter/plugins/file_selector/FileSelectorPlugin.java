@@ -335,9 +335,9 @@ public class FileSelectorPlugin
         delegate.getDirectoryPath(call, result);
         break;
       case METHOD_GET_SAVE_PATH:
-        throw new NotImplementedError("To be implemented later on");
+        throw new UnsupportedOperationException("getSavePath is not supported yet");
       case METHOD_OPEN_FILE:
-        throw new NotImplementedError("To be implemented later");
+        throw new UnsupportedOperationException("openFile is not supported yet");
       default:
         throw new IllegalArgumentException("Unknown method " + call.method);
     }
