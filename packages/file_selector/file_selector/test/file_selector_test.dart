@@ -13,10 +13,12 @@ void main() {
   const String confirmButtonText = 'Use this profile picture';
   const String suggestedName = 'suggested_name';
   final List<XTypeGroup> acceptedTypeGroups = <XTypeGroup>[
+    // ignore: prefer_const_constructors
     XTypeGroup(label: 'documents', mimeTypes: <String>[
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessing',
     ]),
+    // ignore: prefer_const_constructors
     XTypeGroup(label: 'images', extensions: <String>[
       'jpg',
       'png',

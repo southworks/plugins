@@ -1,6 +1,6 @@
-## NEXT
+## 0.9.2+1
 
-* Updates minimum Flutter version to 2.10.
+* Add `// ignore: prefer_const_constructors` to avoid future errors when converting the `XTypeGroup`s constructor to const.
 
 ## 0.9.2
 
