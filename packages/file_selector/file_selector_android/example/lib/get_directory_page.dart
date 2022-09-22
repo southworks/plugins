@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 /// Screen that allows the user to select a directory using `getDirectoryPath`,
 ///  then displays the selected directory in a dialog.
 class GetDirectoryPage extends StatelessWidget {
-  /// Default Constructor
   const GetDirectoryPage({Key? key}) : super(key: key);
 
   Future<void> _getDirectoryPath(BuildContext context) async {
@@ -17,13 +16,12 @@ class GetDirectoryPage extends StatelessWidget {
         await FileSelectorPlatform.instance.getDirectoryPath(
       confirmButtonText: confirmButtonText,
     );
-    if (directoryPath == null) {
-      // Operation was canceled by the user.
-      return;
-    }
+
+    // Operation was canceled by the user.
     await showDialog<void>(
       context: context,
-      builder: (BuildContext context) => TextDisplay(directoryPath),
+      builder: (BuildContext context) =>
+          TextDisplay(directoryPath ?? "Something went wrong"),
     );
   }
 

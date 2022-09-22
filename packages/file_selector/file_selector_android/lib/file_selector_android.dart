@@ -5,25 +5,35 @@
 import 'dart:async';
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
-import 'src/messages.g.dart';
+const MethodChannel _channel =
+    MethodChannel('plugins.flutter.io/file_selector_android');
+
+const String _typeGroupLabelKey = 'label';
+const String _typeGroupExtensionsKey = 'extensions';
+const String _typeGroupMimeTypesKey = 'mimeTypes';
+
+const String _openFileMethod = 'openFile';
+const String _getSavePathMethod = 'getSavePath';
+const String _getDirectoryPathMethod = 'getDirectoryPath';
+
+const String _acceptedTypeGroupsKey = 'acceptedTypeGroups';
+const String _confirmButtonTextKey = 'confirmButtonText';
+const String _initialDirectoryKey = 'initialDirectory';
+const String _multipleKey = 'multiple';
+const String _suggestedNameKey = 'suggestedName';
 
 /// An implementation of [FileSelectorPlatform] for Android.
 class FileSelectorAndroid extends FileSelectorPlatform {
-  /// Constructor for FileSelector.
-  FileSelectorAndroid([this._hostApi]) {
-    _hostApi = _hostApi ?? FileSelectorApi();
-
-    _internalHostApi = _hostApi!;
-  }
-
-  late FileSelectorApi _internalHostApi;
-
-  late FileSelectorApi? _hostApi;
+  /// The MethodChannel that is being used by this implementation of the plugin.
+  @visibleForTesting
+  MethodChannel get channel => _channel;
 
   /// Registers the Android implementation.
-  static void registerWith([FileSelectorApi? hostApi]) {
-    FileSelectorPlatform.instance = FileSelectorAndroid(hostApi);
+  static void registerWith() {
+    FileSelectorPlatform.instance = FileSelectorAndroid();
   }
 
   @override
@@ -32,43 +42,19 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _internalHostApi.startFileExplorer(
-        FileSelectorMethod.OPEN_FILE,
-        SelectionOptions(
-          allowMultiple: false,
-          selectFolders: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        confirmButtonText);
+    final List<Map<String, Object>> serializedTypeGroups =
+        _serializeTypeGroups(acceptedTypeGroups);
 
-    if (paths == null) {
-      return null;
-    }
+    final List<String>? path = await _channel
+        .invokeListMethod<String>(_openFileMethod, <String, dynamic>{
+      if (serializedTypeGroups.isNotEmpty)
+        _acceptedTypeGroupsKey: serializedTypeGroups,
+      _initialDirectoryKey: initialDirectory,
+      _confirmButtonTextKey: confirmButtonText,
+      _multipleKey: false,
+    });
 
-    return paths.isEmpty ? null : XFile(paths.first!);
-  }
-
-  @override
-  Future<String?> getDirectoryPath({
-    String? initialDirectory,
-    String? confirmButtonText,
-  }) async {
-    final List<String?> paths = await _internalHostApi.startFileExplorer(
-        FileSelectorMethod.GET_DIRECTORY_PATH,
-        SelectionOptions(
-          allowMultiple: false,
-          selectFolders: true,
-          allowedTypes: <TypeGroup>[],
-        ),
-        initialDirectory,
-        confirmButtonText);
-
-    if (paths == null) {
-      return null;
-    }
-
-    return paths.isEmpty ? null : paths.first!;
+    return path == null ? null : XFile(path.first);
   }
 
   @override
@@ -77,21 +63,33 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _internalHostApi.startFileExplorer(
-        FileSelectorMethod.OPEN_MULTIPLE_FILES,
-        SelectionOptions(
-          allowMultiple: true,
-          selectFolders: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        confirmButtonText);
+    final List<Map<String, Object>> serializedTypeGroups =
+        _serializeTypeGroups(acceptedTypeGroups);
 
-    if (paths == null) {
-      return <XFile>[];
-    }
+    final List<String>? pathList = await _channel
+        .invokeListMethod<String>(_openFileMethod, <String, dynamic>{
+      if (serializedTypeGroups.isNotEmpty)
+        _acceptedTypeGroupsKey: serializedTypeGroups,
+      _initialDirectoryKey: initialDirectory,
+      _confirmButtonTextKey: confirmButtonText,
+      _multipleKey: false,
+    });
 
-    return paths.map((String? path) => XFile(path!)).toList();
+    return pathList?.map((String path) => XFile(path)).toList() ?? <XFile>[];
+  }
+
+  @override
+  Future<String?> getDirectoryPath({
+    String? initialDirectory,
+    String? confirmButtonText,
+  }) async {
+    return _channel.invokeMethod<String>(
+      _getDirectoryPathMethod,
+      <String, dynamic>{
+        _initialDirectoryKey: initialDirectory,
+        _confirmButtonTextKey: confirmButtonText,
+      },
+    );
   }
 
   @override
@@ -101,27 +99,49 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     String? suggestedName,
     String? confirmButtonText,
   }) async {
-    return await _internalHostApi.openSaveDialog(
-        SelectionOptions(
-          allowMultiple: false,
-          selectFolders: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        suggestedName,
-        confirmButtonText);
+    final List<Map<String, Object>> serializedTypeGroups =
+        _serializeTypeGroups(acceptedTypeGroups);
+
+    return _channel.invokeMethod<String>(
+      _getSavePathMethod,
+      <String, dynamic>{
+        if (serializedTypeGroups.isNotEmpty)
+          _acceptedTypeGroupsKey: serializedTypeGroups,
+        _initialDirectoryKey: initialDirectory,
+        _suggestedNameKey: suggestedName,
+        _confirmButtonTextKey: confirmButtonText,
+      },
+    );
   }
 }
 
-List<TypeGroup> _typeGroupsFromXTypeGroups(List<XTypeGroup>? xtypes) {
-  return (xtypes ?? <XTypeGroup>[]).map((XTypeGroup xtype) {
-    if (!xtype.allowsAny && (xtype.extensions?.isEmpty ?? true)) {
-      throw ArgumentError('Provided type group $xtype does not allow '
-          'all files, but does not set any of the Android-supported filter '
-          'categories. "extensions" must be non-empty for Windows if '
-          'anything is non-empty.');
+List<Map<String, Object>> _serializeTypeGroups(List<XTypeGroup>? groups) {
+  return (groups ?? <XTypeGroup>[]).map(_serializeTypeGroup).toList();
+}
+
+Map<String, Object> _serializeTypeGroup(XTypeGroup group) {
+  final Map<String, Object> serialization = <String, Object>{
+    _typeGroupLabelKey: group.label ?? '',
+  };
+  if (group.allowsAny) {
+    serialization[_typeGroupExtensionsKey] = <String>['*'];
+  } else {
+    if ((group.extensions?.isEmpty ?? true) &&
+        (group.mimeTypes?.isEmpty ?? true)) {
+      throw ArgumentError('Provided type group $group does not allow '
+          'all files, but does not set any of the Linux-supported filter '
+          'categories. "extensions" or "mimeTypes" must be non-empty for Linux '
+          'if anything is non-empty.');
     }
-    return TypeGroup(
-        label: xtype.label ?? '', extensions: xtype.extensions ?? <String>[]);
-  }).toList();
+    if (group.extensions?.isNotEmpty ?? false) {
+      serialization[_typeGroupExtensionsKey] = group.extensions
+              ?.map((String extension) => '*.$extension')
+              .toList() ??
+          <String>[];
+    }
+    if (group.mimeTypes?.isNotEmpty ?? false) {
+      serialization[_typeGroupMimeTypesKey] = group.mimeTypes ?? <String>[];
+    }
+  }
+  return serialization;
 }

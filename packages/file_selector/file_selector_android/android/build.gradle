@@ -33,3 +33,7 @@ android {
         minSdkVersion 16
     }
 }
+
+dependencies {
+    implementation project(path: ':flutter_plugin_android_lifecycle')
+}
