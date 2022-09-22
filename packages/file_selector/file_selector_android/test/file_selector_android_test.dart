@@ -1,23 +1,22 @@
 import 'package:file_selector_android/file_selector_android.dart';
-import 'package:file_selector_android/src/messages.g.dart';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'file_selector_android_test.mocks.dart';
-
-@GenerateMocks(<Type>[FileSelectorApi])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late FileSelectorAndroid plugin;
-  late MockFileSelectorApi mockApi;
+  late List<MethodCall> log;
 
   setUp(() {
-    mockApi = MockFileSelectorApi();
-
-    plugin = FileSelectorAndroid(mockApi);
+    plugin = FileSelectorAndroid();
+    log = <MethodCall>[];
+    plugin.channel.setMockMethodCallHandler((MethodCall methodCall) async {
+      log.add(methodCall);
+      return null;
+    });
   });
 
   test('registers instance', () async {
@@ -25,18 +24,33 @@ void main() {
     expect(FileSelectorPlatform.instance, isA<FileSelectorAndroid>());
   });
 
-  group('#openFile', () {
-    setUp(() {
-      when(mockApi.startFileExplorer(any, any, any, any))
-          .thenAnswer((_) => Future<List<String?>>.value(<String?>['foo']));
+  group('#getDirectoryPath', () {
+    test('passes initialDirectory correctly', () async {
+      await plugin.getDirectoryPath(initialDirectory: '/example/directory');
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoryPath', arguments: <String, dynamic>{
+            'initialDirectory': '/example/directory',
+            'confirmButtonText': null,
+          }),
+        ],
+      );
     });
 
-    test('simple call works', () async {
-      final XFile? file = await plugin.openFile();
+    test('passes confirmButtonText correctly', () async {
+      await plugin.getDirectoryPath(confirmButtonText: 'Open File');
 
-      expect(file!.path, 'foo');
-      final VerificationResult result =
-          verify(mockApi.startFileExplorer(FileSelectorMethod.OPEN_FILE, captureAny, null, null));
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoryPath', arguments: <String, dynamic>{
+            'initialDirectory': null,
+            'confirmButtonText': 'Open File',
+          }),
+        ],
+      );
     });
   });
 }
