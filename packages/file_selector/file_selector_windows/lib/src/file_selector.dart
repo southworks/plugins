@@ -183,7 +183,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// Initilaize the COM library with the internal [CoInitializeEx](https://pub.dev/documentation/win32/latest/winrt/CoInitializeEx.html) method.
+  /// Initialize the COM library with the internal [CoInitializeEx](https://pub.dev/documentation/win32/latest/winrt/CoInitializeEx.html) method.
   /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int initializeComLibrary() {
