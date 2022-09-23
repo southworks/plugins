@@ -70,7 +70,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
         allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
       ),
     );
-    return path == null ? null : Future<String>.value(path);
+    return Future<String>.value(path);
   }
 
   @override
@@ -81,7 +81,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
     final String? path = _api.getDirectoryPath(
         initialDirectory: initialDirectory,
         confirmButtonText: confirmButtonText);
-    return path == null ? null : Future<String>.value(path);
+    return Future<String>.value(path);
   }
 }
 
