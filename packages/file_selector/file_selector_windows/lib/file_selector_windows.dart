@@ -14,7 +14,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
 
   final FileSelector _api;
 
-  /// Registers the Windows implementation. It recieves a DartFileSelectorApi parameter allowing dependency injection.
+  /// Registers the Windows implementation. It receives a DartFileSelectorApi parameter allowing dependency injection.
   static void registerWith(FileSelector? api) {
     FileSelectorPlatform.instance = FileSelectorWindows(api);
   }
