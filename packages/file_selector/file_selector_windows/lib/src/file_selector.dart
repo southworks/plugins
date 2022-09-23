@@ -49,6 +49,7 @@ class FileSelector {
   late ShellItemWrapper _shellItemWrapper;
 
   /// Returns a directory path from user selection.
+  /// A [WindowsException] is thrown if an error occurs.
   String? getDirectoryPath({
     String? initialDirectory,
     String? confirmButtonText,
@@ -63,6 +64,7 @@ class FileSelector {
   }
 
   /// Returns a full path, including file name and extension, from the user selection.
+  /// A [WindowsException] is thrown if an error occurs.
   String? getSavePath({
     String? initialDirectory,
     String? confirmButtonText,
@@ -80,6 +82,7 @@ class FileSelector {
   }
 
   /// Returns a list of file paths form the user selection.
+  /// A [WindowsException] is thrown if an error occurs.
   List<String> getFiles(
       {String? initialDirectory,
       String? confirmButtonText,
@@ -108,6 +111,7 @@ class FileSelector {
   }
 
   /// Returns the IFileOpenDialog options which is a bitfield containing the union of options described in [FILEOPENDIALOGOPTIONS](https://pub.dev/documentation/win32/latest/winrt/FILEOPENDIALOGOPTIONS-class.html).
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int getOptions(Pointer<Uint32> ptrOptions, IFileOpenDialog dialog) {
     final int hResult = _fileOpenDialogWrapper.getOptions(ptrOptions, dialog);
@@ -140,8 +144,8 @@ class FileSelector {
     return options;
   }
 
-  /// Sets the given [ptrOptions] in the [dialog].
-  // TODO(juandausa): Rewrite this sentence.
+  /// Sets the dilog options based on the fileMustExist value and the selectionOption given.
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int setDialogOptions(Pointer<Uint32> ptrOptions,
       SelectionOptions selectionOptions, IFileOpenDialog dialog) {
@@ -153,7 +157,8 @@ class FileSelector {
     return hResult;
   }
 
-  /// Sets the initial directory to a given dialog.
+  /// Sets the initial directory to a given dialog. It does nothing if the given directory is empty.
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int setInitialDirectory(String? initialDirectory, IFileOpenDialog dialog) {
     int hResult = 0;
@@ -179,6 +184,7 @@ class FileSelector {
   }
 
   /// Initilaize the COM library with the internal [CoInitializeEx](https://pub.dev/documentation/win32/latest/winrt/CoInitializeEx.html) method.
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int initializeComLibrary() {
     final int hResult = _fileOpenDialogWrapper.coInitializeEx();
@@ -187,6 +193,7 @@ class FileSelector {
   }
 
   /// Returns a list directory paths from user interaction. It recieves the IFileOpenDialog show result to verify wether the user has cancelled the dialog or not.
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   List<String> returnSelectedElements(
       int hResult, SelectionOptions selectionOptions, IFileOpenDialog dialog) {
@@ -205,6 +212,7 @@ class FileSelector {
   }
 
   /// Sets confirmation button text on an IFileOpenDialog. If the [confirmationText] is null 'Pick' will be used.
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int setOkButtonLabel(
     String? confirmButtonText,
@@ -217,6 +225,7 @@ class FileSelector {
   }
 
   /// Sets file type filters for a given dialog. It deleted the previous filters.
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int setFileTypeFilters(
       SelectionOptions selectionOptions, IFileOpenDialog fileDialog) {
@@ -249,6 +258,7 @@ class FileSelector {
   }
 
   /// Sets the suggested file name of the given dialog. It does nothing if the suggested file name is empty.
+  /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int setSuggestedFileName(
       String? suggestedFileName, IFileOpenDialog fileDialog) {
@@ -262,7 +272,8 @@ class FileSelector {
     return hResult;
   }
 
-  // TODO(juandausa): describe function and errors
+  /// Returns a directory path by opnening a dialog in which the user can pick a folder. It can be configured with a [initialDirectory], a customized text for the confirm button and a suggested file name.
+  /// A [WindowsException] is thrown if an error occurs.
   String? _getDirectory({
     String? initialDirectory,
     String? confirmButtonText,
@@ -293,6 +304,8 @@ class FileSelector {
     }
   }
 
+  /// Releases the given dialog, if any, and uninitialize the COM library.
+  /// A [WindowsException] if thrown if an error occurs.
   void _realeaseResources(IFileOpenDialog? dialog) {
     int releaseResult = 0;
     if (dialog != null) {
@@ -308,7 +321,8 @@ class FileSelector {
     }
   }
 
-  // TODO(juandausa): describe function and errors
+  /// Returns the selected path form a given dialog. It uses the selectionOptions to determine if multiple or single items were selected.
+  /// A [WindowsException] if thrown if an error occurs.
   int _getSelectedPathsFromUserInput(
     SelectionOptions selectionOptions,
     List<String> selectedElements,
@@ -356,7 +370,8 @@ class FileSelector {
     return hResult;
   }
 
-  // TODO(juandausa): describe function and errors
+  /// Adds the selected path to a given list of paths, [selectedElements]. It uses given [ShellItem] pointer, and an [Arena] to allocate and release pointers.
+  /// A [WindowsException] if thrown if an error occurs.
   int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ptrShellItem,
       Arena arena, List<String> selectedElements) {
     final IShellItem shellItem =
