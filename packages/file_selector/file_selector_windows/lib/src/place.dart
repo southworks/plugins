@@ -8,5 +8,5 @@ enum Place {
   top,
 
   /// BOTTOM
-  bottom
+  bottom,
 }

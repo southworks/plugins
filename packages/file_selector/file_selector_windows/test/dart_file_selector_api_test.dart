@@ -5,15 +5,16 @@
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
-import 'package:file_selector_windows/src/dart_file_open_dialog_api.dart';
-import 'package:file_selector_windows/src/dart_file_selector_api.dart';
-import 'package:file_selector_windows/src/dart_open_file_dialog_adapter.dart';
-import 'package:file_selector_windows/src/dart_shell_item_api.dart';
+import 'package:file_selector_windows/src/file_open_dialog_api.dart';
+import 'package:file_selector_windows/src/file_selector_api.dart';
 import 'package:file_selector_windows/src/messages.g.dart';
+import 'package:file_selector_windows/src/open_file_dialog_adapter.dart';
+import 'package:file_selector_windows/src/shell_item_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:win32/win32.dart';
+
 import 'dart_file_selector_api_test.mocks.dart';
 
 @GenerateMocks(<Type>[FileOpenDialogAPI, ShellItemAPI])
@@ -26,7 +27,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final MockFileOpenDialogAPI mockFileOpenDialogAPI = MockFileOpenDialogAPI();
   final MockShellItemAPI mockShellItemAPI = MockShellItemAPI();
-  late DartFileSelectorAPI dartFileSelectorAPI;
+  late DartFileSelectorApi dartFileSelectorAPI;
   late Pointer<Uint32> ptrOptions;
   late int hResult;
   late IFileOpenDialog dialog;
@@ -47,7 +48,7 @@ void main() {
 
     setUp(() {
       dartFileSelectorAPI =
-          DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
+          DartFileSelectorApi(mockFileOpenDialogAPI, mockShellItemAPI);
       ptrOptions = calloc<Uint32>();
       final Pointer<COMObject> ptrCOMObject = calloc<COMObject>();
       hResult = 0;
@@ -407,7 +408,7 @@ void main() {
     );
     setUp(() {
       dartFileSelectorAPI =
-          DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
+          DartFileSelectorApi(mockFileOpenDialogAPI, mockShellItemAPI);
       ptrOptions = calloc<Uint32>();
       final Pointer<COMObject> ptrCOMObject = calloc<COMObject>();
       hResult = 0;
@@ -566,7 +567,7 @@ void main() {
   group('#Public facing functions', () {
     setUp(() {
       dartFileSelectorAPI =
-          DartFileSelectorAPI(mockFileOpenDialogAPI, mockShellItemAPI);
+          DartFileSelectorApi(mockFileOpenDialogAPI, mockShellItemAPI);
       setDefaultMocks(mockFileOpenDialogAPI, mockShellItemAPI,
           successReturnValue, defaultReturnValue, defaultPath, dialog);
     });

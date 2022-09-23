@@ -4,7 +4,7 @@
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:file_selector_windows/file_selector_windows.dart';
-import 'package:file_selector_windows/src/dart_file_selector_api.dart';
+import 'package:file_selector_windows/src/file_selector_api.dart';
 import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,15 +14,15 @@ import 'package:mockito/mockito.dart';
 import 'file_selector_windows_test.mocks.dart';
 import 'test_api.dart';
 
-@GenerateMocks(<Type>[TestFileSelectorApi, DartFileSelectorAPI])
+@GenerateMocks(<Type>[TestFileSelectorApi, DartFileSelectorApi])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late FileSelectorWindows plugin;
-  late MockDartFileSelectorAPI mockDartFileSelectorAPI;
+  late MockDartFileSelectorApi mockDartFileSelectorAPI;
 
   setUp(() {
-    mockDartFileSelectorAPI = MockDartFileSelectorAPI();
+    mockDartFileSelectorAPI = MockDartFileSelectorApi();
     plugin = FileSelectorWindows(mockDartFileSelectorAPI);
   });
 

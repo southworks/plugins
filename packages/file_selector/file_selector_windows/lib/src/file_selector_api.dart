@@ -9,14 +9,14 @@ import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
-import 'dart_file_dialog.dart';
-import 'dart_file_open_dialog_api.dart';
-import 'dart_shell_item_api.dart';
+import 'file_dialog.dart';
+import 'file_open_dialog_api.dart';
+import 'shell_item_api.dart';
 
 /// Dart native implementation of FileSelectorAPI
-class DartFileSelectorAPI extends FileDialog {
+class DartFileSelectorApi extends FileDialog {
   /// We need the file to exist. This value defaults to `false`.
-  DartFileSelectorAPI(
+  DartFileSelectorApi(
       [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemAPI? shellItemAPI])
       : super() {
     _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();

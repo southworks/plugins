@@ -3,19 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:win32/win32.dart';
-import 'dart_place.dart';
-
-/// Exposes custom places.
-class CustomPlace {
-  /// CustomPlace constructor.
-  CustomPlace(this.item, this.place);
-
-  /// An IShellItem.
-  IShellItem item;
-
-  /// A Place.
-  Place place;
-}
 
 /// An abstract of FileDialog, that allows user to interact with the file system.
 abstract class FileDialog {
@@ -30,13 +17,13 @@ abstract class FileDialog {
   /// separated list (for example `*.jpg;*.jpeg`).
   Map<String, String> filterSpecification = <String, String>{};
 
-  /// Set hWnd of dialog
+  /// Sets hWnd of dialog.
   int hWndOwner = NULL;
 
-  /// Sets is save dialog option, this allows the user to select inixistent files.
+  /// Sets is save dialog option, this allows the user to select inexistent files.
   bool fileMustExist = false;
 
-  /// Clears the current filter specification, this way a new filter can be added.
+  /// Clears the current filter specification, this way a new filter can be specified.
   void clearFilterSpecification() {
     filterSpecification = <String, String>{};
   }

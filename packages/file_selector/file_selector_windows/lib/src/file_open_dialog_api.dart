@@ -7,7 +7,7 @@ import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
 
-/// FileOpenDialogAPI provider, it used to interact with an IFileOpenDialogInstance.
+/// FileOpenDialogApi provider, it used to interact with an IFileOpenDialogInstance.
 class FileOpenDialogAPI {
   /// Sets dialog options.
   int setOptions(int options, IFileOpenDialog dialog) {
