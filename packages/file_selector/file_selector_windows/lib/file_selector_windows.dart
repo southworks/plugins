@@ -3,23 +3,20 @@
 // found in the LICENSE file.
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
-import 'package:file_selector_windows/src/file_selector_api.dart';
+import 'src/file_selector.dart';
 import 'src/messages.g.dart';
 
 /// An implementation of [FileSelectorPlatform] for Windows.
 class FileSelectorWindows extends FileSelectorPlatform {
-  /// Constructor for filePicker.
-  FileSelectorWindows([this._dartFileSelectorApi]) {
-    _dartFileSelectorApi = _dartFileSelectorApi ?? DartFileSelectorApi();
-    _api = _dartFileSelectorApi!;
-  }
+  /// Constructor for FileSelectorWindows. It recieves a DartFileSelectorApi parameter allowing dependency injection.
+  FileSelectorWindows(FileSelector? api)
+      : _api = api ?? FileSelector.withoutParameters();
 
-  late DartFileSelectorApi _api;
-  late DartFileSelectorApi? _dartFileSelectorApi;
+  final FileSelector _api;
 
-  /// Registers the Windows implementation.
-  static void registerWith([DartFileSelectorApi? filePicker]) {
-    FileSelectorPlatform.instance = FileSelectorWindows(filePicker);
+  /// Registers the Windows implementation. It recieves a DartFileSelectorApi parameter allowing dependency injection.
+  static void registerWith(FileSelector? api) {
+    FileSelectorPlatform.instance = FileSelectorWindows(api);
   }
 
   @override

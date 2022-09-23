@@ -5,7 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:ffi' as _i5;
 
-import 'package:file_selector_windows/src/file_selector_api.dart' as _i4;
+import 'package:file_selector_windows/src/file_selector.dart' as _i4;
 import 'package:file_selector_windows/src/messages.g.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:win32/win32.dart' as _i6;
@@ -70,12 +70,11 @@ class MockTestFileSelectorApi extends _i1.Mock
       ) as List<String?>);
 }
 
-/// A class which mocks [DartFileSelectorApi].
+/// A class which mocks [FileSelector].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDartFileSelectorApi extends _i1.Mock
-    implements _i4.DartFileSelectorApi {
-  MockDartFileSelectorApi() {
+class MockFileSelector extends _i1.Mock implements _i4.FileSelector {
+  MockFileSelector() {
     _i1.throwOnMissingStub(this);
   }
 

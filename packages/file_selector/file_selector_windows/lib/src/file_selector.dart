@@ -10,21 +10,28 @@ import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
 import 'file_dialog.dart';
-import 'file_open_dialog_api.dart';
-import 'shell_item_api.dart';
+import 'file_open_dialog_wrapper.dart';
+import 'shell_item_wrapper.dart';
 
-/// Dart native implementation of FileSelectorAPI
-class DartFileSelectorApi extends FileDialog {
-  /// We need the file to exist. This value defaults to `false`.
-  DartFileSelectorApi(
-      [FileOpenDialogAPI? fileOpenDialogAPI, ShellItemAPI? shellItemAPI])
+/// Implementation of FileDialog. It provides primitives to interact with the file system including:
+/// * Open a file.
+/// * Open multiple files.
+/// * Select a directory.
+/// * Return a file path to save a file.
+class FileSelector extends FileDialog {
+  /// Initializes a FileSelector instance. It receives a FileOpenDialogWrapper and a ShellItemWrapper allowing dependency injection, both of which can be null.
+  FileSelector(FileOpenDialogWrapper? fileOpenDialogWrapper,
+      ShellItemWrapper? shellItemWrapper)
       : super() {
-    _fileOpenDialogAPI = fileOpenDialogAPI ?? FileOpenDialogAPI();
-    _shellItemAPI = shellItemAPI ?? ShellItemAPI();
+    _fileOpenDialogWrapper = fileOpenDialogWrapper ?? FileOpenDialogWrapper();
+    _shellItemWrapper = shellItemWrapper ?? ShellItemWrapper();
   }
 
-  late FileOpenDialogAPI _fileOpenDialogAPI;
-  late ShellItemAPI _shellItemAPI;
+  /// Initializes a FileSelector instance. It receives a FileOpenDialogWrapper and a ShellItemWrapper allowing dependency injection, both of which can be null.
+  FileSelector.withoutParameters() : this(null, null);
+
+  late FileOpenDialogWrapper _fileOpenDialogWrapper;
+  late ShellItemWrapper _shellItemWrapper;
 
   /// Returns a directory path from user selection.
   String? getDirectoryPath({
@@ -64,7 +71,7 @@ class DartFileSelectorApi extends FileDialog {
       required SelectionOptions selectionOptions}) {
     fileMustExist = false;
     int hResult = initializeComLibrary();
-    final IFileOpenDialog fileDialog = _fileOpenDialogAPI.createInstance();
+    final IFileOpenDialog fileDialog = _fileOpenDialogWrapper.createInstance();
     using((Arena arena) {
       final Pointer<Uint32> ptrOptions = arena<Uint32>();
 
@@ -75,7 +82,7 @@ class DartFileSelectorApi extends FileDialog {
     hResult = setInitialDirectory(initialDirectory, fileDialog);
     hResult = addFileFilters(selectionOptions, fileDialog);
     hResult = addConfirmButtonLabel(confirmButtonText, fileDialog);
-    hResult = _fileOpenDialogAPI.show(hWndOwner, fileDialog);
+    hResult = _fileOpenDialogWrapper.show(hWndOwner, fileDialog);
 
     return returnSelectedElements(hResult, selectionOptions, fileDialog);
   }
@@ -83,7 +90,7 @@ class DartFileSelectorApi extends FileDialog {
   /// Returns dialog options.
   @visibleForTesting
   int getOptions(Pointer<Uint32> ptrOptions, IFileOpenDialog dialog) {
-    final int hResult = _fileOpenDialogAPI.getOptions(ptrOptions, dialog);
+    final int hResult = _fileOpenDialogWrapper.getOptions(ptrOptions, dialog);
     _validateResult(hResult);
 
     return hResult;
@@ -114,7 +121,7 @@ class DartFileSelectorApi extends FileDialog {
       SelectionOptions selectionOptions, IFileOpenDialog dialog) {
     final int options = getDialogOptions(ptrOptions.value, selectionOptions);
 
-    final int hResult = _fileOpenDialogAPI.setOptions(options, dialog);
+    final int hResult = _fileOpenDialogWrapper.setOptions(options, dialog);
 
     _validateResult(hResult);
 
@@ -133,12 +140,12 @@ class DartFileSelectorApi extends FileDialog {
     using((Arena arena) {
       final Pointer<GUID> ptrGuid = GUIDFromString(IID_IShellItem);
       final Pointer<Pointer<COMObject>> ptrPath = arena<Pointer<COMObject>>();
-      hResult = _fileOpenDialogAPI.createItemFromParsingName(
+      hResult = _fileOpenDialogWrapper.createItemFromParsingName(
           initialDirectory, ptrGuid, ptrPath);
 
       _validateResult(hResult);
 
-      hResult = _fileOpenDialogAPI.setFolder(ptrPath, dialog);
+      hResult = _fileOpenDialogWrapper.setFolder(ptrPath, dialog);
 
       _validateResult(hResult);
     });
@@ -149,7 +156,7 @@ class DartFileSelectorApi extends FileDialog {
   /// Initialices the com library
   @visibleForTesting
   int initializeComLibrary() {
-    final int hResult = _fileOpenDialogAPI.coInitializeEx();
+    final int hResult = _fileOpenDialogWrapper.coInitializeEx();
     _validateResult(hResult);
     return hResult;
   }
@@ -169,10 +176,10 @@ class DartFileSelectorApi extends FileDialog {
           selectionOptions, selectedElements, dialog);
     }
 
-    hResult = _fileOpenDialogAPI.release(dialog);
+    hResult = _fileOpenDialogWrapper.release(dialog);
     _validateResult(hResult);
 
-    _fileOpenDialogAPI.coUninitialize();
+    _fileOpenDialogWrapper.coUninitialize();
     return selectedElements;
   }
 
@@ -183,7 +190,7 @@ class DartFileSelectorApi extends FileDialog {
     IFileOpenDialog dialog,
   ) {
     final int hResult =
-        _fileOpenDialogAPI.setOkButtonLabel(confirmButtonText, dialog);
+        _fileOpenDialogWrapper.setOkButtonLabel(confirmButtonText, dialog);
     _validateResult(hResult);
     return hResult;
   }
@@ -213,7 +220,7 @@ class DartFileSelectorApi extends FileDialog {
     int hResult = 0;
     if (filterSpecification.isNotEmpty) {
       hResult =
-          _fileOpenDialogAPI.setFileTypes(filterSpecification, fileDialog);
+          _fileOpenDialogWrapper.setFileTypes(filterSpecification, fileDialog);
       _validateResult(hResult);
     }
 
@@ -226,7 +233,8 @@ class DartFileSelectorApi extends FileDialog {
       String? suggestedFileName, IFileOpenDialog fileDialog) {
     int hResult = 0;
     if (suggestedFileName != null && suggestedFileName.isNotEmpty) {
-      hResult = _fileOpenDialogAPI.setFileName(suggestedFileName, fileDialog);
+      hResult =
+          _fileOpenDialogWrapper.setFileName(suggestedFileName, fileDialog);
       _validateResult(hResult);
     }
 
@@ -240,7 +248,7 @@ class DartFileSelectorApi extends FileDialog {
     required SelectionOptions selectionOptions,
   }) {
     int hResult = initializeComLibrary();
-    final IFileOpenDialog dialog = _fileOpenDialogAPI.createInstance();
+    final IFileOpenDialog dialog = _fileOpenDialogWrapper.createInstance();
     using((Arena arena) {
       final Pointer<Uint32> ptrOptions = arena<Uint32>();
       hResult = getOptions(ptrOptions, dialog);
@@ -251,7 +259,7 @@ class DartFileSelectorApi extends FileDialog {
     hResult = addFileFilters(selectionOptions, dialog);
     hResult = addConfirmButtonLabel(confirmButtonText, dialog);
     hResult = setSuggestedFileName(suggestedFileName, dialog);
-    hResult = _fileOpenDialogAPI.show(hWndOwner, dialog);
+    hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
 
     final List<String> selectedPaths =
         returnSelectedElements(hResult, selectionOptions, dialog);
@@ -275,12 +283,13 @@ class DartFileSelectorApi extends FileDialog {
           arena<Pointer<COMObject>>();
 
       if (selectionOptions.allowMultiple) {
-        hResult = _fileOpenDialogAPI.getResults(ptrShellItemArray, dialog);
+        hResult = _fileOpenDialogWrapper.getResults(ptrShellItemArray, dialog);
         _validateResult(hResult);
         final IShellItemArray iShellItemArray =
-            _shellItemAPI.createShellItemArray(ptrShellItemArray);
+            _shellItemWrapper.createShellItemArray(ptrShellItemArray);
         final Pointer<Uint32> ptrNumberOfSelectedElements = arena<Uint32>();
-        _shellItemAPI.getCount(ptrNumberOfSelectedElements, iShellItemArray);
+        _shellItemWrapper.getCount(
+            ptrNumberOfSelectedElements, iShellItemArray);
 
         for (int index = 0;
             index < ptrNumberOfSelectedElements.value;
@@ -289,16 +298,16 @@ class DartFileSelectorApi extends FileDialog {
               arena<Pointer<COMObject>>();
 
           hResult =
-              _shellItemAPI.getItemAt(index, ptrShellItem, iShellItemArray);
+              _shellItemWrapper.getItemAt(index, ptrShellItem, iShellItemArray);
           _validateResult(hResult);
 
           hResult =
               _addSelectedPathFromPpsi(ptrShellItem, arena, selectedElements);
 
-          _shellItemAPI.release(iShellItemArray);
+          _shellItemWrapper.release(iShellItemArray);
         }
       } else {
-        hResult = _fileOpenDialogAPI.getResult(ptrShellItemArray, dialog);
+        hResult = _fileOpenDialogWrapper.getResult(ptrShellItemArray, dialog);
         _validateResult(hResult);
         hResult = _addSelectedPathFromPpsi(
             ptrShellItemArray, arena, selectedElements);
@@ -312,14 +321,15 @@ class DartFileSelectorApi extends FileDialog {
 
   int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ptrShellItem,
       Arena arena, List<String> selectedElements) {
-    final IShellItem shellItem = _shellItemAPI.createShellItem(ptrShellItem);
+    final IShellItem shellItem =
+        _shellItemWrapper.createShellItem(ptrShellItem);
     final Pointer<IntPtr> ptrPath = arena<IntPtr>();
 
-    int hResult = _shellItemAPI.getDisplayName(ptrPath, shellItem);
+    int hResult = _shellItemWrapper.getDisplayName(ptrPath, shellItem);
     _validateResult(hResult);
 
-    selectedElements.add(_shellItemAPI.getUserSelectedPath(ptrPath));
-    hResult = _shellItemAPI.releaseItem(shellItem);
+    selectedElements.add(_shellItemWrapper.getUserSelectedPath(ptrPath));
+    hResult = _shellItemWrapper.releaseItem(shellItem);
     _validateResult(hResult);
 
     return hResult;

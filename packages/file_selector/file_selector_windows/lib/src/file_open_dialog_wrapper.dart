@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 import 'dart:ffi';
-
 import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
 
-/// FileOpenDialogApi provider, it used to interact with an IFileOpenDialogInstance.
-class FileOpenDialogAPI {
+/// FileOpenDialogWrapper provides an abstraction to interact with IFileOpenDialog related methods.
+class FileOpenDialogWrapper {
   /// Sets dialog options.
   int setOptions(int options, IFileOpenDialog dialog) {
     return dialog.setOptions(options);
