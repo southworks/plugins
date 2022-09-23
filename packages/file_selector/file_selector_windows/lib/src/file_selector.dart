@@ -8,17 +8,15 @@ import 'package:ffi/ffi.dart';
 import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
-
-import 'file_dialog.dart';
 import 'file_open_dialog_wrapper.dart';
 import 'shell_item_wrapper.dart';
 
-/// Implementation of FileDialog. It provides primitives to interact with the file system including:
+/// An abstraction that provides primitives to interact with the file system including:
 /// * Open a file.
 /// * Open multiple files.
 /// * Select a directory.
 /// * Return a file path to save a file.
-class FileSelector extends FileDialog {
+class FileSelector {
   /// Initializes a FileSelector instance. It receives a FileOpenDialogWrapper and a ShellItemWrapper allowing dependency injection, both of which can be null.
   FileSelector(FileOpenDialogWrapper? fileOpenDialogWrapper,
       ShellItemWrapper? shellItemWrapper)
@@ -29,6 +27,23 @@ class FileSelector extends FileDialog {
 
   /// Initializes a FileSelector instance. It receives a FileOpenDialogWrapper and a ShellItemWrapper allowing dependency injection, both of which can be null.
   FileSelector.withoutParameters() : this(null, null);
+
+  /// Sets a filter for the file types shown.
+  ///
+  /// When using the Open dialog, the file types declared here are used to
+  /// filter the view. When using the Save dialog, these values determine which
+  /// file name extension is appended to the file name.
+  ///
+  /// The first value is the "friendly" name which is shown to the user (e.g.
+  /// `JPEG Files`); the second value is a filter, which may be a semicolon-
+  /// separated list (for example `*.jpg;*.jpeg`).
+  Map<String, String> filterSpecification = <String, String>{};
+
+  /// Sets hWnd of dialog.
+  int hWndOwner = NULL;
+
+  /// Sets is save dialog option, this allows the user to select inexistent files.
+  bool fileMustExist = false;
 
   late FileOpenDialogWrapper _fileOpenDialogWrapper;
   late ShellItemWrapper _shellItemWrapper;
@@ -199,7 +214,7 @@ class FileSelector extends FileDialog {
   @visibleForTesting
   int addFileFilters(
       SelectionOptions selectionOptions, IFileOpenDialog fileDialog) {
-    clearFilterSpecification();
+    _clearFilterSpecification();
     for (final TypeGroup? option in selectionOptions.allowedTypes) {
       if (option == null ||
           option.extensions == null ||
@@ -333,5 +348,10 @@ class FileSelector extends FileDialog {
     _validateResult(hResult);
 
     return hResult;
+  }
+
+  /// Clears the current filter specification, this way a new filter can be specified.
+  void _clearFilterSpecification() {
+    filterSpecification = <String, String>{};
   }
 }
