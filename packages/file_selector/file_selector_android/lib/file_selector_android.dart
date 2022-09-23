@@ -66,13 +66,13 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     final List<Map<String, Object>> serializedTypeGroups =
         _serializeTypeGroups(acceptedTypeGroups);
 
-    final List<String>? pathList = await _channel
+    List<String>? pathList = await _channel
         .invokeListMethod<String>(_openFileMethod, <String, dynamic>{
       if (serializedTypeGroups.isNotEmpty)
         _acceptedTypeGroupsKey: serializedTypeGroups,
       _initialDirectoryKey: initialDirectory,
       _confirmButtonTextKey: confirmButtonText,
-      _multipleKey: false,
+      _multipleKey: true,
     });
 
     return pathList?.map((String path) => XFile(path)).toList() ?? <XFile>[];

@@ -16,6 +16,10 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import java.util.ArrayList;
+import java.util.Arrays;
+import android.os.Environment;
+import android.net.Uri;
+import android.provider.DocumentsContract;
 
 /**
  * A delegate class doing the heavy lifting for the plugin.
@@ -38,6 +42,7 @@ public class FileSelectorDelegate
     implements PluginRegistry.ActivityResultListener,
         PluginRegistry.RequestPermissionsResultListener {
   @VisibleForTesting static final int REQUEST_CODE_GET_DIRECTORY_PATH = 2342;
+  @VisibleForTesting static final int REQUEST_CODE_OPEN_FILE = 2343;
 
   /** Constants for key types in the dart invoke methods */
   @VisibleForTesting static final String _confirmButtonText = "confirmButtonText";
@@ -81,6 +86,32 @@ public class FileSelectorDelegate
     launchGetDirectoryPath(methodCall.argument(_initialDirectory));
   }
 
+  public void openFile(MethodCall methodCall, MethodChannel.Result result, boolean isMultipleSelection, String[] mimeTypes) {
+    if (!setPendingMethodCallAndResult(methodCall, result)) {
+      finishWithAlreadyActiveError(result);
+      return;
+    }
+
+    launchOpenFile(isMultipleSelection, mimeTypes);
+  }
+
+  @Override
+  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+    switch (requestCode) {
+      case REQUEST_CODE_GET_DIRECTORY_PATH:
+        handleGetDirectoryPathResult(resultCode, data);
+        break;
+      case REQUEST_CODE_OPEN_FILE:
+        handleOpenFileResult(resultCode, data);
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   private void launchGetDirectoryPath(@Nullable String initialDirectory) {
     Intent getDirectoryPathIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 
@@ -91,21 +122,22 @@ public class FileSelectorDelegate
       uri = Uri.parse(scheme);
       getDirectoryPathIntent.putExtra("android.provider.extra.INITIAL_URI", uri);
     }
-
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
-  @Override
-  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-    switch (requestCode) {
-      case REQUEST_CODE_GET_DIRECTORY_PATH:
-        handleGetDirectoryPathResult(resultCode, data);
-        break;
-      default:
-        return false;
+  private void launchOpenFile(boolean isMultipleSelection, String[] mimeTypes) {
+    Intent openFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
+    openFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
+    openFileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    openFileIntent.setType(mimeTypes.length == 1 ? mimeTypes[0] : "*/*");
+
+    if (mimeTypes.length > 0) {
+      openFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
     }
 
-    return true;
+    openFileIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultipleSelection);
+
+    activity.startActivityForResult(openFileIntent, REQUEST_CODE_OPEN_FILE);
   }
 
   private void handleGetDirectoryPathResult(int resultCode, Intent data) {
@@ -118,9 +150,27 @@ public class FileSelectorDelegate
     finishWithSuccess(null);
   }
 
+  private void handleOpenFileResult(int resultCode, Intent data) {
+    if (resultCode == Activity.RESULT_OK && data != null) {
+      ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList(data.getData().toString()));
+      //ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList("file://com.android.providers.downloads.documents/document/sample3.txt"));
+      //ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList("content://com.android.providers.downloads.documents/document/msf:24.txt"));
+
+      handleActionResults(srcPaths);
+      return;
+    }
+
+    finishWithSuccess(null);
+  }
+
   private void handleGetDirectoryPathResult(String path) {
     finishWithSuccess(path);
   }
+
+  private void handleActionResults(ArrayList<String> srcPaths) {
+    finishWithListSuccess(srcPaths);
+  }
+
 
   private boolean setPendingMethodCallAndResult(
       MethodCall methodCall, MethodChannel.Result result) {
