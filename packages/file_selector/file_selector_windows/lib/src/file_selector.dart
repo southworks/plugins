@@ -153,7 +153,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// Sets the initial directory to open the dialog
+  /// Sets the initial directory to a given dialog.
   @visibleForTesting
   int setInitialDirectory(String? initialDirectory, IFileOpenDialog dialog) {
     int hResult = 0;
