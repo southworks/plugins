@@ -10,6 +10,10 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import android.webkit.MimeTypeMap;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -17,6 +21,10 @@ import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
+import java.io.File;
+import kotlin.NotImplementedError;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 /** Android platform implementation of the FileSelectorPlugin. */
 public class FileSelectorPlugin
@@ -126,5 +134,13 @@ public class FileSelectorPlugin
       default:
         throw new IllegalArgumentException("Unknown method " + call.method);
     }
+  }
+
+  private String[] getMimeTypes(HashMap arguments) {
+    ArrayList acceptedTypeGroups = (ArrayList) arguments.get("acceptedTypeGroups");
+    HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
+    ArrayList<String> mimeTypesList = (ArrayList<String>) xTypeGroups.get("mimeTypes");
+
+    return mimeTypesList.toArray(new String[0]);
   }
 }
