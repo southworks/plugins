@@ -18,7 +18,7 @@ class FileOpenDialogWrapper {
     return dialog.getOptions(ptrOptions);
   }
 
-  /// Sets confirmation button text on an IFileOpenDialog. If the [confirmationText] is null 'Pick' will be used.
+  /// Sets confirmation button text on an IFileOpenDialog. If the [confirmationText] is null, 'Pick' will be used.
   int setOkButtonLabel(String? confirmationText, IFileOpenDialog dialog) {
     return dialog.setOkButtonLabel(TEXT(confirmationText ?? 'Pick'));
   }
