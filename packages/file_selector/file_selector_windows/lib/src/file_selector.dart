@@ -257,7 +257,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// TBD describe function and errors thrown.
+  // TODO(juandausa): describe function and errors
   String? _getDirectory({
     String? initialDirectory,
     String? confirmButtonText,
@@ -303,7 +303,7 @@ class FileSelector {
     }
   }
 
-  /// TBD document
+  // TODO(juandausa): describe function and errors
   int _getSelectedPathsFromUserInput(
     SelectionOptions selectionOptions,
     List<String> selectedElements,
@@ -351,7 +351,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// TBD Document
+  // TODO(juandausa): describe function and errors
   int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ptrShellItem,
       Arena arena, List<String> selectedElements) {
     final IShellItem shellItem =
