@@ -144,7 +144,7 @@ class FileSelector {
     return options;
   }
 
-  /// Sets the dilog options based on the fileMustExist value and the selectionOption given.
+  /// Sets the dialog options based on the fileMustExist value and the selectionOption given.
   /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int setDialogOptions(Pointer<Uint32> ptrOptions,
