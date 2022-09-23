@@ -26,19 +26,24 @@ class FileOpenDialogWrapper {
   /// Sets the allowed file type extensions in an IFileOpenDialog.
   int setFileTypes(
       Map<String, String> filterSpecification, IFileOpenDialog dialog) {
-    final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
-        calloc<COMDLG_FILTERSPEC>(filterSpecification.length);
+    int operationResult = 0;
+    using((Arena arena) {
+      final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
+          arena<COMDLG_FILTERSPEC>(filterSpecification.length);
 
-    int index = 0;
-    for (final String key in filterSpecification.keys) {
-      registerFilterSpecification[index]
-        ..pszName = TEXT(key)
-        ..pszSpec = TEXT(filterSpecification[key]!);
-      index++;
-    }
+      int index = 0;
+      for (final String key in filterSpecification.keys) {
+        registerFilterSpecification[index]
+          ..pszName = TEXT(key)
+          ..pszSpec = TEXT(filterSpecification[key]!);
+        index++;
+      }
 
-    return dialog.setFileTypes(
-        filterSpecification.length, registerFilterSpecification);
+      operationResult = dialog.setFileTypes(
+          filterSpecification.length, registerFilterSpecification);
+    });
+
+    return operationResult;
   }
 
   /// Shows an IFileOpenDialog using the given owner.
