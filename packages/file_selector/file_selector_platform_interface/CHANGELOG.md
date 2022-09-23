@@ -1,5 +1,6 @@
-## NEXT
+## 2.1.1
 
+* Makes XTypeGroup constant.
 * Updates minimum Flutter version to 2.10.
 
 ## 2.1.0

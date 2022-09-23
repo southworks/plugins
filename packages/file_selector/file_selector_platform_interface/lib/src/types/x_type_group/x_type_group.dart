@@ -8,19 +8,19 @@ class XTypeGroup {
   ///
   /// A group with none of the type options provided indicates that any type is
   /// allowed.
-  XTypeGroup({
+  const XTypeGroup({
     this.label,
     List<String>? extensions,
     this.mimeTypes,
     this.macUTIs,
     this.webWildCards,
-  }) : extensions = _removeLeadingDots(extensions);
+  }) : _extensions = extensions;
 
   /// The 'name' or reference to this group of types
   final String? label;
 
   /// The extensions for this group
-  final List<String>? extensions;
+  final List<String>? _extensions;
 
   /// The MIME types for this group
   final List<String>? mimeTypes;
@@ -40,6 +40,11 @@ class XTypeGroup {
       'macUTIs': macUTIs,
       'webWildCards': webWildCards,
     };
+  }
+
+  /// The extensions for this group
+  List<String>? get extensions {
+    return _removeLeadingDots(_extensions);
   }
 
   /// True if this type group should allow any file.
