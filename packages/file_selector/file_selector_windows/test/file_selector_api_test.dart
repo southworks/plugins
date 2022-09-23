@@ -210,22 +210,6 @@ void main() {
     });
 
     test(
-        'returnSelectedElements should throw if dialog release returns an error',
-        () {
-      when(mockFileOpenDialogWrapper.release(any)).thenReturn(-1);
-      expect(
-          () => api.returnSelectedElements(
-              hResult, singleFileSelectionOptions, mockFileOpenDialog),
-          throwsA(predicate((Object? e) => e is WindowsException)));
-
-      verify(mockFileOpenDialogWrapper.getResult(any, mockFileOpenDialog))
-          .called(1);
-      verify(mockShellItemWrapper.getDisplayName(any, any)).called(1);
-      verify(mockShellItemWrapper.releaseItem(any)).called(1);
-      verify(mockFileOpenDialogWrapper.release(any)).called(1);
-    });
-
-    test(
         'returnSelectedElements should return without a path when the user cancels interaction',
         () {
       const int cancelledhResult = -2147023673;
@@ -238,15 +222,6 @@ void main() {
       verifyNever(mockFileOpenDialogWrapper.getResult(any, mockFileOpenDialog));
       verifyNever(mockShellItemWrapper.getDisplayName(any, any));
       verifyNever(mockShellItemWrapper.getUserSelectedPath(any));
-      verify(mockFileOpenDialogWrapper.release(mockFileOpenDialog)).called(1);
-    });
-
-    test('returnSelectedElements should call dialog release', () {
-      expect(
-          api.returnSelectedElements(
-              hResult, singleFileSelectionOptions, mockFileOpenDialog),
-          expectedPaths);
-      verify(mockFileOpenDialogWrapper.release(mockFileOpenDialog)).called(1);
     });
 
     test('returnSelectedElements should call dialog getDisplayName', () {

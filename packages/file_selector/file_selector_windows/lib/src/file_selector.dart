@@ -84,22 +84,27 @@ class FileSelector {
       {String? initialDirectory,
       String? confirmButtonText,
       required SelectionOptions selectionOptions}) {
+    IFileOpenDialog? dialog;
     fileMustExist = false;
-    int hResult = initializeComLibrary();
-    final IFileOpenDialog fileDialog = _fileOpenDialogWrapper.createInstance();
-    using((Arena arena) {
-      final Pointer<Uint32> ptrOptions = arena<Uint32>();
+    try {
+      int hResult = initializeComLibrary();
+      dialog = _fileOpenDialogWrapper.createInstance();
+      using((Arena arena) {
+        final Pointer<Uint32> ptrOptions = arena<Uint32>();
 
-      hResult = getOptions(ptrOptions, fileDialog);
-      hResult = setDialogOptions(ptrOptions, selectionOptions, fileDialog);
-    });
+        hResult = getOptions(ptrOptions, dialog!);
+        hResult = setDialogOptions(ptrOptions, selectionOptions, dialog);
+      });
 
-    hResult = setInitialDirectory(initialDirectory, fileDialog);
-    hResult = addFileFilters(selectionOptions, fileDialog);
-    hResult = addConfirmButtonLabel(confirmButtonText, fileDialog);
-    hResult = _fileOpenDialogWrapper.show(hWndOwner, fileDialog);
+      hResult = setInitialDirectory(initialDirectory, dialog);
+      hResult = addFileFilters(selectionOptions, dialog);
+      hResult = addConfirmButtonLabel(confirmButtonText, dialog);
+      hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
 
-    return returnSelectedElements(hResult, selectionOptions, fileDialog);
+      return returnSelectedElements(hResult, selectionOptions, dialog);
+    } finally {
+      _realeaseResources(dialog);
+    }
   }
 
   /// Returns dialog options.
@@ -191,10 +196,6 @@ class FileSelector {
           selectionOptions, selectedElements, dialog);
     }
 
-    hResult = _fileOpenDialogWrapper.release(dialog);
-    _validateResult(hResult);
-
-    _fileOpenDialogWrapper.coUninitialize();
     return selectedElements;
   }
 
@@ -256,29 +257,44 @@ class FileSelector {
     return hResult;
   }
 
+  /// TBD describe function and errors thrown.
   String? _getDirectory({
     String? initialDirectory,
     String? confirmButtonText,
     String? suggestedFileName,
     required SelectionOptions selectionOptions,
   }) {
-    int hResult = initializeComLibrary();
-    final IFileOpenDialog dialog = _fileOpenDialogWrapper.createInstance();
-    using((Arena arena) {
-      final Pointer<Uint32> ptrOptions = arena<Uint32>();
-      hResult = getOptions(ptrOptions, dialog);
-      hResult = setDialogOptions(ptrOptions, selectionOptions, dialog);
-    });
+    IFileOpenDialog? dialog;
+    try {
+      int hResult = initializeComLibrary();
+      dialog = _fileOpenDialogWrapper.createInstance();
+      using((Arena arena) {
+        final Pointer<Uint32> ptrOptions = arena<Uint32>();
+        hResult = getOptions(ptrOptions, dialog!);
+        hResult = setDialogOptions(ptrOptions, selectionOptions, dialog);
+      });
 
-    hResult = setInitialDirectory(initialDirectory, dialog);
-    hResult = addFileFilters(selectionOptions, dialog);
-    hResult = addConfirmButtonLabel(confirmButtonText, dialog);
-    hResult = setSuggestedFileName(suggestedFileName, dialog);
-    hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
+      hResult = setInitialDirectory(initialDirectory, dialog);
+      hResult = addFileFilters(selectionOptions, dialog);
+      hResult = addConfirmButtonLabel(confirmButtonText, dialog);
+      hResult = setSuggestedFileName(suggestedFileName, dialog);
+      hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
 
-    final List<String> selectedPaths =
-        returnSelectedElements(hResult, selectionOptions, dialog);
-    return selectedPaths.isEmpty ? null : selectedPaths.first;
+      final List<String> selectedPaths =
+          returnSelectedElements(hResult, selectionOptions, dialog);
+      return selectedPaths.isEmpty ? null : selectedPaths.first;
+    } finally {
+      _realeaseResources(dialog);
+    }
+  }
+
+  void _realeaseResources(IFileOpenDialog? dialog) {
+    int releaseResult = 0;
+    if (dialog != null) {
+      releaseResult = _fileOpenDialogWrapper.release(dialog);
+    }
+    _fileOpenDialogWrapper.coUninitialize();
+    _validateResult(releaseResult);
   }
 
   void _validateResult(int hResult) {
@@ -287,6 +303,7 @@ class FileSelector {
     }
   }
 
+  /// TBD document
   int _getSelectedPathsFromUserInput(
     SelectionOptions selectionOptions,
     List<String> selectedElements,
@@ -334,6 +351,7 @@ class FileSelector {
     return hResult;
   }
 
+  /// TBD Document
   int _addSelectedPathFromPpsi(Pointer<Pointer<COMObject>> ptrShellItem,
       Arena arena, List<String> selectedElements) {
     final IShellItem shellItem =
