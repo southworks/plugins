@@ -192,7 +192,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// Returns a list directory paths from user interaction. It recieves the IFileOpenDialog show result to verify wether the user has cancelled the dialog or not.
+  /// Returns a list of directory paths from user interaction. It receives the IFileOpenDialog show result to verify whether the user has canceled the dialog or not.
   /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   List<String> returnSelectedElements(
