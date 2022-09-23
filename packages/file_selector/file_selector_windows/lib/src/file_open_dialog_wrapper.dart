@@ -8,17 +8,17 @@ import 'package:win32/win32.dart';
 
 /// FileOpenDialogWrapper provides an abstraction to interact with IFileOpenDialog related methods.
 class FileOpenDialogWrapper {
-  /// Sets the options given into an IFileOpenDialog.
+  /// Sets the [options](https://pub.dev/documentation/win32/latest/winrt/FILEOPENDIALOGOPTIONS-class.html) given into an IFileOpenDialog.
   int setOptions(int options, IFileOpenDialog dialog) {
     return dialog.setOptions(options);
   }
 
-  /// Returns the IFileOpenDialog's options.
+  /// Returns the IFileOpenDialog's [options](https://pub.dev/documentation/win32/latest/winrt/FILEOPENDIALOGOPTIONS-class.html).
   int getOptions(Pointer<Uint32> ptrOptions, IFileOpenDialog dialog) {
     return dialog.getOptions(ptrOptions);
   }
 
-  /// Set confirmation button text on an IFileOpenDialog.
+  /// Sets confirmation button text on an IFileOpenDialog. If the [confirmationText] is null 'Pick' will be used.
   int setOkButtonLabel(String? confirmationText, IFileOpenDialog dialog) {
     return dialog.setOkButtonLabel(TEXT(confirmationText ?? 'Pick'));
   }

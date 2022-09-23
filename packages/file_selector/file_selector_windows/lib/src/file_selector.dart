@@ -39,10 +39,10 @@ class FileSelector {
   /// separated list (for example `*.jpg;*.jpeg`).
   Map<String, String> filterSpecification = <String, String>{};
 
-  /// Sets hWnd of dialog.
+  /// Sets the owner of the IFileDialog to be shown.
   int hWndOwner = NULL;
 
-  /// Sets is save dialog option, this allows the user to select inexistent files.
+  /// Whether the selected item should exist or not. This allows the user to select inexistent files.
   bool fileMustExist = false;
 
   late FileOpenDialogWrapper _fileOpenDialogWrapper;
@@ -62,7 +62,7 @@ class FileSelector {
         selectionOptions: selectionOptions);
   }
 
-  /// Returns a full path, including file name and it's extension, from user selection.
+  /// Returns a full path, including file name and extension, from the user selection.
   String? getSavePath({
     String? initialDirectory,
     String? confirmButtonText,
@@ -79,7 +79,7 @@ class FileSelector {
         selectionOptions: selectionOptions ?? defaultSelectionOptions);
   }
 
-  /// Returns a list of file paths.
+  /// Returns a list of file paths form the user selection.
   List<String> getFiles(
       {String? initialDirectory,
       String? confirmButtonText,
@@ -97,8 +97,8 @@ class FileSelector {
       });
 
       hResult = setInitialDirectory(initialDirectory, dialog);
-      hResult = addFileFilters(selectionOptions, dialog);
-      hResult = addConfirmButtonLabel(confirmButtonText, dialog);
+      hResult = setFileTypeFilters(selectionOptions, dialog);
+      hResult = setOkButtonLabel(confirmButtonText, dialog);
       hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
 
       return returnSelectedElements(hResult, selectionOptions, dialog);
@@ -107,7 +107,7 @@ class FileSelector {
     }
   }
 
-  /// Returns dialog options.
+  /// Returns the IFileOpenDialog options which is a bitfield containing the union of options described in [FILEOPENDIALOGOPTIONS](https://pub.dev/documentation/win32/latest/winrt/FILEOPENDIALOGOPTIONS-class.html).
   @visibleForTesting
   int getOptions(Pointer<Uint32> ptrOptions, IFileOpenDialog dialog) {
     final int hResult = _fileOpenDialogWrapper.getOptions(ptrOptions, dialog);
@@ -116,7 +116,12 @@ class FileSelector {
     return hResult;
   }
 
-  /// Returns the dialog option based on conditions.
+  /// Returns options based the given [options], which is a bitfield containing the union of options described in [FILEOPENDIALOGOPTIONS](https://pub.dev/documentation/win32/latest/winrt/FILEOPENDIALOGOPTIONS-class.html), and theh value of [selectionOptions].
+  /// The [options](https://learn.microsoft.com/en-us/previous-versions/bb775856(v=vs.85)) that are used in this method are:
+  /// FOS_PATHMUSTEXIST: The item returned must exist. This is a default value.
+  /// FOS_FILEMUSTEXIST: The item returned must be in an existing folder. This is a default value.
+  /// FOS_PICKFOLDERS: Present the Open dialog offering a choice of folders rather than files.
+  /// FOS_ALLOWMULTISELECT: Enables the user to select multiple items in the open dialog.
   @visibleForTesting
   int getDialogOptions(int options, SelectionOptions selectionOptions) {
     if (!fileMustExist) {
@@ -135,12 +140,12 @@ class FileSelector {
     return options;
   }
 
-  /// Sets and checks options for the dialog.
+  /// Sets the given [ptrOptions] in the [dialog].
+  // TODO(juandausa): Rewrite this sentence.
   @visibleForTesting
   int setDialogOptions(Pointer<Uint32> ptrOptions,
       SelectionOptions selectionOptions, IFileOpenDialog dialog) {
     final int options = getDialogOptions(ptrOptions.value, selectionOptions);
-
     final int hResult = _fileOpenDialogWrapper.setOptions(options, dialog);
 
     _validateResult(hResult);
@@ -173,7 +178,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// Initialices the com library
+  /// Initilaize the COM library with the internal [CoInitializeEx](https://pub.dev/documentation/win32/latest/winrt/CoInitializeEx.html) method.
   @visibleForTesting
   int initializeComLibrary() {
     final int hResult = _fileOpenDialogWrapper.coInitializeEx();
@@ -181,7 +186,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// Returns a list directory paths from user interaction.
+  /// Returns a list directory paths from user interaction. It recieves the IFileOpenDialog show result to verify wether the user has cancelled the dialog or not.
   @visibleForTesting
   List<String> returnSelectedElements(
       int hResult, SelectionOptions selectionOptions, IFileOpenDialog dialog) {
@@ -199,9 +204,9 @@ class FileSelector {
     return selectedElements;
   }
 
-  /// Add confirmation button text.
+  /// Sets confirmation button text on an IFileOpenDialog. If the [confirmationText] is null 'Pick' will be used.
   @visibleForTesting
-  int addConfirmButtonLabel(
+  int setOkButtonLabel(
     String? confirmButtonText,
     IFileOpenDialog dialog,
   ) {
@@ -211,9 +216,9 @@ class FileSelector {
     return hResult;
   }
 
-  /// Adds file type filters.
+  /// Sets file type filters for a given dialog. It deleted the previous filters.
   @visibleForTesting
-  int addFileFilters(
+  int setFileTypeFilters(
       SelectionOptions selectionOptions, IFileOpenDialog fileDialog) {
     _clearFilterSpecification();
     for (final TypeGroup? option in selectionOptions.allowedTypes) {
@@ -243,7 +248,7 @@ class FileSelector {
     return hResult;
   }
 
-  /// Set the suggested file name of the given dialog.
+  /// Sets the suggested file name of the given dialog. It does nothing if the suggested file name is empty.
   @visibleForTesting
   int setSuggestedFileName(
       String? suggestedFileName, IFileOpenDialog fileDialog) {
@@ -275,8 +280,8 @@ class FileSelector {
       });
 
       hResult = setInitialDirectory(initialDirectory, dialog);
-      hResult = addFileFilters(selectionOptions, dialog);
-      hResult = addConfirmButtonLabel(confirmButtonText, dialog);
+      hResult = setFileTypeFilters(selectionOptions, dialog);
+      hResult = setOkButtonLabel(confirmButtonText, dialog);
       hResult = setSuggestedFileName(suggestedFileName, dialog);
       hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
 

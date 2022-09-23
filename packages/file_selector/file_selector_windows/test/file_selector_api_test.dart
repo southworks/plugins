@@ -84,7 +84,7 @@ void main() {
 
     test('addConfirmButtonLabel should call dialog setOkButtonLabel', () {
       const String confirmationText = 'Text';
-      expect(api.addConfirmButtonLabel(confirmationText, mockFileOpenDialog),
+      expect(api.setOkButtonLabel(confirmationText, mockFileOpenDialog),
           defaultReturnValue);
       verify(mockFileOpenDialogWrapper.setOkButtonLabel(
               confirmationText, mockFileOpenDialog))
@@ -105,7 +105,7 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(api.addFileFilters(selectionOptions, mockFileOpenDialog),
+      expect(api.setFileTypeFilters(selectionOptions, mockFileOpenDialog),
           defaultReturnValue);
       verify(mockFileOpenDialogWrapper.setFileTypes(
               filterSpecification, mockFileOpenDialog))
@@ -128,9 +128,9 @@ void main() {
         'Images': '*.jpg;*.png;',
       };
 
-      expect(api.addFileFilters(selectionOptions, mockFileOpenDialog),
+      expect(api.setFileTypeFilters(selectionOptions, mockFileOpenDialog),
           defaultReturnValue);
-      expect(api.addFileFilters(selectionOptions, mockFileOpenDialog),
+      expect(api.setFileTypeFilters(selectionOptions, mockFileOpenDialog),
           defaultReturnValue);
       verify(mockFileOpenDialogWrapper.setFileTypes(
               filterSpecification, mockFileOpenDialog))
@@ -149,7 +149,7 @@ void main() {
         allowedTypes: <TypeGroup?>[typeGroup],
       );
 
-      expect(api.addFileFilters(selectionOptions, mockFileOpenDialog),
+      expect(api.setFileTypeFilters(selectionOptions, mockFileOpenDialog),
           successReturnValue);
       verifyNever(
           mockFileOpenDialogWrapper.setFileTypes(any, mockFileOpenDialog));

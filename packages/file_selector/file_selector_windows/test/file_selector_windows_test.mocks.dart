@@ -224,13 +224,13 @@ class MockFileSelector extends _i1.Mock implements _i4.FileSelector {
         returnValue: <String>[],
       ) as List<String>);
   @override
-  int addConfirmButtonLabel(
+  int setOkButtonLabel(
     String? confirmButtonText,
     _i6.IFileOpenDialog? dialog,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
-          #addConfirmButtonLabel,
+          #setOkButtonLabel,
           [
             confirmButtonText,
             dialog,
@@ -239,13 +239,13 @@ class MockFileSelector extends _i1.Mock implements _i4.FileSelector {
         returnValue: 0,
       ) as int);
   @override
-  int addFileFilters(
+  int setFileTypeFilters(
     _i3.SelectionOptions? selectionOptions,
     _i6.IFileOpenDialog? fileDialog,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
-          #addFileFilters,
+          #setFileTypeFilters,
           [
             selectionOptions,
             fileDialog,
