@@ -211,7 +211,7 @@ class FileSelector {
     return selectedElements;
   }
 
-  /// Sets confirmation button text on an IFileOpenDialog. If the [confirmationText] is null 'Pick' will be used.
+  /// Sets the confirmation button text on an IFileOpenDialog. If the [confirmationText] is null, 'Pick' will be used.
   /// A [WindowsException] is thrown if an error occurs.
   @visibleForTesting
   int setOkButtonLabel(
