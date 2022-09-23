@@ -62,7 +62,7 @@ class FileOpenDialogWrapper {
     return dialog.getResult(ptrCOMObject);
   }
 
-  /// Return results from an IFileOpenDialog, this should be used when selecting multiple items.
+  /// Return results from an IFileOpenDialog. This should be used when selecting multiple items.
   int getResults(
       Pointer<Pointer<COMObject>> ptrCOMObject, IFileOpenDialog dialog) {
     return dialog.getResults(ptrCOMObject);
