@@ -90,19 +90,19 @@ class FileSelector {
     IFileOpenDialog? dialog;
     fileMustExist = false;
     try {
-      int hResult = initializeComLibrary();
+      initializeComLibrary();
       dialog = _fileOpenDialogWrapper.createInstance();
       using((Arena arena) {
         final Pointer<Uint32> ptrOptions = arena<Uint32>();
 
-        hResult = getOptions(ptrOptions, dialog!);
-        hResult = setDialogOptions(ptrOptions, selectionOptions, dialog);
+        getOptions(ptrOptions, dialog!);
+        setDialogOptions(ptrOptions, selectionOptions, dialog);
       });
 
-      hResult = setInitialDirectory(initialDirectory, dialog);
-      hResult = setFileTypeFilters(selectionOptions, dialog);
-      hResult = setOkButtonLabel(confirmButtonText, dialog);
-      hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
+      setInitialDirectory(initialDirectory, dialog);
+      setFileTypeFilters(selectionOptions, dialog);
+      setOkButtonLabel(confirmButtonText, dialog);
+      final int hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
 
       return returnSelectedElements(hResult, selectionOptions, dialog);
     } finally {
@@ -282,19 +282,19 @@ class FileSelector {
   }) {
     IFileOpenDialog? dialog;
     try {
-      int hResult = initializeComLibrary();
+      initializeComLibrary();
       dialog = _fileOpenDialogWrapper.createInstance();
       using((Arena arena) {
         final Pointer<Uint32> ptrOptions = arena<Uint32>();
-        hResult = getOptions(ptrOptions, dialog!);
-        hResult = setDialogOptions(ptrOptions, selectionOptions, dialog);
+        getOptions(ptrOptions, dialog!);
+        setDialogOptions(ptrOptions, selectionOptions, dialog);
       });
 
-      hResult = setInitialDirectory(initialDirectory, dialog);
-      hResult = setFileTypeFilters(selectionOptions, dialog);
-      hResult = setOkButtonLabel(confirmButtonText, dialog);
-      hResult = setSuggestedFileName(suggestedFileName, dialog);
-      hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
+      setInitialDirectory(initialDirectory, dialog);
+      setFileTypeFilters(selectionOptions, dialog);
+      setOkButtonLabel(confirmButtonText, dialog);
+      setSuggestedFileName(suggestedFileName, dialog);
+      final int hResult = _fileOpenDialogWrapper.show(hWndOwner, dialog);
 
       final List<String> selectedPaths =
           returnSelectedElements(hResult, selectionOptions, dialog);
@@ -364,8 +364,6 @@ class FileSelector {
             ptrShellItemArray, arena, selectedElements);
       }
     });
-
-    _validateResult(hResult);
 
     return hResult;
   }
