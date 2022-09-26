@@ -34,4 +34,45 @@ void main() {
     expect(fakeFileOpenDialog.getResultCalledTimes(), 1);
     free(ptrCOMObject);
   });
+
+  test('getResults should call dialog getResults', () {
+    final Pointer<Pointer<COMObject>> ptrCOMObject =
+        calloc<Pointer<COMObject>>();
+    fileOpenDialogWrapper.getResults(ptrCOMObject, fakeFileOpenDialog);
+    expect(fakeFileOpenDialog.getResultsCalledTimes(), 1);
+    free(ptrCOMObject);
+  });
+
+  test('release should call dialog release', () {
+    fileOpenDialogWrapper.release(fakeFileOpenDialog);
+    expect(fakeFileOpenDialog.releaseCalledTimes(), 1);
+  });
+
+  test('setFileName should call dialog setFileName', () {
+    fileOpenDialogWrapper.setFileName('name.txt', fakeFileOpenDialog);
+    expect(fakeFileOpenDialog.setFileNameCalledTimes(), 1);
+  });
+
+  test('setFileTypes should call dialog setFileTypes', () {
+    final Map<String, String> filterSpecification = <String, String>{
+      'Images': '*.jpg;*.png;',
+    };
+    fileOpenDialogWrapper.setFileTypes(filterSpecification, fakeFileOpenDialog);
+    expect(fakeFileOpenDialog.setFileTypesCalledTimes(), 1);
+  });
+
+  test('setFolder should call dialog setFolder', () {
+    final Pointer<Pointer<COMObject>> ptrCOMObject =
+        calloc<Pointer<COMObject>>();
+    fileOpenDialogWrapper.setFolder(ptrCOMObject, fakeFileOpenDialog);
+    expect(fakeFileOpenDialog.setFolderCalledTimes(), 1);
+    free(ptrCOMObject);
+  });
+
+  test(
+      'setOkButtonLabelCalledTimes should call dialog setOkButtonLabelCalledTimes',
+      () {
+    fileOpenDialogWrapper.setOkButtonLabel('text', fakeFileOpenDialog);
+    expect(fakeFileOpenDialog.setOkButtonLabelCalledTimes(), 1);
+  });
 }
