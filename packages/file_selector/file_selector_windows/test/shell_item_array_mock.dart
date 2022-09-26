@@ -9,8 +9,26 @@ import 'package:win32/win32.dart';
 
 // Fake IShellItemArray class
 class FakeIShellItemArray extends Fake implements IShellItemArray {
+  int _getCountCalledTimes = 0;
+  int _getItemAtCalledTimes = 0;
+
   @override
   int getCount(Pointer<Uint32> ptrCount) {
+    _getCountCalledTimes++;
     return 0;
+  }
+
+  @override
+  int getItemAt(int dwIndex, Pointer<Pointer<COMObject>> ppsi) {
+    _getItemAtCalledTimes++;
+    return 0;
+  }
+
+  int getCountCalledTimes() {
+    return _getCountCalledTimes;
+  }
+
+  int getItemAtCalledTimes() {
+    return _getItemAtCalledTimes;
   }
 }

@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:win32/win32.dart';
 import 'shell_item_array_mock.dart';
+import 'shell_item_mock.dart';
 
 void main() {
   final ShellItemWrapper shellItemWrapper = ShellItemWrapper();
@@ -19,33 +20,48 @@ void main() {
   tearDown(() {});
 
   test('creates a shell item instance', () {
-    // ignore: unused_element, always_declare_return_types
-    using(Arena arena) {
-      final Pointer<Pointer<COMObject>> comObjectPtr =
-          arena<Pointer<COMObject>>();
-      expect(shellItemWrapper.createShellItem(comObjectPtr), isA<IShellItem>());
-    }
+    final Pointer<Pointer<COMObject>> ptrComObject =
+        calloc<Pointer<COMObject>>();
+    expect(shellItemWrapper.createShellItem(ptrComObject), isA<IShellItem>());
+    free(ptrComObject);
   });
 
   test('creates a shell item array instance', () {
-    // ignore: unused_element, always_declare_return_types
-    using(Arena arena) {
-      final Pointer<Pointer<COMObject>> comObjectPtr =
-          arena<Pointer<COMObject>>();
-      shellItemWrapper.createShellItemArray(comObjectPtr);
-      expect(shellItemWrapper.createShellItemArray(comObjectPtr),
-          isA<IShellItemArray>());
-    }
+    final Pointer<Pointer<COMObject>> ptrComObject =
+        calloc<Pointer<COMObject>>();
+    shellItemWrapper.createShellItemArray(ptrComObject);
+    expect(shellItemWrapper.createShellItemArray(ptrComObject),
+        isA<IShellItemArray>());
+    free(ptrComObject);
   });
 
   test('getCount invokes shellItemArray getCount', () {
-    // ignore: unused_element, always_declare_return_types
-    using(Arena arena) {
-      final FakeIShellItemArray shellItemArray = FakeIShellItemArray();
-      final Pointer<Uint32> ptrNumberOfItems = arena<Uint32>();
+    final FakeIShellItemArray shellItemArray = FakeIShellItemArray();
+    final Pointer<Uint32> ptrNumberOfItems = calloc<Uint32>();
 
-      shellItemWrapper.getCount(ptrNumberOfItems, shellItemArray);
-      verify(shellItemArray.getCount(ptrNumberOfItems));
-    }
+    shellItemWrapper.getCount(ptrNumberOfItems, shellItemArray);
+    expect(1, shellItemArray.getCountCalledTimes());
+    free(ptrNumberOfItems);
+  });
+
+  test('getDisplayName invokes shellItem getDisplayName', () {
+    final FakeIShellItem shellItem = FakeIShellItem();
+    final Pointer<IntPtr> ptrInt = calloc<IntPtr>();
+
+    shellItemWrapper.getDisplayName(ptrInt, shellItem);
+    expect(1, shellItem.getDisplayNameCalledTimes());
+    free(ptrInt);
+  });
+
+  test('getItemAt invokes shellItem getItemAt', () {
+    final FakeIShellItemArray shellItemArray = FakeIShellItemArray();
+    final Pointer<Uint32> ptrNumberOfItems = calloc<Uint32>();
+    final Pointer<Pointer<COMObject>> ptrShellItem =
+        calloc<Pointer<COMObject>>();
+
+    shellItemWrapper.getItemAt(4, ptrShellItem, shellItemArray);
+    expect(1, shellItemArray.getItemAtCalledTimes());
+    free(ptrNumberOfItems);
+    free(ptrShellItem);
   });
 }
