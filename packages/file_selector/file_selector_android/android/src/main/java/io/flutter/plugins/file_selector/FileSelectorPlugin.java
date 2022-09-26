@@ -116,7 +116,7 @@ public class FileSelectorPlugin
         return null;
     }
 
-    final ArrayList<String> mimes = new ArrayList<>();
+    final ArrayList<String> mimes = new ArrayList<String>();
 
     for (int i = 0; i < allowedExtensions.size(); i++) {
         final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(allowedExtensions.get(i));
@@ -141,6 +141,7 @@ public class FileSelectorPlugin
 
     MethodChannel.Result result = new MethodResultWrapper(rawResult);
     FileSelectorDelegate delegate = activityState.getDelegate();
+    delegate.clearCache();
     switch (call.method) {
       case METHOD_GET_DIRECTORY_PATH:
         delegate.getDirectoryPath(call, result);

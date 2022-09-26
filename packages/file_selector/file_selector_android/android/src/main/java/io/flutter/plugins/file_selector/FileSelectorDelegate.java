@@ -4,22 +4,24 @@
 
 package io.flutter.plugins.file_selector;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.provider.DocumentsContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
+import androidx.core.app.ActivityCompat;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import android.os.Environment;
-import android.net.Uri;
-import android.provider.DocumentsContract;
 
 /**
  * A delegate class doing the heavy lifting for the plugin.
@@ -76,6 +78,10 @@ public class FileSelectorDelegate
     this.methodCall = methodCall;
   }
 
+  public void clearCache() {
+    PathUtils.clearCache(this.activity);
+  }
+
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   public void getDirectoryPath(MethodCall methodCall, MethodChannel.Result result) {
     if (!setPendingMethodCallAndResult(methodCall, result)) {
@@ -128,7 +134,6 @@ public class FileSelectorDelegate
   private void launchOpenFile(boolean isMultipleSelection, String[] mimeTypes) {
     Intent openFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
     openFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
-    openFileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     openFileIntent.setType(mimeTypes.length == 1 ? mimeTypes[0] : "*/*");
 
     if (mimeTypes.length > 0) {
@@ -152,9 +157,9 @@ public class FileSelectorDelegate
 
   private void handleOpenFileResult(int resultCode, Intent data) {
     if (resultCode == Activity.RESULT_OK && data != null) {
-      ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList(data.getData().toString()));
-      //ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList("file://com.android.providers.downloads.documents/document/sample3.txt"));
-      //ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList("content://com.android.providers.downloads.documents/document/msf:24.txt"));
+      Uri uri = data.getData();
+      String filePath = PathUtils.copyFileToInternalStorage(uri, this.activity);
+      ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList(filePath));
 
       handleActionResults(srcPaths);
       return;
@@ -170,7 +175,6 @@ public class FileSelectorDelegate
   private void handleActionResults(ArrayList<String> srcPaths) {
     finishWithListSuccess(srcPaths);
   }
-
 
   private boolean setPendingMethodCallAndResult(
       MethodCall methodCall, MethodChannel.Result result) {
