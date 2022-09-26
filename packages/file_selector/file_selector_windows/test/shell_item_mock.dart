@@ -11,6 +11,7 @@ import 'package:win32/win32.dart';
 // Fake IShellItemArray class
 class FakeIShellItem extends Fake implements IShellItem {
   int _getDisplayNameCalledTimes = 0;
+  int _releaseCalledTimes = 0;
 
   @override
   int getDisplayName(int sigdnName, Pointer<Pointer<Utf16>> ppszName) {
@@ -18,7 +19,17 @@ class FakeIShellItem extends Fake implements IShellItem {
     return 0;
   }
 
+  @override
+  int release() {
+    _releaseCalledTimes++;
+    return 0;
+  }
+
   int getDisplayNameCalledTimes() {
     return _getDisplayNameCalledTimes;
+  }
+
+  int releaseCalledTimes() {
+    return _releaseCalledTimes;
   }
 }

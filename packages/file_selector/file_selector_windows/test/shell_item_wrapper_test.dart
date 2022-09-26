@@ -64,4 +64,18 @@ void main() {
     free(ptrNumberOfItems);
     free(ptrShellItem);
   });
+
+  test('release invokes shellItemArray release', () {
+    final FakeIShellItemArray shellItemArray = FakeIShellItemArray();
+
+    shellItemWrapper.release(shellItemArray);
+    expect(1, shellItemArray.releaseCalledTimes());
+  });
+
+  test('releaseItem invokes shellItem release', () {
+    final FakeIShellItem shellItem = FakeIShellItem();
+
+    shellItemWrapper.releaseItem(shellItem);
+    expect(1, shellItem.releaseCalledTimes());
+  });
 }
