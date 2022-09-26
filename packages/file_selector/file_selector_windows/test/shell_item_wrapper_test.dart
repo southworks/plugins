@@ -7,17 +7,13 @@ import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:file_selector_windows/src/shell_item_wrapper.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 import 'package:win32/win32.dart';
-import 'shell_item_array_mock.dart';
-import 'shell_item_mock.dart';
+
+import 'fake_shell_item.dart';
+import 'fake_shell_item_array.dart';
 
 void main() {
   final ShellItemWrapper shellItemWrapper = ShellItemWrapper();
-
-  setUp(() {});
-
-  tearDown(() {});
 
   test('creates a shell item instance', () {
     final Pointer<Pointer<COMObject>> ptrComObject =
