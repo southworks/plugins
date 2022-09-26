@@ -36,7 +36,7 @@ void main() {
     final Pointer<Uint32> ptrNumberOfItems = calloc<Uint32>();
 
     shellItemWrapper.getCount(ptrNumberOfItems, shellItemArray);
-    expect(1, shellItemArray.getCountCalledTimes());
+    expect(shellItemArray.getCountCalledTimes(), 1);
     free(ptrNumberOfItems);
   });
 
@@ -45,7 +45,7 @@ void main() {
     final Pointer<IntPtr> ptrInt = calloc<IntPtr>();
 
     shellItemWrapper.getDisplayName(ptrInt, shellItem);
-    expect(1, shellItem.getDisplayNameCalledTimes());
+    expect(shellItem.getDisplayNameCalledTimes(), 1);
     free(ptrInt);
   });
 
@@ -56,7 +56,7 @@ void main() {
         calloc<Pointer<COMObject>>();
 
     shellItemWrapper.getItemAt(4, ptrShellItem, shellItemArray);
-    expect(1, shellItemArray.getItemAtCalledTimes());
+    expect(shellItemArray.getItemAtCalledTimes(), 1);
     free(ptrNumberOfItems);
     free(ptrShellItem);
   });
@@ -65,13 +65,13 @@ void main() {
     final FakeIShellItemArray shellItemArray = FakeIShellItemArray();
 
     shellItemWrapper.release(shellItemArray);
-    expect(1, shellItemArray.releaseCalledTimes());
+    expect(shellItemArray.releaseCalledTimes(), 1);
   });
 
   test('releaseItem invokes shellItem release', () {
     final FakeIShellItem shellItem = FakeIShellItem();
 
     shellItemWrapper.releaseItem(shellItem);
-    expect(1, shellItem.releaseCalledTimes());
+    expect(shellItem.releaseCalledTimes(), 1);
   });
 }
