@@ -66,7 +66,7 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     final List<Map<String, Object>> serializedTypeGroups =
         _serializeTypeGroups(acceptedTypeGroups);
 
-    List<String>? pathList = await _channel
+    final List<String>? pathList = await _channel
         .invokeListMethod<String>(_openFileMethod, <String, dynamic>{
       if (serializedTypeGroups.isNotEmpty)
         _acceptedTypeGroupsKey: serializedTypeGroups,

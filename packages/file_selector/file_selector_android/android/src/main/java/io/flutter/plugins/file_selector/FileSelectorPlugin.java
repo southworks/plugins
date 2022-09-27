@@ -10,10 +10,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
-import androidx.lifecycle.DefaultLifecycleObserver;
-import android.webkit.MimeTypeMap;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -136,6 +132,7 @@ public class FileSelectorPlugin
     }
   }
 
+  @VisibleForTesting
   private String[] getMimeTypes(HashMap arguments) {
     ArrayList acceptedTypeGroups = (ArrayList) arguments.get("acceptedTypeGroups");
     HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
