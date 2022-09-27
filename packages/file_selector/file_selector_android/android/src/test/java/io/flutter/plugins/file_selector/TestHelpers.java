@@ -6,21 +6,34 @@ package io.flutter.plugins.file_selector;
 
 import static io.flutter.plugins.file_selector.FileSelectorDelegate._confirmButtonText;
 import static io.flutter.plugins.file_selector.FileSelectorDelegate._initialDirectory;
+import static io.flutter.plugins.file_selector.FileSelectorDelegate._acceptedTypeGroups;
+import static io.flutter.plugins.file_selector.FileSelectorDelegate._multiple;
 
 import androidx.annotation.Nullable;
 import io.flutter.plugin.common.MethodCall;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TestHelpers {
   public static MethodCall buildMethodCall(
-      String method, @Nullable String initialDirectory, @Nullable String confirmButtonText) {
+      String method, @Nullable String initialDirectory, @Nullable String confirmButtonText, @Nullable boolean multiple, @Nullable ArrayList acceptedTypeGroups) {
     final Map<String, Object> arguments = new HashMap<>();
     if (initialDirectory != null) {
       arguments.put(_initialDirectory, initialDirectory);
     }
     if (confirmButtonText != null) {
       arguments.put(_confirmButtonText, confirmButtonText);
+    }
+    if (acceptedTypeGroups != null) {
+      arguments.put(_acceptedTypeGroups, acceptedTypeGroups);
+    }
+    if (multiple) {
+      arguments.put(_multiple, true);
+    }
+    else {
+      arguments.put(_multiple, false);
     }
 
     return new MethodCall(method, arguments);

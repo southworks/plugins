@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// ignore_for_file: always_specify_types
+
 import 'package:file_selector_android/file_selector_android.dart';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/services.dart';
@@ -49,6 +51,32 @@ void main() {
         <Matcher>[
           isMethodCall('getDirectoryPath', arguments: <String, dynamic>{
             'initialDirectory': null,
+          }),
+        ],
+      );
+    });
+  });
+
+  group('#openFile', () {
+    final XTypeGroup typeGroup =
+        XTypeGroup(mimeTypes: <String>['text/plain', 'application/json']);
+    final List<XTypeGroup> acceptedTypeGroups = <XTypeGroup>[typeGroup];
+    test('passes arguments correctly', () async {
+      await plugin.openFile(acceptedTypeGroups: acceptedTypeGroups);
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('openFile', arguments: <String, dynamic>{
+            'acceptedTypeGroups': [
+              {
+                'label': '',
+                'mimeTypes': <String>['text/plain', 'application/json']
+              }
+            ],
+            'initialDirectory': null,
+            'confirmButtonText': null,
+            'multiple': false
           }),
         ],
       );

@@ -22,6 +22,10 @@ import io.flutter.plugin.common.PluginRegistry;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A delegate class doing the heavy lifting for the plugin.
@@ -47,10 +51,21 @@ public class FileSelectorDelegate
   @VisibleForTesting static final int REQUEST_CODE_OPEN_FILE = 2343;
 
   /** Constants for key types in the dart invoke methods */
-  @VisibleForTesting static final String _confirmButtonText = "confirmButtonText";
+  @VisibleForTesting
+  static final String _confirmButtonText = "confirmButtonText";
+  @VisibleForTesting
+  static final String _initialDirectory = "initialDirectory";
+  @VisibleForTesting
+  static final String _acceptedTypeGroups = "acceptedTypeGroups";
+  @VisibleForTesting
+  static final String _multiple = "multiple";
+  @VisibleForTesting
+  static String cacheFolder = "file_selector";
+  @VisibleForTesting
+  public PathUtils pathUtils = new PathUtils();
 
-  @VisibleForTesting static final String _initialDirectory = "initialDirectory";
-
+  private MethodChannel.Result pendingResult;
+  private MethodCall methodCall;
   private final Activity activity;
 
   @Override
@@ -58,9 +73,6 @@ public class FileSelectorDelegate
       int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     return true;
   }
-
-  private MethodChannel.Result pendingResult;
-  private MethodCall methodCall;
 
   public FileSelectorDelegate(final Activity activity) {
     this(activity, null, null);
@@ -79,7 +91,7 @@ public class FileSelectorDelegate
   }
 
   public void clearCache() {
-    PathUtils.clearCache(this.activity);
+    pathUtils.clearCache(this.activity, cacheFolder);
   }
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -158,7 +170,7 @@ public class FileSelectorDelegate
   private void handleOpenFileResult(int resultCode, Intent data) {
     if (resultCode == Activity.RESULT_OK && data != null) {
       Uri uri = data.getData();
-      String filePath = PathUtils.copyFileToInternalStorage(uri, this.activity);
+      String filePath = pathUtils.copyFileToInternalStorage(uri, this.activity, cacheFolder);
       ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList(filePath));
 
       handleActionResults(srcPaths);

@@ -10,10 +10,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
-import androidx.lifecycle.DefaultLifecycleObserver;
-import android.webkit.MimeTypeMap;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -33,8 +29,6 @@ public class FileSelectorPlugin
   static final String METHOD_GET_DIRECTORY_PATH = "getDirectoryPath";
   static final String METHOD_OPEN_FILE = "openFile";
   static final String METHOD_GET_SAVE_PATH = "getSavePath";
-  private static boolean isMultipleSelection = false;
-  private static String[] mimeTypes = null;
   private static final String CHANNEL = "plugins.flutter.io/file_selector_android";
 
   private FlutterPluginBinding pluginBinding;
@@ -110,25 +104,6 @@ public class FileSelectorPlugin
     }
   }
 
-  public static String[] getMimeTypes(final ArrayList<String> allowedExtensions) {
-
-    if (allowedExtensions == null || allowedExtensions.isEmpty()) {
-        return null;
-    }
-
-    final ArrayList<String> mimes = new ArrayList<String>();
-
-    for (int i = 0; i < allowedExtensions.size(); i++) {
-        final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(allowedExtensions.get(i));
-        if (mime == null) {
-            continue;
-        }
-
-        mimes.add(mime);
-    }
-    return mimes.toArray(new String[0]);
-  }
-
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result rawResult) {
@@ -149,8 +124,8 @@ public class FileSelectorPlugin
       case METHOD_GET_SAVE_PATH:
         throw new UnsupportedOperationException("getSavePath is not supported yet");
       case METHOD_OPEN_FILE:
-        mimeTypes = getMimeTypes(arguments);
-        isMultipleSelection = (boolean) arguments.get("multiple");
+        String[] mimeTypes = getMimeTypes(arguments);
+        boolean isMultipleSelection = (boolean) arguments.get("multiple");
         delegate.openFile(call, result, isMultipleSelection, mimeTypes);
         break;
       default:
@@ -158,6 +133,7 @@ public class FileSelectorPlugin
     }
   }
 
+  @VisibleForTesting
   private String[] getMimeTypes(HashMap arguments) {
     ArrayList acceptedTypeGroups = (ArrayList) arguments.get("acceptedTypeGroups");
     HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
