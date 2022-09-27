@@ -1,26 +1,21 @@
 package io.flutter.plugins.file_selector;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.database.Cursor;
+
+import androidx.annotation.VisibleForTesting;
+
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.File;
-import android.app.Activity;
 
+@VisibleForTesting
 public class PathUtils {
-    static final String cachePath = "file_selector";
+    @VisibleForTesting static String cacheFolder = "file_selector";
 
-    public static String getFileName(Uri uri, final Context context) {
-        String result = null;
-
+    public static String getFileName(Uri uri, Context context) {
         Cursor returnCursor = context.getContentResolver().query(uri, new String[] {
             OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE
         }, null, null, null);
@@ -31,8 +26,8 @@ public class PathUtils {
         return (returnCursor.getString(nameIndex));
     }
 
-    public static String copyFileToInternalStorage(Uri uri, final Context context) {
-        String newDirPath = context.getFilesDir() + "/" + cachePath;
+     public static String copyFileToInternalStorage(Uri uri, Context context, String cacheFolderName) {
+        String newDirPath = context.getFilesDir() + "/" + cacheFolderName;
         String name = getFileName(uri, context);
 
         File output;
@@ -61,20 +56,17 @@ public class PathUtils {
         return output.getAbsolutePath();
       }
 
-    public static boolean clearCache(final Context context) {
-        try {
-            final File cacheDir = new File(context.getFilesDir() + "/" + cachePath + "/");
-            final File[] files = cacheDir.listFiles();
-
-            if (files != null) {
-                for (final File file : files) {
-                    file.delete();
-                }
-            }
-        } catch (final Exception ex) {
-            System.out.println("There was an error clearing the app cache");
-            return false;
+    public static void clearCache(Context context, String cacheFolderName) {
+        if (cacheFolderName == null) {
+            cacheFolderName = cacheFolder;
         }
-        return true;
+        File cacheDir = new File(context.getFilesDir() + "/" + cacheFolderName + "/");
+        File[] files = cacheDir.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
+        }
     }
 }

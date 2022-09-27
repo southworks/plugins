@@ -5,17 +5,20 @@
 package io.flutter.plugins.file_selector;
 
 import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_GET_DIRECTORY_PATH;
+import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_OPEN_FILE;
 import static io.flutter.plugins.file_selector.TestHelpers.buildMethodCall;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -25,8 +28,9 @@ public class FileSelectorDelegateTest {
   @Mock Activity mockActivity;
   @Mock MethodChannel.Result mockResult;
   @Mock Intent mockIntent;
-
   @Mock Uri mockUri;
+  @Mock PathUtils mockPathUtils;
+  FileSelectorDelegate delegate;
 
   @Before
   public void setUp() {
@@ -34,6 +38,15 @@ public class FileSelectorDelegateTest {
 
     mockUri = mock(Uri.class);
     when(mockIntent.getData()).thenReturn(mockUri);
+  }
+
+  @After
+  public void tearDown() {
+    reset(mockUri);
+    reset(mockActivity);
+    reset(mockIntent);
+    reset(mockPathUtils);
+    reset(mockResult);
   }
 
   @Test
@@ -68,6 +81,29 @@ public class FileSelectorDelegateTest {
         FileSelectorDelegate.REQUEST_CODE_GET_DIRECTORY_PATH, Activity.RESULT_OK, mockIntent);
 
     verify(mockResult).success(mockUri.toString());
+    verifyNoMoreInteractions(mockResult);
+  }
+
+  @Test
+  public void openFile_WhenPendingResultExists_FinishesWithAlreadyActiveError() {
+    MethodCall call = buildMethodCall(METHOD_OPEN_FILE);
+    FileSelectorDelegate delegate = new FileSelectorDelegate(mockActivity, mockResult, call);
+
+    delegate.openFile(call, mockResult, false, new String[]{"text"});
+
+    verifyFinishedWithAlreadyActiveError();
+    verifyNoMoreInteractions(mockResult);
+  }
+
+  @Test
+  public void onActivityResult_WhenOpenFileCanceled_FinishesWithNull() {
+    MethodCall call = buildMethodCall(METHOD_OPEN_FILE);
+    FileSelectorDelegate delegate = createDelegateWithPendingResultAndMethodCall(call);
+
+    delegate.onActivityResult(
+            FileSelectorDelegate.REQUEST_CODE_OPEN_FILE, Activity.RESULT_CANCELED, null);
+
+    verify(mockResult).success(null);
     verifyNoMoreInteractions(mockResult);
   }
 
