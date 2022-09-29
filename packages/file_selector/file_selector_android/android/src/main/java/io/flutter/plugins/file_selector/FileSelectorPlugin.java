@@ -17,10 +17,6 @@ import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
-import java.io.File;
-import kotlin.NotImplementedError;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 /** Android platform implementation of the FileSelectorPlugin. */
 public class FileSelectorPlugin
