@@ -4,28 +4,20 @@
 
 package io.flutter.plugins.file_selector;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.provider.DocumentsContract;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.app.ActivityCompat;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A delegate class doing the heavy lifting for the plugin.
@@ -104,13 +96,13 @@ public class FileSelectorDelegate
     launchGetDirectoryPath(methodCall.argument(_initialDirectory));
   }
 
-  public void openFile(MethodCall methodCall, MethodChannel.Result result, boolean isMultipleSelection, String[] mimeTypes) {
+  public void openFile(MethodCall methodCall, MethodChannel.Result result) {
     if (!setPendingMethodCallAndResult(methodCall, result)) {
       finishWithAlreadyActiveError(result);
       return;
     }
 
-    launchOpenFile(isMultipleSelection, mimeTypes);
+    launchOpenFile(methodCall.argument(_multiple), methodCall.argument(_acceptedTypeGroups));
   }
 
   @Override
@@ -143,16 +135,19 @@ public class FileSelectorDelegate
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
-  private void launchOpenFile(boolean isMultipleSelection, String[] mimeTypes) {
+  private void launchOpenFile(boolean isMultipleSelection, ArrayList acceptedTypeGroups) {
     Intent openFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
     openFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
-    openFileIntent.setType(mimeTypes.length == 1 ? mimeTypes[0] : "*/*");
-
-    if (mimeTypes.length > 0) {
-      openFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-    }
-
     openFileIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultipleSelection);
+
+    if(acceptedTypeGroups != null || acceptedTypeGroups.isEmpty()) {
+      openFileIntent.setType("*/*");
+      String[] mimeTypes = getMimeTypes(acceptedTypeGroups);
+
+      if (mimeTypes.length > 0) {
+        openFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+      }
+    }
 
     activity.startActivityForResult(openFileIntent, REQUEST_CODE_OPEN_FILE);
   }
@@ -167,11 +162,12 @@ public class FileSelectorDelegate
     finishWithSuccess(null);
   }
 
+  @VisibleForTesting
   private void handleOpenFileResult(int resultCode, Intent data) {
     if (resultCode == Activity.RESULT_OK && data != null) {
       Uri uri = data.getData();
       String filePath = pathUtils.copyFileToInternalStorage(uri, this.activity, cacheFolder);
-      ArrayList<String> srcPaths = new ArrayList<>(Arrays.asList(filePath));
+      ArrayList<String> srcPaths = new ArrayList<>(Collections.singletonList(filePath));
 
       handleActionResults(srcPaths);
       return;
@@ -225,5 +221,12 @@ public class FileSelectorDelegate
   private void clearMethodCallAndResult() {
     methodCall = null;
     pendingResult = null;
+  }
+
+  private String[] getMimeTypes(ArrayList acceptedTypeGroups) {
+    HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
+    ArrayList<String> mimeTypesList = (ArrayList<String>) xTypeGroups.get("mimeTypes");
+
+    return mimeTypesList.toArray(new String[0]);
   }
 }

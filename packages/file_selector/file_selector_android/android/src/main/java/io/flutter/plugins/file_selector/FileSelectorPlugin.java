@@ -124,21 +124,10 @@ public class FileSelectorPlugin
       case METHOD_GET_SAVE_PATH:
         throw new UnsupportedOperationException("getSavePath is not supported yet");
       case METHOD_OPEN_FILE:
-        String[] mimeTypes = getMimeTypes(arguments);
-        boolean isMultipleSelection = (boolean) arguments.get("multiple");
-        delegate.openFile(call, result, isMultipleSelection, mimeTypes);
+        delegate.openFile(call, result);
         break;
       default:
         throw new IllegalArgumentException("Unknown method " + call.method);
     }
-  }
-
-  @VisibleForTesting
-  private String[] getMimeTypes(HashMap arguments) {
-    ArrayList acceptedTypeGroups = (ArrayList) arguments.get("acceptedTypeGroups");
-    HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
-    ArrayList<String> mimeTypesList = (ArrayList<String>) xTypeGroups.get("mimeTypes");
-
-    return mimeTypesList.toArray(new String[0]);
   }
 }

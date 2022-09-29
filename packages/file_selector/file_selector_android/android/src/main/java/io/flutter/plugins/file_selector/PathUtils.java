@@ -23,7 +23,7 @@ public class PathUtils {
         int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
         returnCursor.moveToFirst();
 
-        return (returnCursor.getString(nameIndex));
+        return returnCursor.getString(nameIndex);
     }
 
      public static String copyFileToInternalStorage(Uri uri, Context context, String cacheFolderName) {
@@ -39,7 +39,7 @@ public class PathUtils {
         try {
           InputStream inputStream = context.getContentResolver().openInputStream(uri);
           FileOutputStream outputStream = new FileOutputStream(output);
-          int read = 0;
+          int read;
           int bufferSize = 1024;
           final byte[] buffers = new byte[bufferSize];
           while ((read = inputStream.read(buffers)) != -1) {
