@@ -20,6 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
 import android.app.Activity;
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -38,8 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class FileSelectorPluginTest {
   final HashMap<String, ArrayList<String>> xTypeGroups = new HashMap<>();
@@ -109,6 +108,7 @@ public class FileSelectorPluginTest {
       onMethodCall_GetDirectoryPath_WhenCalledWithoutInitialDirectory_InvokesRootSourceFolder() {
     MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, null, null, false, null);
     plugin.onMethodCall(call, mockResult);
+
     verifyNoInteractions(mockResult);
   }
 
