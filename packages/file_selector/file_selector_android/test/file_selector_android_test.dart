@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ignore_for_file: always_specify_types
-
 import 'package:file_selector_android/file_selector_android.dart';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/services.dart';
@@ -58,7 +56,7 @@ void main() {
   });
 
   group('#openFile', () {
-    final XTypeGroup typeGroup =
+    const XTypeGroup typeGroup =
         XTypeGroup(mimeTypes: <String>['text/plain', 'application/json']);
     final List<XTypeGroup> acceptedTypeGroups = <XTypeGroup>[typeGroup];
     test('passes arguments correctly', () async {
@@ -68,8 +66,8 @@ void main() {
         log,
         <Matcher>[
           isMethodCall('openFile', arguments: <String, dynamic>{
-            'acceptedTypeGroups': [
-              {
+            'acceptedTypeGroups': <Object>[
+              <String, Object>{
                 'label': '',
                 'mimeTypes': <String>['text/plain', 'application/json']
               }

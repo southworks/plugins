@@ -17,10 +17,6 @@ import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
-import java.io.File;
-import kotlin.NotImplementedError;
-import java.util.HashMap;
-import java.util.ArrayList;
 
 /** Android platform implementation of the FileSelectorPlugin. */
 public class FileSelectorPlugin
@@ -31,8 +27,9 @@ public class FileSelectorPlugin
   static final String METHOD_GET_SAVE_PATH = "getSavePath";
   private static final String CHANNEL = "plugins.flutter.io/file_selector_android";
 
-  private FlutterPluginBinding pluginBinding;
-  private ActivityStateHelper activityState;
+  @VisibleForTesting FlutterPluginBinding pluginBinding;
+  @VisibleForTesting ActivityStateHelper activityState;
+  @VisibleForTesting FileSelectorDelegate delegate;
 
   /**
    * Default constructor for the plugin.
@@ -97,10 +94,12 @@ public class FileSelectorPlugin
             CHANNEL, application, activity, messenger, this, registrar, activityBinding);
   }
 
-  private void tearDown() {
+  @VisibleForTesting
+  void tearDown() {
     if (activityState != null) {
       activityState.release();
       activityState = null;
+      delegate.clearCache();
     }
   }
 
@@ -112,11 +111,9 @@ public class FileSelectorPlugin
       return;
     }
 
-    final HashMap arguments = (HashMap) call.arguments;
-
     MethodChannel.Result result = new MethodResultWrapper(rawResult);
-    FileSelectorDelegate delegate = activityState.getDelegate();
-    delegate.clearCache();
+    delegate = activityState.getDelegate();
+
     switch (call.method) {
       case METHOD_GET_DIRECTORY_PATH:
         delegate.getDirectoryPath(call, result);
