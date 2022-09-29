@@ -112,7 +112,8 @@ public class FileSelectorPlugin
         delegate.getDirectoryPath(call, result);
         break;
       case METHOD_GET_SAVE_PATH:
-        throw new UnsupportedOperationException("getSavePath is not supported yet");
+        delegate.getSavePath(call, result);
+        break;
       case METHOD_OPEN_FILE:
         throw new UnsupportedOperationException("openFile is not supported yet");
       default:

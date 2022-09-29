@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -38,11 +39,13 @@ public class FileSelectorDelegate
     implements PluginRegistry.ActivityResultListener,
         PluginRegistry.RequestPermissionsResultListener {
   @VisibleForTesting static final int REQUEST_CODE_GET_DIRECTORY_PATH = 2342;
+  @VisibleForTesting static final int REQUEST_CODE_GET_SAVE_PATH = 2343;
 
   /** Constants for key types in the dart invoke methods */
   @VisibleForTesting static final String _confirmButtonText = "confirmButtonText";
 
   @VisibleForTesting static final String _initialDirectory = "initialDirectory";
+  @VisibleForTesting static final  String _suggestedNameKey = "suggestedName";
 
   private final Activity activity;
 
@@ -73,12 +76,24 @@ public class FileSelectorDelegate
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   public void getDirectoryPath(MethodCall methodCall, MethodChannel.Result result) {
-    if (!setPendingMethodCallAndResult(methodCall, result)) {
+    if (setPendingMethodCallAndResult(methodCall, result)) {
       finishWithAlreadyActiveError(result);
       return;
     }
 
     launchGetDirectoryPath(methodCall.argument(_initialDirectory));
+  }
+
+  public void getSavePath(MethodCall methodCall, MethodChannel.Result result) {
+    if (setPendingMethodCallAndResult(methodCall, result)) {
+      finishWithAlreadyActiveError(result);
+      return;
+    }
+
+    String initialDirectory = methodCall.argument(_initialDirectory);
+    String suggestedName = methodCall.argument(_suggestedNameKey);
+
+    launchGetSavePath(initialDirectory, suggestedName);
   }
 
   private void launchGetDirectoryPath(@Nullable String initialDirectory) {
@@ -95,11 +110,33 @@ public class FileSelectorDelegate
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
+  private void launchGetSavePath(@Nullable String initialDirectory, @Nullable String suggestedName) {
+    Intent getSavePathIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+    getSavePathIntent.setType("*/*");
+
+    if (initialDirectory != null && !initialDirectory.isEmpty()) {
+      Uri uri = getSavePathIntent.getParcelableExtra("android.provider.extra.INITIAL_URI");
+      String scheme = uri.toString();
+      scheme = scheme.replace("/root/", initialDirectory);
+      uri = Uri.parse(scheme);
+      getSavePathIntent.putExtra("android.provider.extra.INITIAL_URI", uri);
+    }
+
+    if (suggestedName != null && !suggestedName.isEmpty()) {
+      getSavePathIntent.putExtra("android.intent.extra.TITLE", suggestedName);
+    }
+
+    activity.startActivityForResult(getSavePathIntent, REQUEST_CODE_GET_SAVE_PATH);
+  }
+
   @Override
   public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
     switch (requestCode) {
       case REQUEST_CODE_GET_DIRECTORY_PATH:
         handleGetDirectoryPathResult(resultCode, data);
+        break;
+      case REQUEST_CODE_GET_SAVE_PATH:
+        handleGetSavePathResult(resultCode, data);
         break;
       default:
         return false;
@@ -118,20 +155,34 @@ public class FileSelectorDelegate
     finishWithSuccess(null);
   }
 
+  private void handleGetSavePathResult(int resultCode, Intent data) {
+    if (resultCode == Activity.RESULT_OK && data != null) {
+      Uri path = data.getData();
+      String fullPath = PathUtils.getPath(path, this.activity);
+      handleGetSavePathResult(fullPath);
+      return;
+    }
+
+    finishWithSuccess(null);
+  }
+
   private void handleGetDirectoryPathResult(String path) {
+    finishWithSuccess(path);
+  }
+  private void handleGetSavePathResult(String path) {
     finishWithSuccess(path);
   }
 
   private boolean setPendingMethodCallAndResult(
       MethodCall methodCall, MethodChannel.Result result) {
     if (pendingResult != null) {
-      return false;
+      return true;
     }
 
     this.methodCall = methodCall;
     pendingResult = result;
 
-    return true;
+    return false;
   }
 
   private void finishWithSuccess(String srcPath) {

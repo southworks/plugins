@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Screen that allows the user to select a save location using `getSavePath`,
 /// then writes text to a file at that location.
@@ -24,6 +25,10 @@ class SaveTextPage extends StatelessWidget {
       // Operation was canceled by the user.
       return;
     }
+
+    await Permission.storage.request().isGranted;
+    await Permission.manageExternalStorage.request().isGranted;
+
     final String text = _contentController.text;
     final Uint8List fileData = Uint8List.fromList(text.codeUnits);
     const String fileMimeType = 'text/plain';

@@ -5,6 +5,7 @@
 package io.flutter.plugins.file_selector;
 
 import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_GET_DIRECTORY_PATH;
+import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_GET_SAVE_PATH;
 import static io.flutter.plugins.file_selector.TestHelpers.buildMethodCall;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -80,7 +81,7 @@ public class FileSelectorPluginTest {
   @Test
   public void
       onMethodCall_GetDirectoryPath_WhenCalledWithoutInitialDirectory_InvokesRootSourceFolder() {
-    MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, null, null);
+    MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, null, null, null);
     plugin.onMethodCall(call, mockResult);
     verify(mockFileSelectorDelegate).getDirectoryPath(eq(call), any());
     verifyNoInteractions(mockResult);
@@ -88,9 +89,26 @@ public class FileSelectorPluginTest {
 
   @Test
   public void onMethodCall_GetDirectoryPath_WhenCalledWithInitialDirectory_InvokesSourceFolder() {
-    MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, "Documents", null);
+    MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, "Documents", null, null);
     plugin.onMethodCall(call, mockResult);
     verify(mockFileSelectorDelegate).getDirectoryPath(eq(call), any());
+    verifyNoInteractions(mockResult);
+  }
+
+  @Test
+  public void
+  onMethodCall_GetSavePath_WhenCalledWithoutSuggestedName_InvokesSuccessfully() {
+    MethodCall call = buildMethodCall(METHOD_GET_SAVE_PATH, null, null, null);
+    plugin.onMethodCall(call, mockResult);
+    verify(mockFileSelectorDelegate).getSavePath(eq(call), any());
+    verifyNoInteractions(mockResult);
+  }
+
+  @Test
+  public void onMethodCall_GetSavePath_WhenCalledWithSuggestedName_InvokesSuccessfully() {
+    MethodCall call = buildMethodCall(METHOD_GET_SAVE_PATH, "Documents", null, "test.txt");
+    plugin.onMethodCall(call, mockResult);
+    verify(mockFileSelectorDelegate).getSavePath(eq(call), any());
     verifyNoInteractions(mockResult);
   }
 

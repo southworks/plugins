@@ -5,6 +5,7 @@
 package io.flutter.plugins.file_selector;
 
 import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_GET_DIRECTORY_PATH;
+import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_GET_SAVE_PATH;
 import static io.flutter.plugins.file_selector.TestHelpers.buildMethodCall;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -42,6 +43,17 @@ public class FileSelectorDelegateTest {
     FileSelectorDelegate delegate = new FileSelectorDelegate(mockActivity, mockResult, call);
 
     delegate.getDirectoryPath(call, mockResult);
+
+    verifyFinishedWithAlreadyActiveError();
+    verifyNoMoreInteractions(mockResult);
+  }
+
+  @Test
+  public void getSavePath_WhenPendingResultExists_FinishesWithAlreadyActiveError() {
+    MethodCall call = buildMethodCall(METHOD_GET_SAVE_PATH);
+    FileSelectorDelegate delegate = new FileSelectorDelegate(mockActivity, mockResult, call);
+
+    delegate.getSavePath(call, mockResult);
 
     verifyFinishedWithAlreadyActiveError();
     verifyNoMoreInteractions(mockResult);
