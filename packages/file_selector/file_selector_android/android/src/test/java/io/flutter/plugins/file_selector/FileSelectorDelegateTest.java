@@ -30,7 +30,6 @@ public class FileSelectorDelegateTest {
   @Mock Intent mockIntent;
   @Mock Uri mockUri;
   @Mock PathUtils mockPathUtils;
-  FileSelectorDelegate delegate;
 
   @Before
   public void setUp() {
@@ -89,7 +88,7 @@ public class FileSelectorDelegateTest {
     MethodCall call = buildMethodCall(METHOD_OPEN_FILE);
     FileSelectorDelegate delegate = new FileSelectorDelegate(mockActivity, mockResult, call);
 
-    delegate.openFile(call, mockResult, false, new String[]{"text"});
+    delegate.openFile(call, mockResult);
 
     verifyFinishedWithAlreadyActiveError();
     verifyNoMoreInteractions(mockResult);

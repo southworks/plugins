@@ -41,7 +41,7 @@ import java.util.HashMap;
 
 public class FileSelectorPluginTest {
   final HashMap<String, ArrayList<String>> xTypeGroups = new HashMap<>();
-  final ArrayList<String> mimeTypes = new ArrayList();
+  final ArrayList<String> mimeTypes = new ArrayList<String>();
   final HashMap<String, Boolean> multiple = new HashMap<>();
 
   @Mock io.flutter.plugin.common.PluginRegistry.Registrar mockRegistrar;
@@ -65,7 +65,6 @@ public class FileSelectorPluginTest {
 
     plugin = new FileSelectorPlugin(mockFileSelectorDelegate, mockActivity);
   }
-
 
   @After
   public void tearDown() {
@@ -142,11 +141,10 @@ public class FileSelectorPluginTest {
   public void
   onMethodCall_OpenFile_ShouldBeCalledWithCorrespondingArguments() {
     final ArrayList<HashMap> arguments = prepareArguments();
-    final String[] receivedMimeTypes = new String[]{mimeTypes.get(0)};
     MethodCall call = buildMethodCall(METHOD_OPEN_FILE, null, null, false, arguments);
     plugin.onMethodCall(call, mockResult);
 
-    verify(mockFileSelectorDelegate).openFile(eq(call), any(), eq(false), eq(receivedMimeTypes));
+    verify(mockFileSelectorDelegate).openFile(eq(call), any());
     verifyNoInteractions(mockResult);
   }
 
@@ -156,6 +154,7 @@ public class FileSelectorPluginTest {
     final ArrayList<HashMap> arguments = prepareArguments();
     MethodCall call = buildMethodCall(METHOD_OPEN_FILE, null, null, false, arguments);
     plugin.onMethodCall(call, mockResult);
+
     verify(mockFileSelectorDelegate, times(1)).clearCache();
   }
 
