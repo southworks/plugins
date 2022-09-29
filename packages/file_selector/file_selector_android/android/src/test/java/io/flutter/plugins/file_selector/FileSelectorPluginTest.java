@@ -20,6 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
 import android.app.Activity;
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -30,14 +31,14 @@ import io.flutter.embedding.engine.plugins.lifecycle.HiddenLifecycleReference;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
-
+import java.util.ArrayList;
+import java.util.HashMap;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class FileSelectorPluginTest {
   final HashMap<String, ArrayList<String>> xTypeGroups = new HashMap<>();
@@ -52,13 +53,14 @@ public class FileSelectorPluginTest {
   @Mock FileSelectorDelegate mockFileSelectorDelegate;
   @Mock MethodChannel.Result mockResult;
   @Mock PathUtils mockPathUtils;
+  @Mock ActivityStateHelper mockActivityStateHelper;
   FileSelectorPlugin plugin;
 
   @Before
   public void setUp() {
     MockitoAnnotations.openMocks(this);
-    doNothing().when(mockFileSelectorDelegate).clearCache();
 
+    doNothing().when(mockFileSelectorDelegate).clearCache();
     when(mockRegistrar.context()).thenReturn(mockApplication);
     when(mockActivityBinding.getActivity()).thenReturn(mockActivity);
     when(mockPluginBinding.getApplicationContext()).thenReturn(mockApplication);
@@ -98,7 +100,7 @@ public class FileSelectorPluginTest {
             IllegalArgumentException.class,
             () -> plugin.onMethodCall(new MethodCall(method, null), mockResult));
     assertEquals("Unknown method " + method, exception.getMessage());
-    verify(mockFileSelectorDelegate).clearCache();
+
     verifyNoInteractions(mockResult);
   }
 
@@ -107,6 +109,7 @@ public class FileSelectorPluginTest {
       onMethodCall_GetDirectoryPath_WhenCalledWithoutInitialDirectory_InvokesRootSourceFolder() {
     MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, null, null, false, null);
     plugin.onMethodCall(call, mockResult);
+
     verifyNoInteractions(mockResult);
   }
 
@@ -114,12 +117,15 @@ public class FileSelectorPluginTest {
   public void onMethodCall_GetDirectoryPath_WhenCalledWithInitialDirectory_InvokesSourceFolder() {
     MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, "Documents", null, false, null);
     plugin.onMethodCall(call, mockResult);
+
     verify(mockFileSelectorDelegate).getDirectoryPath(eq(call), any());
     verifyNoInteractions(mockResult);
   }
 
   @Test
   public void onDetachedFromActivity_ShouldReleaseActivityState() {
+    plugin.delegate = mockFileSelectorDelegate;
+
     final BinaryMessenger mockBinaryMessenger = mock(BinaryMessenger.class);
     when(mockPluginBinding.getBinaryMessenger()).thenReturn(mockBinaryMessenger);
 
@@ -138,8 +144,7 @@ public class FileSelectorPluginTest {
   }
 
   @Test
-  public void
-  onMethodCall_OpenFile_ShouldBeCalledWithCorrespondingArguments() {
+  public void onMethodCall_OpenFile_ShouldBeCalledWithCorrespondingArguments() {
     final ArrayList<HashMap> arguments = prepareArguments();
     MethodCall call = buildMethodCall(METHOD_OPEN_FILE, null, null, false, arguments);
     plugin.onMethodCall(call, mockResult);
@@ -149,13 +154,16 @@ public class FileSelectorPluginTest {
   }
 
   @Test
-  public void
-  onMethodCall_AnyMethodInvocation_ShouldInvokeClearCacheMethod() {
-    final ArrayList<HashMap> arguments = prepareArguments();
-    MethodCall call = buildMethodCall(METHOD_OPEN_FILE, null, null, false, arguments);
-    plugin.onMethodCall(call, mockResult);
+  public void tearDown_ShouldClearState() {
+    plugin.activityState = mockActivityStateHelper;
+    plugin.delegate = mockFileSelectorDelegate;
+    doNothing().when(mockFileSelectorDelegate).clearCache();
+    doNothing().when(mockActivityStateHelper).release();
+    plugin.tearDown();
 
+    verify(mockActivityStateHelper, times(1)).release();
     verify(mockFileSelectorDelegate, times(1)).clearCache();
+    Assert.assertNull(plugin.activityState);
   }
 
   @NonNull

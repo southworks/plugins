@@ -43,18 +43,12 @@ public class FileSelectorDelegate
   @VisibleForTesting static final int REQUEST_CODE_OPEN_FILE = 2343;
 
   /** Constants for key types in the dart invoke methods */
-  @VisibleForTesting
-  static final String _confirmButtonText = "confirmButtonText";
-  @VisibleForTesting
-  static final String _initialDirectory = "initialDirectory";
-  @VisibleForTesting
-  static final String _acceptedTypeGroups = "acceptedTypeGroups";
-  @VisibleForTesting
-  static final String _multiple = "multiple";
-  @VisibleForTesting
-  static String cacheFolder = "file_selector";
-  @VisibleForTesting
-  public PathUtils pathUtils = new PathUtils();
+  @VisibleForTesting static final String _confirmButtonText = "confirmButtonText";
+
+  @VisibleForTesting static final String _initialDirectory = "initialDirectory";
+  @VisibleForTesting static final String _acceptedTypeGroups = "acceptedTypeGroups";
+  @VisibleForTesting static final String _multiple = "multiple";
+  @VisibleForTesting static String cacheFolder = "file_selector";
 
   private MethodChannel.Result pendingResult;
   private MethodCall methodCall;
@@ -71,9 +65,14 @@ public class FileSelectorDelegate
   }
 
   /**
-   * This constructor is used exclusively for testing; it can be used to provide mocks to final
-   * fields of this class. Otherwise those fields would have to be mutable and visible.
+   * These constructors are used exclusively for testing; they can be used to provide mocks to final
+   * fields of this class. Otherwise, those fields would have to be mutable and visible.
    */
+  @VisibleForTesting
+  FileSelectorDelegate() {
+    this(null, null, null);
+  }
+
   @VisibleForTesting
   FileSelectorDelegate(
       final Activity activity, final MethodChannel.Result result, final MethodCall methodCall) {
@@ -83,7 +82,7 @@ public class FileSelectorDelegate
   }
 
   public void clearCache() {
-    pathUtils.clearCache(this.activity, cacheFolder);
+    PathUtils.clearCache(this.activity, cacheFolder);
   }
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -135,13 +134,14 @@ public class FileSelectorDelegate
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
-  private void launchOpenFile(boolean isMultipleSelection, ArrayList acceptedTypeGroups) {
+  @VisibleForTesting
+  void launchOpenFile(boolean isMultipleSelection, ArrayList acceptedTypeGroups) {
     Intent openFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
     openFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
     openFileIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultipleSelection);
+    openFileIntent.setType("*/*");
 
-    if(acceptedTypeGroups != null || acceptedTypeGroups.isEmpty()) {
-      openFileIntent.setType("*/*");
+    if (acceptedTypeGroups != null && !acceptedTypeGroups.isEmpty()) {
       String[] mimeTypes = getMimeTypes(acceptedTypeGroups);
 
       if (mimeTypes.length > 0) {
@@ -163,10 +163,10 @@ public class FileSelectorDelegate
   }
 
   @VisibleForTesting
-  private void handleOpenFileResult(int resultCode, Intent data) {
+  void handleOpenFileResult(int resultCode, Intent data) {
     if (resultCode == Activity.RESULT_OK && data != null) {
       Uri uri = data.getData();
-      String filePath = pathUtils.copyFileToInternalStorage(uri, this.activity, cacheFolder);
+      String filePath = PathUtils.copyFileToInternalStorage(uri, this.activity, cacheFolder);
       ArrayList<String> srcPaths = new ArrayList<>(Collections.singletonList(filePath));
 
       handleActionResults(srcPaths);
@@ -226,7 +226,8 @@ public class FileSelectorDelegate
   private String[] getMimeTypes(ArrayList acceptedTypeGroups) {
     HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
     ArrayList<String> mimeTypesList = (ArrayList<String>) xTypeGroups.get("mimeTypes");
-
-    return mimeTypesList.toArray(new String[0]);
+    String[] mimeTypes =
+        mimeTypesList == null ? new String[0] : mimeTypesList.toArray(new String[0]);
+    return mimeTypes;
   }
 }

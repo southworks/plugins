@@ -16,7 +16,7 @@ class OpenImagePage extends StatelessWidget {
 
   Future<void> _openImageFile(BuildContext context) async {
     final XTypeGroup typeGroup = XTypeGroup(
-      mimeTypes: <String>['image/jpeg', 'image/x-png'],
+      mimeTypes: <String>['image/jpeg', 'image/png'],
     );
     final XFile? file = await FileSelectorPlatform.instance
         .openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);

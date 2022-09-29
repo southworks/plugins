@@ -5,8 +5,6 @@ repository: https://github.com/flutter/plugins/tree/main/packages/file_selector/
 issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+file_selector%22
 version: 0.9.2
 
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-
 environment:
   sdk: ">=2.12.0 <3.0.0"
   flutter: ">=2.10.0"
@@ -24,12 +22,8 @@ flutter:
         default_package: file_selector_web
       windows:
         default_package: file_selector_windows
-      android:
-        default_package: file_selector_android
 
 dependencies:
-  file_selector_android:
-    path: ../file_selector_android/
   file_selector_ios: ^0.5.0
   file_selector_linux: ^0.9.0
   file_selector_macos: ^0.9.0
