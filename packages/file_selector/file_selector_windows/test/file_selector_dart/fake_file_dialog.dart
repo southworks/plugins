@@ -10,7 +10,6 @@ import 'package:win32/win32.dart';
 
 // Fake IFileDialog class for testing purposes.
 class FakeIFileDialog extends Fake implements IFileDialog {
-  bool _shouldFail = false;
   int _getOptionsCalledTimes = 0;
   int _getResultCalledTimes = 0;
   int _setOptionsCalledTimes = 0;
@@ -23,9 +22,6 @@ class FakeIFileDialog extends Fake implements IFileDialog {
   @override
   int getOptions(Pointer<Uint32> pfos) {
     _getOptionsCalledTimes++;
-    if (_shouldFail) {
-      return -1;
-    }
     return S_OK;
   }
 
@@ -80,14 +76,6 @@ class FakeIFileDialog extends Fake implements IFileDialog {
     _setOkButtonLabelCalledTimes = 0;
     _showCalledTimes = 0;
     _setFileNameCalledTimes = 0;
-  }
-
-  void mockSuccess() {
-    _shouldFail = false;
-  }
-
-  void mockFailure() {
-    _shouldFail = true;
   }
 
   int getOptionsCalledTimes() {

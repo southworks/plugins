@@ -38,14 +38,13 @@ class DialogWrapper {
 
   /// Creates a DialogWrapper for testing purposes.
   @visibleForTesting
-  DialogWrapper.test(
+  DialogWrapper.withFakeDependencies(
       FileDialogController dialogController,
       this._fileDialogControllerFactory,
       this._fileDialogFactory,
-      this._dialogMode,
-      this._isOpenDialog) {
-    _dialogController = dialogController;
-  }
+      this._dialogMode)
+      : _isOpenDialog = true,
+        _dialogController = dialogController;
 
   int _lastResult = S_OK;
 

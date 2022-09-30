@@ -8,58 +8,69 @@ import 'package:file_selector_windows/src/file_selector_dart/file_dialog_control
 import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller_factory.dart';
 import 'package:file_selector_windows/src/file_selector_dart/ifile_dialog_factory.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:win32/win32.dart';
 
-import 'fake_file_dialog.dart';
-import 'fake_ifile_open_dialog_factory.dart';
+import 'dialog_wrapper_test.mocks.dart';
 
+@GenerateMocks(<Type>[FileDialogController])
 void main() {
-  final FakeIFileDialog fakeFileOpenDialog = FakeIFileDialog();
-  final FakeIFileOpenDialogFactory fakeIFileOpenDialogFactory =
-      FakeIFileOpenDialogFactory();
-  final FileDialogController fileDialogController =
-      FileDialogController(fakeFileOpenDialog, fakeIFileOpenDialogFactory);
+  const int defaultReturnValue = S_OK;
+  late final MockFileDialogController mockFileDialogController =
+      MockFileDialogController();
   final FileDialogControllerFactory fileDialogControllerFactory =
       FileDialogControllerFactory();
   final IFileDialogFactory fileDialogFactory = IFileDialogFactory();
   const DialogMode dialogMode = DialogMode.Open;
-  final DialogWrapper dialogWrapper = DialogWrapper.test(
-      fileDialogController,
+  final DialogWrapper dialogWrapper = DialogWrapper.withFakeDependencies(
+      mockFileDialogController,
       fileDialogControllerFactory,
       fileDialogFactory,
-      DialogMode.Open,
-      dialogMode == DialogMode.Open);
+      dialogMode);
 
-  setUp(() {});
+  setUp(() {
+    setDefaultMocks(mockFileDialogController, defaultReturnValue);
+  });
 
   tearDown(() {
-    fakeFileOpenDialog.resetCounters();
+    reset(mockFileDialogController);
   });
 
   test('setFileName should call dialog setFileName', () {
     const String folderName = 'Documents';
     dialogWrapper.setFileName(folderName);
-    expect(fakeFileOpenDialog.setFileNameCalledTimes(), 1);
+    verify(mockFileDialogController.setFileName(folderName)).called(1);
   });
 
   test('setOkButtonLabel should call dialog setOkButtonLabel', () {
     const String okButtonLabel = 'Confirm';
     dialogWrapper.setOkButtonLabel(okButtonLabel);
-    expect(fakeFileOpenDialog.setOkButtonLabelCalledTimes(), 1);
+    verify(mockFileDialogController.setOkButtonLabel(okButtonLabel)).called(1);
   });
 
   test('addOptions should call dialog getOptions and setOptions', () {
-    const int newOptions = 0;
+    const int newOptions = FILEOPENDIALOGOPTIONS.FOS_NOREADONLYRETURN;
     dialogWrapper.addOptions(newOptions);
-    expect(fakeFileOpenDialog.getOptionsCalledTimes(), 1);
-    expect(fakeFileOpenDialog.setOptionsCalledTimes(), 1);
+    verify(mockFileDialogController.getOptions(any)).called(1);
+    verify(mockFileDialogController.setOptions(newOptions)).called(1);
   });
 
   test('addOptions should not call setOptions if getOptions returns an error',
       () {
-    const int newOptions = 0;
-    fakeFileOpenDialog.mockFailure();
-    dialogWrapper.addOptions(newOptions);
-    expect(fakeFileOpenDialog.getOptionsCalledTimes(), 1);
-    expect(fakeFileOpenDialog.setOptionsCalledTimes(), 0);
+    const int options = FILEOPENDIALOGOPTIONS.FOS_NOREADONLYRETURN;
+    when(mockFileDialogController.getOptions(any)).thenReturn(E_FAIL);
+    dialogWrapper.addOptions(options);
+    verifyNever(mockFileDialogController.setOptions(any));
   });
+}
+
+void setDefaultMocks(
+    MockFileDialogController mockFileDialogController, int defaultReturnValue) {
+  when(mockFileDialogController.setOptions(any)).thenReturn(defaultReturnValue);
+  when(mockFileDialogController.getOptions(any)).thenReturn(defaultReturnValue);
+  when(mockFileDialogController.setOkButtonLabel(any))
+      .thenReturn(defaultReturnValue);
+  when(mockFileDialogController.setFileName(any))
+      .thenReturn(defaultReturnValue);
 }
