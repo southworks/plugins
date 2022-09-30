@@ -6,22 +6,45 @@ import 'package:file_selector_platform_interface/file_selector_platform_interfac
 import 'package:win32/win32.dart';
 
 import 'dialog_mode.dart';
+import 'file_dialog_controller.dart';
 import 'ifile_dialog_controller_factory.dart';
+import 'ifile_dialog_factory.dart';
 
 /// Wraps an IFileDialog, managing object lifetime as a scoped object and
 /// providing a simplified API for interacting with it as needed for the plugin.
 class DialogWrapper {
-  // ignore: public_member_api_docs
+  /// Creates a DialogWrapper using a [IFileDialogControllerFactory] and a [DialogMode].
+  /// It also resposible of creating a [IFileDialog].
   DialogWrapper(IFileDialogControllerFactory fileDialogControllerFactory,
-      DialogMode dialogMode)
-      : _factoryDialog = fileDialogControllerFactory,
-        _dialogMode = dialogMode;
+      IFileDialogFactory fileDialogFactory, DialogMode dialogMode)
+      : _fileDialogControllerFactory = fileDialogControllerFactory,
+        _fileDialogFactory = fileDialogFactory,
+        _dialogMode = dialogMode,
+        _isOpenDialog = dialogMode == DialogMode.Open {
+    try {
+      final IFileDialog dialog = fileDialogFactory.createInstace(_dialogMode);
+      _dialogController = _fileDialogControllerFactory.createController(dialog);
+    } catch (ex) {
+      if (ex is WindowsException) {
+        _lastResult = ex.hr;
+      }
+    }
+  }
 
-  final int _lastResult = S_OK;
+  int _lastResult = S_OK;
   // ignore: unused_field
-  final IFileDialogControllerFactory _factoryDialog;
+  final IFileDialogControllerFactory _fileDialogControllerFactory;
+  // ignore: unused_field
+  final IFileDialogFactory _fileDialogFactory;
   // ignore: unused_field
   final DialogMode _dialogMode;
+  // ignore: unused_field
+  final bool _isOpenDialog;
+  // ignore: unused_field
+  late FileDialogController _dialogController;
+
+  /// Returns the result of the last Win32 API call related to this object.
+  int get lastResult => _lastResult;
 
   /// Attempts to set the default folder for the dialog to |path|,
   /// if it exists.
@@ -43,9 +66,4 @@ class DialogWrapper {
   /// Displays the dialog, and returns the selected files, or nullopt on error.
   /// std::optional<EncodableList>
   void show(HWND parentWindow) {}
-
-  /// Returns the result of the last Win32 API call related to this object.
-  int lastResult() {
-    return _lastResult;
-  }
 }
