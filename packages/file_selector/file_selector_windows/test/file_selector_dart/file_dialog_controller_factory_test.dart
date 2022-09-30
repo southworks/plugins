@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:ffi';
-
-import 'package:ffi/ffi.dart';
 import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller.dart';
 import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller_factory.dart';
 import 'package:flutter_test/flutter_test.dart';
