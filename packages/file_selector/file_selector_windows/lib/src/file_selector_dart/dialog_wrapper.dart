@@ -6,7 +6,6 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
-import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
