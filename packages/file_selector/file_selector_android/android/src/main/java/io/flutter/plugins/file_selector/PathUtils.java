@@ -34,7 +34,7 @@ public class PathUtils {
   }
 
   @VisibleForTesting
-  String copyFileToInternalStorage(Uri uri, Context context) {
+  static String copyFileToInternalStorage(Uri uri, Context context) {
     return copyFileToInternalStorage(uri, context, "");
   }
 
@@ -72,6 +72,7 @@ public class PathUtils {
     return output.getAbsolutePath();
   }
 
+  @VisibleForTesting
   @Nullable
   public static String getSavePathUri(final Uri uri, Context context) {
     final String docId = DocumentsContract.getDocumentId(uri);
@@ -83,7 +84,7 @@ public class PathUtils {
     switch (uri.getAuthority()) {
       case externalStorageDocuments:
         final String[] split = docId.split(":");
-        return getPathFromExtSD(split);
+        return getPathFromExtSD(uri, context, split);
       case providersDownloadsDocuments:
         return getDownloadsDocumentPath(uri, context, docId);
       case providersMediaDocuments:
@@ -105,43 +106,30 @@ public class PathUtils {
 
   @Nullable
   private static String getDownloadsDocumentPath(Uri uri, Context context, String docId) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      String fileName =
-          getFileName(uri, context, new String[] {MediaStore.MediaColumns.DISPLAY_NAME});
-      String path = Environment.getExternalStorageDirectory().toString() + "/Download/" + fileName;
-      if (!TextUtils.isEmpty(path)) {
-        return path;
-      }
+    String fileName =
+        getFileName(uri, context, new String[] {MediaStore.MediaColumns.DISPLAY_NAME});
+    String path = Environment.getExternalStorageDirectory().toString() + "/Download/" + fileName;
+    if (!TextUtils.isEmpty(path)) {
+      return path;
+    }
 
-      if (docId.startsWith("raw:")) {
-        return docId.replaceFirst("raw:", "");
-      }
-      String[] contentUriPrefixesToTry =
-          new String[] {"content://downloads/public_downloads", "content://downloads/my_downloads"};
-      for (String contentUriPrefix : contentUriPrefixesToTry) {
-        try {
-          final Uri contentUri =
-              ContentUris.withAppendedId(Uri.parse(contentUriPrefix), Long.parseLong(docId));
+    if (docId.startsWith("raw:")) {
+      return docId.replaceFirst("raw:", "");
+    }
+    String[] contentUriPrefixesToTry =
+        new String[] {"content://downloads/public_downloads", "content://downloads/my_downloads"};
+    for (String contentUriPrefix : contentUriPrefixesToTry) {
+      try {
+        final Uri contentUri =
+            ContentUris.withAppendedId(Uri.parse(contentUriPrefix), Long.parseLong(docId));
 
-          return getDataColumn(context, contentUri, null, null);
-        } catch (NumberFormatException e) {
-          //In Android 8 and Android P the id is not a number
-          return uri.getPath().replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "");
-        }
-      }
-    } else {
-      if (docId.startsWith("raw:")) {
-        return docId.replaceFirst("raw:", "");
-      }
-
-      Uri contentUri =
-          ContentUris.withAppendedId(
-              Uri.parse("content://downloads/public_downloads"), Long.parseLong(docId));
-
-      if (contentUri != null) {
         return getDataColumn(context, contentUri, null, null);
+      } catch (NumberFormatException e) {
+        //In Android 8 and Android P the id is not a number
+        return uri.getPath().replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "");
       }
     }
+
     return null;
   }
 
@@ -168,21 +156,29 @@ public class PathUtils {
     selection = "_id=?";
     selectionArgs = new String[] {split[1]};
 
-    return getDataColumn(context, contentUri, selection, selectionArgs);
+    if (contentUri != null) {
+      return contentUri + "/" + getDataColumn(context, contentUri, selection, selectionArgs);
+    }
+
+    return null;
   }
 
-  private static boolean fileExists(String filePath) {
-    return new File(filePath).exists();
+  @VisibleForTesting
+  static boolean fileExists(String filePath) {
+    File file = new File(filePath);
+    return file.exists();
   }
 
   @Nullable
-  private static String getPathFromExtSD(@NonNull String[] pathData) {
+  private static String getPathFromExtSD(Uri uri, Context context, @NonNull String[] pathData) {
     final String type = pathData[0];
-    final String relativePath = "/" + pathData[1];
+    final String relativePath = "/" + pathData[1] + "/";
     String fullPath;
+    String fileName =
+        getFileName(uri, context, new String[] {MediaStore.MediaColumns.DISPLAY_NAME});
 
-    if ("primary".equalsIgnoreCase(type)) {
-      fullPath = Environment.getExternalStorageDirectory() + relativePath;
+    if (type.equalsIgnoreCase("primary")) {
+      fullPath = Environment.getExternalStorageDirectory() + relativePath + fileName;
       if (fileExists(fullPath)) {
         return fullPath;
       }
