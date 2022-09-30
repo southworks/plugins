@@ -47,25 +47,48 @@ class DialogWrapper {
   }
 
   int _lastResult = S_OK;
+
   // ignore: unused_field
   final IFileDialogControllerFactory _fileDialogControllerFactory;
+
   // ignore: unused_field
   final IFileDialogFactory _fileDialogFactory;
+
   // ignore: unused_field
   final DialogMode _dialogMode;
+
   // ignore: unused_field
   final bool _isOpenDialog;
+
   // ignore: unused_field
   bool _openingDirectory = false;
+
   // ignore: unused_field
   late FileDialogController _dialogController;
 
   /// Returns the result of the last Win32 API call related to this object.
   int get lastResult => _lastResult;
 
-  /// Attempts to set the default folder for the dialog to |path|,
-  /// if it exists.
-  void setFolder(String path) {}
+  /// Attempts to set the default folder for the dialog to [path], if it exists.
+  void setFolder(String path) {
+    if (path == null || path.isEmpty) {
+      return;
+    }
+
+    using((Arena arena) {
+      final Pointer<GUID> ptrGuid = GUIDFromString(IID_IShellItem);
+      final Pointer<Pointer<COMObject>> ptrPath = arena<Pointer<COMObject>>();
+      // TODO(eugeniorossetto): This won't work on a test environment.
+      _lastResult =
+          SHCreateItemFromParsingName(TEXT(path), nullptr, ptrGuid, ptrPath);
+
+      if (!SUCCEEDED(_lastResult)) {
+        return;
+      }
+
+      _dialogController.setFolder(ptrPath.value);
+    });
+  }
 
   /// Sets the file name that is initially shown in the dialog.
   void setFileName(String name) {
