@@ -78,9 +78,9 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     return pathList?.map((String path) => XFile(path)).toList() ?? <XFile>[];
   }
 
-  // We can't currently set the Confirm Button Text
-  // For references, please check the following link:
-  // https://developer.android.com/reference/android/content/Intent#ACTION_OPEN_DOCUMENT_TREE
+  /// Android doesn't currently support to set the Confirm Button Text
+  /// For references, please check the following link:
+  /// https://developer.android.com/reference/android/content/Intent#ACTION_OPEN_DOCUMENT_TREE
   @override
   Future<String?> getDirectoryPath({
     String? initialDirectory,
@@ -94,11 +94,11 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     );
   }
 
-  // We can't currently set the Confirm Button Text
-  // For references, please check the following link:
-  // https://developer.android.com/reference/android/content/Intent#ACTION_CREATE_DOCUMENT
-  // As for MIME types, Android handles the save Intent quite diferently than a desktop OS,
-  // 
+  /// Android doesn't currently support to set the Confirm Button Text
+  /// As for MIME types, Android handles the save Intent quite diferently than a desktop OS,
+  /// and doesn't get a list of types to filter in the save action.
+  /// For references, please check the following link:
+  /// https://developer.android.com/reference/android/content/Intent#ACTION_CREATE_DOCUMENT
   @override
   Future<String?> getSavePath({
     List<XTypeGroup>? acceptedTypeGroups,

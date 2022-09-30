@@ -15,7 +15,10 @@ import java.util.Map;
 
 public class TestHelpers {
   public static MethodCall buildMethodCall(
-      String method, @Nullable String initialDirectory, @Nullable String confirmButtonText, @Nullable String suggestedName) {
+      String method,
+      @Nullable String initialDirectory,
+      @Nullable String confirmButtonText,
+      @Nullable String suggestedName) {
     final Map<String, Object> arguments = new HashMap<>();
     if (initialDirectory != null) {
       arguments.put(_initialDirectory, initialDirectory);
