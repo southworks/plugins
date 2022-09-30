@@ -96,8 +96,7 @@ public class FileSelectorPluginTest {
   }
 
   @Test
-  public void
-  onMethodCall_GetSavePath_WhenCalledWithoutSuggestedName_InvokesSuccessfully() {
+  public void onMethodCall_GetSavePath_WhenCalledWithoutSuggestedName_InvokesSuccessfully() {
     MethodCall call = buildMethodCall(METHOD_GET_SAVE_PATH, null, null, null);
     plugin.onMethodCall(call, mockResult);
     verify(mockFileSelectorDelegate).getSavePath(eq(call), any());

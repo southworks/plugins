@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -39,13 +38,13 @@ public class FileSelectorDelegate
     implements PluginRegistry.ActivityResultListener,
         PluginRegistry.RequestPermissionsResultListener {
   @VisibleForTesting static final int REQUEST_CODE_GET_DIRECTORY_PATH = 2342;
-  @VisibleForTesting static final int REQUEST_CODE_GET_SAVE_PATH = 2343;
+  @VisibleForTesting static final int REQUEST_CODE_GET_SAVE_PATH = 2344;
 
   /** Constants for key types in the dart invoke methods */
   @VisibleForTesting static final String _confirmButtonText = "confirmButtonText";
 
   @VisibleForTesting static final String _initialDirectory = "initialDirectory";
-  @VisibleForTesting static final  String _suggestedNameKey = "suggestedName";
+  @VisibleForTesting static final String _suggestedNameKey = "suggestedName";
 
   private final Activity activity;
 
@@ -110,7 +109,8 @@ public class FileSelectorDelegate
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
-  private void launchGetSavePath(@Nullable String initialDirectory, @Nullable String suggestedName) {
+  private void launchGetSavePath(
+      @Nullable String initialDirectory, @Nullable String suggestedName) {
     Intent getSavePathIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
     getSavePathIntent.setType("*/*");
 
@@ -158,7 +158,7 @@ public class FileSelectorDelegate
   private void handleGetSavePathResult(int resultCode, Intent data) {
     if (resultCode == Activity.RESULT_OK && data != null) {
       Uri path = data.getData();
-      String fullPath = PathUtils.getPath(path, this.activity);
+      String fullPath = PathUtils.getSavePathUri(path, this.activity);
       handleGetSavePathResult(fullPath);
       return;
     }
@@ -169,6 +169,7 @@ public class FileSelectorDelegate
   private void handleGetDirectoryPathResult(String path) {
     finishWithSuccess(path);
   }
+
   private void handleGetSavePathResult(String path) {
     finishWithSuccess(path);
   }
