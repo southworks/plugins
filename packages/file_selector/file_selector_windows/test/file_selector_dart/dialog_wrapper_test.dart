@@ -31,17 +31,35 @@ void main() {
 
   setUp(() {});
 
-  tearDown(() {});
+  tearDown(() {
+    fakeFileOpenDialog.resetCounters();
+  });
 
-  test('setFileName call dialog setFileName', () {
+  test('setFileName should call dialog setFileName', () {
     const String folderName = 'Documents';
     dialogWrapper.setFileName(folderName);
     expect(fakeFileOpenDialog.setFileNameCalledTimes(), 1);
   });
 
-  test('setOkButtonLabel call dialog setOkButtonLabel', () {
+  test('setOkButtonLabel should call dialog setOkButtonLabel', () {
     const String okButtonLabel = 'Confirm';
     dialogWrapper.setOkButtonLabel(okButtonLabel);
     expect(fakeFileOpenDialog.setOkButtonLabelCalledTimes(), 1);
+  });
+
+  test('addOptions should call dialog getOptions and setOptions', () {
+    const int newOptions = 0;
+    dialogWrapper.addOptions(newOptions);
+    expect(fakeFileOpenDialog.getOptionsCalledTimes(), 1);
+    expect(fakeFileOpenDialog.setOptionsCalledTimes(), 1);
+  });
+
+  test('addOptions should not call setOptions if getOptions returns an error',
+      () {
+    const int newOptions = 0;
+    fakeFileOpenDialog.mockFailure();
+    dialogWrapper.addOptions(newOptions);
+    expect(fakeFileOpenDialog.getOptionsCalledTimes(), 1);
+    expect(fakeFileOpenDialog.setOptionsCalledTimes(), 0);
   });
 }
