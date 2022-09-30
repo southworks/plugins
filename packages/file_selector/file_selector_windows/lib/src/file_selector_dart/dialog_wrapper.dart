@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ffi';
+
+import 'package:ffi/ffi.dart';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
@@ -53,6 +56,8 @@ class DialogWrapper {
   // ignore: unused_field
   final bool _isOpenDialog;
   // ignore: unused_field
+  bool _openingDirectory = false;
+  // ignore: unused_field
   late FileDialogController _dialogController;
 
   /// Returns the result of the last Win32 API call related to this object.
@@ -72,8 +77,26 @@ class DialogWrapper {
     _dialogController.setOkButtonLabel(label);
   }
 
-  /// Adds the given options to the dialog's current option set.
-  void addOptions(FILEOPENDIALOGOPTIONS newOptions) {}
+  /// Adds the given options to the dialog's current [options](https://pub.dev/documentation/win32/latest/winrt/FILEOPENDIALOGOPTIONS-class.html).
+  /// Both are bitfields.
+  void addOptions(int newOptions) {
+    using((Arena arena) {
+      final Pointer<Uint32> currentOptions = arena<Uint32>();
+      _lastResult = _dialogController.getOptions(currentOptions);
+      if (!SUCCEEDED(_lastResult)) {
+        return;
+      }
+
+      currentOptions.value |= newOptions;
+
+      if (currentOptions.value & FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS ==
+          currentOptions.value) {
+        _openingDirectory = true;
+      }
+
+      _lastResult = _dialogController.setOptions(currentOptions.value);
+    });
+  }
 
   /// Sets the filters for allowed file types to select.
   /// filters -> std::optional<EncodableList>
@@ -82,4 +105,21 @@ class DialogWrapper {
   /// Displays the dialog, and returns the selected files, or nullopt on error.
   /// std::optional<EncodableList>
   void show(HWND parentWindow) {}
+
+  /// Returns the path for [shellItem] as a UTF-8 string, or an empty string on
+  /// failure.
+  String getPathForShellItem(IShellItem shellItem) {
+    // TODO(eugeniorossetto): Review this implementation.
+    return using((Arena arena) {
+      final Pointer<Pointer<Utf16>> ptrPath = arena<Pointer<Utf16>>();
+
+      if (!SUCCEEDED(
+          shellItem.getDisplayName(SIGDN.SIGDN_FILESYSPATH, ptrPath.cast()))) {
+        return '';
+      }
+
+      final Pointer<Utf16> path = Pointer<Utf16>.fromAddress(ptrPath.address);
+      return path.toDartString();
+    });
+  }
 }
