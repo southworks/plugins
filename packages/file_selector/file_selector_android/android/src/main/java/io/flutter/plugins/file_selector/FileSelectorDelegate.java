@@ -5,6 +5,7 @@
 package io.flutter.plugins.file_selector;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -16,7 +17,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 /**
@@ -164,16 +164,24 @@ public class FileSelectorDelegate
 
   @VisibleForTesting
   void handleOpenFileResult(int resultCode, Intent data) {
-    if (resultCode == Activity.RESULT_OK && data != null) {
-      Uri uri = data.getData();
-      String filePath = PathUtils.copyFileToInternalStorage(uri, this.activity, cacheFolder);
-      ArrayList<String> srcPaths = new ArrayList<>(Collections.singletonList(filePath));
-
-      handleActionResults(srcPaths);
+    if (resultCode != Activity.RESULT_OK || data == null) {
+      finishWithSuccess(null);
       return;
     }
 
-    finishWithSuccess(null);
+    ArrayList<Uri> uris = new ArrayList<>();
+    ClipData clipData = data.getClipData();
+    if (clipData != null) {
+      int itemCount = clipData.getItemCount();
+      for (int i = 0; i < itemCount; i++) {
+        uris.add(clipData.getItemAt(i).getUri());
+      }
+    } else {
+      uris.add(data.getData());
+    }
+
+    ArrayList<String> srcPaths = PathUtils.copyFileToInternalStorage(uris, this.activity, cacheFolder);
+    handleActionResults(srcPaths);
   }
 
   private void handleGetDirectoryPathResult(String path) {
@@ -223,11 +231,19 @@ public class FileSelectorDelegate
     pendingResult = null;
   }
 
-  private String[] getMimeTypes(ArrayList acceptedTypeGroups) {
-    HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
-    ArrayList<String> mimeTypesList = (ArrayList<String>) xTypeGroups.get("mimeTypes");
+  @VisibleForTesting
+  String[] getMimeTypes(ArrayList acceptedTypeGroups) {
+    ArrayList<String> mimeTypesList = new ArrayList<>();
+    for(Object acceptedType : acceptedTypeGroups) {
+      HashMap xTypeGroup = (HashMap) acceptedType;
+      ArrayList<String> types = (ArrayList<String>) xTypeGroup.get("mimeTypes");
+      mimeTypesList.addAll(types);
+    }
+    return mimeTypesList.toArray(new String[0]);
+/*
     String[] mimeTypes =
-        mimeTypesList == null ? new String[0] : mimeTypesList.toArray(new String[0]);
-    return mimeTypes;
+    mimeTypesList == null ? new String[0] : mimeTypesList.toArray(new String[0]);
+return mimeTypes;
+*/
   }
 }

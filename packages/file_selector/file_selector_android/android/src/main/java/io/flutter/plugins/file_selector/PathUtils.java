@@ -8,6 +8,8 @@ import androidx.annotation.VisibleForTesting;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @VisibleForTesting
 public class PathUtils {
@@ -31,38 +33,42 @@ public class PathUtils {
   }
 
   @VisibleForTesting
-  String copyFileToInternalStorage(Uri uri, Context context) {
+  ArrayList<String> copyFileToInternalStorage(ArrayList<Uri> uri, Context context) {
     return copyFileToInternalStorage(uri, context, "");
   }
 
-  public static String copyFileToInternalStorage(Uri uri, Context context, String cacheFolderName) {
+  public static ArrayList<String> copyFileToInternalStorage(ArrayList<Uri> uris, Context context, String cacheFolderName) {
+    ArrayList<String> absolutePaths = null;
     String newDirPath = context.getFilesDir() + "/" + cacheFolderName;
-    String name = getFileName(uri, context);
+    for(Uri uri : uris){
+      String name = getFileName(uri, context);
 
-    File output;
-    File dir = new File(newDirPath);
-    if (!dir.exists()) {
-      dir.mkdir();
-    }
-    output = new File(newDirPath + "/" + name);
-    try {
-      InputStream inputStream = context.getContentResolver().openInputStream(uri);
-      FileOutputStream outputStream = new FileOutputStream(output);
-      int read;
-      int bufferSize = 1024;
-      final byte[] buffers = new byte[bufferSize];
-      while ((read = inputStream.read(buffers)) != -1) {
-        outputStream.write(buffers, 0, read);
+      File output;
+      File dir = new File(newDirPath);
+      if (!dir.exists()) {
+        dir.mkdir();
       }
+      output = new File(newDirPath + "/" + name);
+      try {
+        InputStream inputStream = context.getContentResolver().openInputStream(uri);
+        FileOutputStream outputStream = new FileOutputStream(output);
+        int read;
+        int bufferSize = 1024;
+        final byte[] buffers = new byte[bufferSize];
+        while ((read = inputStream.read(buffers)) != -1) {
+          outputStream.write(buffers, 0, read);
+        }
 
-      inputStream.close();
-      outputStream.close();
+        inputStream.close();
+        outputStream.close();
 
-    } catch (Exception e) {
-      System.out.println("There was an error adding a file to the application cache");
+      } catch (Exception e) {
+        System.out.println("There was an error adding a file to the application cache");
+      }
+      absolutePaths.add(output.getAbsolutePath());
     }
 
-    return output.getAbsolutePath();
+    return absolutePaths;
   }
 
   @VisibleForTesting
