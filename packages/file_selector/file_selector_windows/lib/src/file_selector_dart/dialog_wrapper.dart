@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
 import 'dialog_mode.dart';
@@ -31,6 +32,17 @@ class DialogWrapper {
     }
   }
 
+  /// Creates a DialogWrapper for testing purposes.
+  @visibleForTesting
+  DialogWrapper.test(
+      FileDialogController dialogController,
+      this._fileDialogControllerFactory,
+      this._fileDialogFactory,
+      this._dialogMode,
+      this._isOpenDialog) {
+    _dialogController = dialogController;
+  }
+
   int _lastResult = S_OK;
   // ignore: unused_field
   final IFileDialogControllerFactory _fileDialogControllerFactory;
@@ -51,10 +63,14 @@ class DialogWrapper {
   void setFolder(String path) {}
 
   /// Sets the file name that is initially shown in the dialog.
-  void setFileName(String name) {}
+  void setFileName(String name) {
+    _dialogController.setFileName(name);
+  }
 
   /// Sets the label of the confirmation button.
-  void setOkButtonLabel(String label) {}
+  void setOkButtonLabel(String label) {
+    _dialogController.setOkButtonLabel(label);
+  }
 
   /// Adds the given options to the dialog's current option set.
   void addOptions(FILEOPENDIALOGOPTIONS newOptions) {}
