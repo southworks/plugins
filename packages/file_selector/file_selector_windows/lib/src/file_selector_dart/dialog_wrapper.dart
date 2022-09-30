@@ -6,6 +6,7 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'package:file_selector_windows/src/messages.g.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:win32/win32.dart';
 
@@ -48,17 +49,19 @@ class DialogWrapper {
 
   int _lastResult = S_OK;
 
-  // ignore: unused_field
   final IFileDialogControllerFactory _fileDialogControllerFactory;
 
   // ignore: unused_field
   final IFileDialogFactory _fileDialogFactory;
 
-  // ignore: unused_field
   final DialogMode _dialogMode;
 
   // ignore: unused_field
   final bool _isOpenDialog;
+
+  final String _allowAnyValue = 'Any';
+
+  final String _allowAnyExtension = '*.*';
 
   // ignore: unused_field
   bool _openingDirectory = false;
@@ -123,7 +126,47 @@ class DialogWrapper {
 
   /// Sets the filters for allowed file types to select.
   /// filters -> std::optional<EncodableList>
-  void setFileTypeFilters(List<XTypeGroup> filters) {}
+  void setFileTypeFilters(List<XTypeGroup> filters) {
+    final Map<String, String> filterSpecification = <String, String>{};
+
+    for (final XTypeGroup option in filters) {
+      if (option == null) {
+        continue;
+      }
+
+      final String? label = option.label;
+
+      if (option.allowsAny) {
+        filterSpecification[label ?? _allowAnyValue] = _allowAnyExtension;
+      }
+
+      // TODO(eugeniorossetto): review what happens when extensions is null.
+
+      String extensionsForLabel = '';
+      for (final String? extensionFile in option.extensions!) {
+        if (extensionFile != null) {
+          extensionsForLabel += '*.$extensionFile;';
+        }
+      }
+      filterSpecification[label ?? extensionsForLabel] = extensionsForLabel;
+    }
+
+    using((Arena arena) {
+      final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
+          arena<COMDLG_FILTERSPEC>(filterSpecification.length);
+
+      int index = 0;
+      for (final String key in filterSpecification.keys) {
+        registerFilterSpecification[index]
+          ..pszName = TEXT(key)
+          ..pszSpec = TEXT(filterSpecification[key]!);
+        index++;
+      }
+
+      _lastResult = _dialogController.setFileTypes(
+          filterSpecification.length, registerFilterSpecification);
+    });
+  }
 
   /// Displays the dialog, and returns the selected files, or nullopt on error.
   /// std::optional<EncodableList>
