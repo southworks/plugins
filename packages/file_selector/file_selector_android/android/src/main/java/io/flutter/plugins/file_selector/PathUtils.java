@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 @VisibleForTesting
 public class PathUtils {
@@ -33,42 +32,53 @@ public class PathUtils {
   }
 
   @VisibleForTesting
-  ArrayList<String> copyFileToInternalStorage(ArrayList<Uri> uri, Context context) {
-    return copyFileToInternalStorage(uri, context, "");
+  ArrayList<String> copyFilesToInternalStorage(ArrayList<Uri> uri, Context context) {
+    return copyFilesToInternalStorage(uri, context, "");
   }
 
-  public static ArrayList<String> copyFileToInternalStorage(ArrayList<Uri> uris, Context context, String cacheFolderName) {
-    ArrayList<String> absolutePaths = null;
+  public static ArrayList<String> copyFilesToInternalStorage(
+      ArrayList<Uri> uris, Context context, String cacheFolderName) {
+    ArrayList<String> absolutePaths = new ArrayList<>();
+
     String newDirPath = context.getFilesDir() + "/" + cacheFolderName;
-    for(Uri uri : uris){
+    createDirectoryIfNotExists(newDirPath);
+
+    for (Uri uri : uris) {
       String name = getFileName(uri, context);
-
-      File output;
-      File dir = new File(newDirPath);
-      if (!dir.exists()) {
-        dir.mkdir();
-      }
-      output = new File(newDirPath + "/" + name);
-      try {
-        InputStream inputStream = context.getContentResolver().openInputStream(uri);
-        FileOutputStream outputStream = new FileOutputStream(output);
-        int read;
-        int bufferSize = 1024;
-        final byte[] buffers = new byte[bufferSize];
-        while ((read = inputStream.read(buffers)) != -1) {
-          outputStream.write(buffers, 0, read);
-        }
-
-        inputStream.close();
-        outputStream.close();
-
-      } catch (Exception e) {
-        System.out.println("There was an error adding a file to the application cache");
-      }
+      File output = getFile(context, newDirPath, uri, name);
       absolutePaths.add(output.getAbsolutePath());
     }
 
     return absolutePaths;
+  }
+
+  private static File getFile(Context context, String newDirPath, Uri uri, String name) {
+    File output;
+    output = new File(newDirPath + "/" + name);
+    try {
+      InputStream inputStream = context.getContentResolver().openInputStream(uri);
+      FileOutputStream outputStream = new FileOutputStream(output);
+      int read;
+      int bufferSize = 1024;
+      final byte[] buffers = new byte[bufferSize];
+      while ((read = inputStream.read(buffers)) != -1) {
+        outputStream.write(buffers, 0, read);
+      }
+
+      inputStream.close();
+      outputStream.close();
+
+    } catch (Exception e) {
+      System.out.println("There was an error adding a file to the application cache");
+    }
+    return output;
+  }
+
+  private static void createDirectoryIfNotExists(String newDirPath) {
+    File dir = new File(newDirPath);
+    if (!dir.exists()) {
+      dir.mkdir();
+    }
   }
 
   @VisibleForTesting

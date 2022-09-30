@@ -50,6 +50,8 @@ public class FileSelectorDelegate
   @VisibleForTesting static final String _multiple = "multiple";
   @VisibleForTesting static String cacheFolder = "file_selector";
 
+  @VisibleForTesting Intent openFileIntent = new Intent();
+
   private MethodChannel.Result pendingResult;
   private MethodCall methodCall;
   private final Activity activity;
@@ -136,7 +138,7 @@ public class FileSelectorDelegate
 
   @VisibleForTesting
   void launchOpenFile(boolean isMultipleSelection, ArrayList acceptedTypeGroups) {
-    Intent openFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
+    openFileIntent.setAction(Intent.ACTION_GET_CONTENT);
     openFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
     openFileIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultipleSelection);
     openFileIntent.setType("*/*");
@@ -169,26 +171,19 @@ public class FileSelectorDelegate
       return;
     }
 
-    ArrayList<Uri> uris = new ArrayList<>();
-    ClipData clipData = data.getClipData();
-    if (clipData != null) {
-      int itemCount = clipData.getItemCount();
-      for (int i = 0; i < itemCount; i++) {
-        uris.add(clipData.getItemAt(i).getUri());
-      }
-    } else {
-      uris.add(data.getData());
-    }
+    ArrayList<Uri> uris = uriHandler(data);
 
-    ArrayList<String> srcPaths = PathUtils.copyFileToInternalStorage(uris, this.activity, cacheFolder);
-    handleActionResults(srcPaths);
+    ArrayList<String> srcPaths =
+        PathUtils.copyFilesToInternalStorage(uris, this.activity, cacheFolder);
+    handleOpenFileActionResults(srcPaths);
   }
 
   private void handleGetDirectoryPathResult(String path) {
     finishWithSuccess(path);
   }
 
-  private void handleActionResults(ArrayList<String> srcPaths) {
+  @VisibleForTesting
+  void handleOpenFileActionResults(ArrayList<String> srcPaths) {
     finishWithListSuccess(srcPaths);
   }
 
@@ -209,7 +204,8 @@ public class FileSelectorDelegate
     clearMethodCallAndResult();
   }
 
-  private void finishWithListSuccess(ArrayList<String> srcPaths) {
+  @VisibleForTesting
+  void finishWithListSuccess(ArrayList<String> srcPaths) {
     if (pendingResult == null) {
       return;
     }
@@ -226,7 +222,8 @@ public class FileSelectorDelegate
     clearMethodCallAndResult();
   }
 
-  private void clearMethodCallAndResult() {
+  @VisibleForTesting
+  void clearMethodCallAndResult() {
     methodCall = null;
     pendingResult = null;
   }
@@ -234,16 +231,26 @@ public class FileSelectorDelegate
   @VisibleForTesting
   String[] getMimeTypes(ArrayList acceptedTypeGroups) {
     ArrayList<String> mimeTypesList = new ArrayList<>();
-    for(Object acceptedType : acceptedTypeGroups) {
+    for (Object acceptedType : acceptedTypeGroups) {
       HashMap xTypeGroup = (HashMap) acceptedType;
       ArrayList<String> types = (ArrayList<String>) xTypeGroup.get("mimeTypes");
-      mimeTypesList.addAll(types);
+      if (types != null) mimeTypesList.addAll(types);
     }
     return mimeTypesList.toArray(new String[0]);
-/*
-    String[] mimeTypes =
-    mimeTypesList == null ? new String[0] : mimeTypesList.toArray(new String[0]);
-return mimeTypes;
-*/
+  }
+
+  @VisibleForTesting
+  ArrayList<Uri> uriHandler(Intent data) {
+    ArrayList<Uri> uris = new ArrayList<>();
+    ClipData clipData = data.getClipData();
+    if (clipData != null) {
+      int itemCount = clipData.getItemCount();
+      for (int i = 0; i < itemCount; i++) {
+        uris.add(clipData.getItemAt(i).getUri());
+      }
+    } else {
+      uris.add(data.getData());
+    }
+    return uris;
   }
 }

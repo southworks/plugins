@@ -1,5 +1,6 @@
 package io.flutter.plugins.file_selector;
 
+import static io.flutter.plugins.file_selector.TestHelpers.setMockUris;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -13,6 +14,8 @@ import android.provider.OpenableColumns;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,6 +31,7 @@ import org.mockito.Spy;
 public class PathUtilsTest {
   static TemporaryFolder folder;
   static final String fileName = "FileName";
+  static final String folderName = "FolderName";
   int bufferSize = 1024;
   final byte[] fakeByte = new byte[bufferSize];
   PathUtils pathUtils;
@@ -81,27 +85,50 @@ public class PathUtilsTest {
 
   @Test
   public void getFileName_shouldReturnTheFileName() {
-    final String actualResult = pathUtils.getFileName(mockUri, mockActivity);
+    final String actualResult = PathUtils.getFileName(mockUri, mockActivity);
 
     Assert.assertEquals(fileName, actualResult);
   }
 
   @Test
   public void
-      copyFileToInternalStorage_whenCacheFolderNameIsNotPassed_shouldInvokeCopyFileToInternalStorageWithEmptyString() {
+      copyFilesToInternalStorage_whenCacheFolderNameIsNotPassed_shouldInvokeCopyFileToInternalStorageWithEmptyString() {
     try (MockedStatic<PathUtils> mockedPathUtils = Mockito.mockStatic(PathUtils.class)) {
-      spyPathUtils.copyFileToInternalStorage(mockUri, mockActivity);
+      spyPathUtils.copyFilesToInternalStorage(setMockUris(1, mockUri), mockActivity);
 
       mockedPathUtils.verify(
-          () -> PathUtils.copyFileToInternalStorage(mockUri, mockActivity, ""), times(1));
+          () -> PathUtils.copyFilesToInternalStorage(setMockUris(1, mockUri), mockActivity, ""),
+          times(1));
     }
   }
 
   @Test
   public void
-      copyFileToInternalStorage_whenExecutedSuccessfully_shouldReturnAbsolutePathOfAddedFolder() {
-    String expectedResult = folder.getRoot() + "\\" + fileName;
-    final String actualResult = pathUtils.copyFileToInternalStorage(mockUri, mockActivity);
+      copyFilesToInternalStorage_whenMoreThanOneUriIsReceived_shouldReturnSameNumberOfAbsolutePaths() {
+    Integer numberOfPickedFiles = 3;
+
+    ArrayList<Uri> fakeUris = setMockUris(numberOfPickedFiles, mockUri);
+    ArrayList<String> expectedResult = new ArrayList();
+    String absolutPath = folder.getRoot() + "\\" + folderName + "\\" + fileName;
+    expectedResult.add(absolutPath);
+    expectedResult.add(absolutPath);
+    expectedResult.add(absolutPath);
+
+    ArrayList actualResult =
+        PathUtils.copyFilesToInternalStorage(fakeUris, mockActivity, folderName);
+
+    Assert.assertEquals(expectedResult, actualResult);
+    Assert.assertEquals(expectedResult.size(), actualResult.size());
+  }
+
+  @Test
+  public void
+      copyFilesToInternalStorage_whenExecutedSuccessfully_shouldReturnAbsolutePathOfAddedFolder() {
+    ArrayList<String> expectedResult =
+        new ArrayList<>(
+            Collections.singletonList(folder.getRoot() + "\\" + folderName + "\\" + fileName));
+    final ArrayList<String> actualResult =
+        PathUtils.copyFilesToInternalStorage(setMockUris(1, mockUri), mockActivity, folderName);
 
     Assert.assertEquals(expectedResult, actualResult);
   }

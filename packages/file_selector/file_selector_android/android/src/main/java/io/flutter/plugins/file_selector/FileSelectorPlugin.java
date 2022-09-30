@@ -127,13 +127,4 @@ public class FileSelectorPlugin
         throw new IllegalArgumentException("Unknown method " + call.method);
     }
   }
-
-  @VisibleForTesting
-  private String[] getMimeTypes(HashMap arguments) {
-    ArrayList acceptedTypeGroups = (ArrayList) arguments.get("acceptedTypeGroups");
-    HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
-    ArrayList<String> mimeTypesList = (ArrayList<String>) xTypeGroups.get("mimeTypes");
-
-    return mimeTypesList.toArray(new String[0]);
-  }
 }

@@ -9,6 +9,7 @@ import static io.flutter.plugins.file_selector.FileSelectorDelegate._confirmButt
 import static io.flutter.plugins.file_selector.FileSelectorDelegate._initialDirectory;
 import static io.flutter.plugins.file_selector.FileSelectorDelegate._multiple;
 
+import android.net.Uri;
 import androidx.annotation.Nullable;
 import io.flutter.plugin.common.MethodCall;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TestHelpers {
+
   public static MethodCall buildMethodCall(
       String method,
       @Nullable String initialDirectory,
@@ -39,5 +41,14 @@ public class TestHelpers {
 
   public static MethodCall buildMethodCall(String method) {
     return new MethodCall(method, null);
+  }
+
+  public static ArrayList<Uri> setMockUris(int uriCount, Uri mockUri) {
+    ArrayList<Uri> mockUris = new ArrayList<>();
+
+    for (int i = 0; i < uriCount; i++) {
+      mockUris.add(mockUri);
+    }
+    return mockUris;
   }
 }
