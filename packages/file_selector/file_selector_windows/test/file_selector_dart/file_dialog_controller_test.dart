@@ -61,8 +61,8 @@ void main() {
   test('getOptions should call dialog getOptions', () {
     final Pointer<Uint32> ptrOptions = calloc<Uint32>();
     fileDialogController.getOptions(ptrOptions);
-    expect(fakeFileOpenDialog.getOptionsCalledTimes(), 1);
     free(ptrOptions);
+    expect(fakeFileOpenDialog.getOptionsCalledTimes(), 1);
   });
 
   test('setOptions should call dialog setOptions', () {
@@ -74,26 +74,26 @@ void main() {
     final Pointer<Pointer<COMObject>> ptrCOMObject =
         calloc<Pointer<COMObject>>();
     fileDialogController.getResult(ptrCOMObject);
-    expect(fakeFileOpenDialog.getResultCalledTimes(), 1);
     free(ptrCOMObject);
+    expect(fakeFileOpenDialog.getResultCalledTimes(), 1);
   });
 
   test('getResults should call the from method of the factory', () {
     final Pointer<Pointer<COMObject>> ptrCOMObject =
         calloc<Pointer<COMObject>>();
     fileDialogController.getResults(ptrCOMObject);
-    expect(fakeIFileOpenDialogFactory.getFromCalledTimes(), 1);
     free(ptrCOMObject);
+    expect(fakeIFileOpenDialogFactory.getFromCalledTimes(), 1);
   });
 
   test('getResults should call dialog getResults', () {
     final Pointer<Pointer<COMObject>> ptrCOMObject =
         calloc<Pointer<COMObject>>();
     fileDialogController.getResults(ptrCOMObject);
+    free(ptrCOMObject);
     expect(
         fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getResultsCalledTimes(),
         1);
-    free(ptrCOMObject);
   });
 
   test(
@@ -102,8 +102,8 @@ void main() {
     final Pointer<Pointer<COMObject>> ptrCOMObject =
         calloc<Pointer<COMObject>>();
     fakeIFileOpenDialogFactory.mockFailure();
-    expect(fileDialogController.getResults(ptrCOMObject), E_FAIL);
     free(ptrCOMObject);
+    expect(fileDialogController.getResults(ptrCOMObject), E_FAIL);
   });
 
   test(
@@ -112,20 +112,20 @@ void main() {
     final Pointer<Pointer<COMObject>> ptrCOMObject =
         calloc<Pointer<COMObject>>();
     fakeIFileOpenDialogFactory.fakeIFileOpenDialog.mockFailure();
+    free(ptrCOMObject);
     expect(fileDialogController.getResults(ptrCOMObject), E_FAIL);
     expect(
         fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getReleaseCalledTimes(),
         1);
-    free(ptrCOMObject);
   });
 
   test('getResults should call dialog release', () {
     final Pointer<Pointer<COMObject>> ptrCOMObject =
         calloc<Pointer<COMObject>>();
     fileDialogController.getResults(ptrCOMObject);
+    free(ptrCOMObject);
     expect(
         fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getReleaseCalledTimes(),
         1);
-    free(ptrCOMObject);
   });
 }
