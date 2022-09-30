@@ -23,6 +23,8 @@ public class PathUtils {
   static final String providersDownloadsDocuments = "com.android.providers.downloads.documents";
   static final String providersMediaDocuments = "com.android.providers.media.documents";
 
+  /** Given a projection, returns the file name for the uri
+   using the content resolver to avoid unwanted parsing. */
   public static String getFileName(Uri uri, @NonNull Context context, String[] projection) {
     Cursor returnCursor = context.getContentResolver().query(uri, projection, null, null, null);
 
@@ -72,6 +74,13 @@ public class PathUtils {
     return output.getAbsolutePath();
   }
 
+  /**
+  * Returns an absolute path for the file to be saved from
+  * the 3 possible content paths to return.
+  * If none of these match, then we will create a copy
+  * of the created file in the internal storage and
+  * return that path.
+  */
   @VisibleForTesting
   @Nullable
   public static String getSavePathUri(final Uri uri, Context context) {

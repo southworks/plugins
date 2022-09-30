@@ -43,8 +43,6 @@ public class FileSelectorDelegateTest {
   public void setUp() {
     MockitoAnnotations.openMocks(this);
 
-    //    spyFileSelectorDelegate.cacheFolder = fakeFolder;
-
     spyFileSelectorDelegate = spy(new FileSelectorDelegate(mockActivity));
     when(mockIntent.getData()).thenReturn(mockUri);
   }
