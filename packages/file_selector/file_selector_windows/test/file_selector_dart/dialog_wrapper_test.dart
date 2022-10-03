@@ -81,20 +81,82 @@ void main() {
   });
 
   test('setFileTypeFilters should call setFileTypes with Any by default', () {
+    const String expectedPszName = 'Any';
+    const String expectedPszSpec = '*.*';
     final List<XTypeGroup> typeGroups = <XTypeGroup>[];
-    when(mockFileDialogController.setFileTypes(1, any))
-        .thenAnswer((Invocation realInvocation) {
-      final Pointer<COMDLG_FILTERSPEC> pointer =
-          realInvocation.positionalArguments[1] as Pointer<COMDLG_FILTERSPEC>;
-
-      return pointer[0].pszSpec.toDartString() == '*.*' &&
-              pointer[0].pszName.toDartString() == 'Any'
-          ? S_OK
-          : E_FAIL;
-    });
+    mockSetFileTypesConditions(
+        mockFileDialogController, expectedPszName, expectedPszSpec);
     dialogWrapper.setFileTypeFilters(typeGroups);
     verify(mockFileDialogController.setFileTypes(any, any)).called(1);
     expect(dialogWrapper.lastResult, S_OK);
+  });
+
+  test('setFileTypeFilters should call setFileTypes with a label', () {
+    const String label = 'All files';
+    const String expectedPszSpec = '*.*';
+    final List<XTypeGroup> typeGroups = <XTypeGroup>[
+      XTypeGroup(label: label),
+    ];
+    mockSetFileTypesConditions(
+        mockFileDialogController, label, expectedPszSpec);
+    dialogWrapper.setFileTypeFilters(typeGroups);
+    verify(mockFileDialogController.setFileTypes(any, any)).called(1);
+    expect(dialogWrapper.lastResult, S_OK);
+  });
+
+  test('setFileTypeFilters should call setFileTypes with extensions', () {
+    const String jpg = 'jpg';
+    const String png = 'png';
+    const String imageLabel = 'Image';
+    const String txt = 'txt';
+    const String json = 'json';
+    const String textLabel = 'Text';
+    final Map<String, String> filterSpecification = <String, String>{
+      imageLabel: '*.$jpg;*.$png;',
+      textLabel: '*.$txt;*.$json;',
+    };
+    final List<XTypeGroup> typeGroups = <XTypeGroup>[
+      XTypeGroup(extensions: <String>[jpg, png], label: imageLabel),
+      XTypeGroup(extensions: <String>[txt, json], label: textLabel),
+    ];
+    when(mockFileDialogController.setFileTypes(any, any))
+        .thenAnswer((Invocation realInvocation) {
+      int result = S_OK;
+      final Pointer<COMDLG_FILTERSPEC> pointer =
+          realInvocation.positionalArguments[1] as Pointer<COMDLG_FILTERSPEC>;
+
+      int index = 0;
+      for (final String key in filterSpecification.keys) {
+        result += pointer[index].pszName.toDartString() == key &&
+                pointer[index].pszSpec.toDartString() ==
+                    filterSpecification[key]
+            ? S_OK
+            : E_FAIL;
+        index++;
+      }
+
+      return result;
+    });
+
+    dialogWrapper.setFileTypeFilters(typeGroups);
+    verify(mockFileDialogController.setFileTypes(any, any)).called(1);
+    expect(dialogWrapper.lastResult, S_OK);
+  });
+}
+
+void mockSetFileTypesConditions(
+    MockFileDialogController mockFileDialogController,
+    String expectedPszName,
+    String expectedPszSpec) {
+  when(mockFileDialogController.setFileTypes(1, any))
+      .thenAnswer((Invocation realInvocation) {
+    final Pointer<COMDLG_FILTERSPEC> pointer =
+        realInvocation.positionalArguments[1] as Pointer<COMDLG_FILTERSPEC>;
+
+    return pointer[0].pszName.toDartString() == expectedPszName &&
+            pointer[0].pszSpec.toDartString() == expectedPszSpec
+        ? S_OK
+        : E_FAIL;
   });
 }
 
