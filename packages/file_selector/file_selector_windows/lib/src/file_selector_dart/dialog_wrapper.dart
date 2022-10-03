@@ -127,43 +127,37 @@ class DialogWrapper {
   void setFileTypeFilters(List<XTypeGroup> filters) {
     final Map<String, String> filterSpecification = <String, String>{};
 
-    for (final XTypeGroup option in filters) {
-      if (option == null) {
-        continue;
-      }
-
-      final String? label = option.label;
-
-      if (option.allowsAny) {
-        filterSpecification[label ?? _allowAnyValue] = _allowAnyExtension;
-      }
-
-      // TODO(eugeniorossetto): review what happens when extensions is null.
-
-      String extensionsForLabel = '';
-      for (final String? extensionFile in option.extensions!) {
-        if (extensionFile != null) {
-          extensionsForLabel += '*.$extensionFile;';
+    if (filters.isEmpty) {
+      filterSpecification[_allowAnyValue] = _allowAnyExtension;
+    } else {
+      for (final XTypeGroup option in filters) {
+        final String? label = option.label;
+        if (option.allowsAny || option.extensions!.isEmpty) {
+          filterSpecification[label ?? _allowAnyValue] = _allowAnyExtension;
+        } else {
+          String extensionsForLabel = '';
+          for (final String extensionFile in option.extensions!) {
+            extensionsForLabel += '*.$extensionFile;';
+          }
+          filterSpecification[label ?? extensionsForLabel] = extensionsForLabel;
         }
       }
-      filterSpecification[label ?? extensionsForLabel] = extensionsForLabel;
     }
 
-    using((Arena arena) {
-      final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
-          arena<COMDLG_FILTERSPEC>(filterSpecification.length);
+    final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
+        malloc<COMDLG_FILTERSPEC>(filterSpecification.length);
 
-      int index = 0;
-      for (final String key in filterSpecification.keys) {
-        registerFilterSpecification[index]
-          ..pszName = TEXT(key)
-          ..pszSpec = TEXT(filterSpecification[key]!);
-        index++;
-      }
+    int index = 0;
+    for (final String key in filterSpecification.keys) {
+      registerFilterSpecification[index]
+        ..pszName = TEXT(key)
+        ..pszSpec = TEXT(filterSpecification[key]!);
+      index++;
+    }
 
-      _lastResult = _dialogController.setFileTypes(
-          filterSpecification.length, registerFilterSpecification);
-    });
+    _lastResult = _dialogController.setFileTypes(
+        filterSpecification.length, registerFilterSpecification);
+    free(registerFilterSpecification);
   }
 
   /// Displays the dialog, and returns the selected files, or nullopt on error.

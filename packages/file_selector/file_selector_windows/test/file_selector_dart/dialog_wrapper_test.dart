@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ffi';
+
+import 'package:ffi/ffi.dart';
+import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:file_selector_windows/src/file_selector_dart/dialog_mode.dart';
 import 'package:file_selector_windows/src/file_selector_dart/dialog_wrapper.dart';
 import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller.dart';
@@ -63,6 +67,35 @@ void main() {
     dialogWrapper.addOptions(options);
     verifyNever(mockFileDialogController.setOptions(any));
   });
+
+  test(
+      'setFileTypeFilters should call setFileTypes with expected typeGroups count',
+      () {
+    final List<XTypeGroup> typeGroups = <XTypeGroup>[
+      XTypeGroup(extensions: <String>['jpg', 'png'], label: 'Images'),
+      XTypeGroup(extensions: <String>['txt', 'json'], label: 'Text'),
+    ];
+    dialogWrapper.setFileTypeFilters(typeGroups);
+    verify(mockFileDialogController.setFileTypes(typeGroups.length, any))
+        .called(1);
+  });
+
+  test('setFileTypeFilters should call setFileTypes with Any by default', () {
+    final List<XTypeGroup> typeGroups = <XTypeGroup>[];
+    when(mockFileDialogController.setFileTypes(1, any))
+        .thenAnswer((Invocation realInvocation) {
+      final Pointer<COMDLG_FILTERSPEC> pointer =
+          realInvocation.positionalArguments[1] as Pointer<COMDLG_FILTERSPEC>;
+
+      return pointer[0].pszSpec.toDartString() == '*.*' &&
+              pointer[0].pszName.toDartString() == 'Any'
+          ? S_OK
+          : E_FAIL;
+    });
+    dialogWrapper.setFileTypeFilters(typeGroups);
+    verify(mockFileDialogController.setFileTypes(any, any)).called(1);
+    expect(dialogWrapper.lastResult, S_OK);
+  });
 }
 
 void setDefaultMocks(
@@ -72,5 +105,7 @@ void setDefaultMocks(
   when(mockFileDialogController.setOkButtonLabel(any))
       .thenReturn(defaultReturnValue);
   when(mockFileDialogController.setFileName(any))
+      .thenReturn(defaultReturnValue);
+  when(mockFileDialogController.setFileTypes(any, any))
       .thenReturn(defaultReturnValue);
 }
