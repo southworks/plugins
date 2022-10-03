@@ -11,6 +11,7 @@ import 'package:file_selector_windows/src/file_selector_dart/dialog_wrapper.dart
 import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller.dart';
 import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller_factory.dart';
 import 'package:file_selector_windows/src/file_selector_dart/ifile_dialog_factory.dart';
+import 'package:file_selector_windows/src/file_selector_dart/shell_win32_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -18,11 +19,12 @@ import 'package:win32/win32.dart';
 
 import 'dialog_wrapper_test.mocks.dart';
 
-@GenerateMocks(<Type>[FileDialogController])
+@GenerateMocks(<Type>[FileDialogController, ShellWin32Api])
 void main() {
   const int defaultReturnValue = S_OK;
   late final MockFileDialogController mockFileDialogController =
       MockFileDialogController();
+  late final MockShellWin32Api mockShellWin32Api = MockShellWin32Api();
   final FileDialogControllerFactory fileDialogControllerFactory =
       FileDialogControllerFactory();
   final IFileDialogFactory fileDialogFactory = IFileDialogFactory();
@@ -31,7 +33,8 @@ void main() {
       mockFileDialogController,
       fileDialogControllerFactory,
       fileDialogFactory,
-      dialogMode);
+      dialogMode,
+      mockShellWin32Api);
 
   setUp(() {
     setDefaultMocks(mockFileDialogController, defaultReturnValue);
@@ -72,8 +75,8 @@ void main() {
       'setFileTypeFilters should call setFileTypes with expected typeGroups count',
       () {
     final List<XTypeGroup> typeGroups = <XTypeGroup>[
-      XTypeGroup(extensions: <String>['jpg', 'png'], label: 'Images'),
-      XTypeGroup(extensions: <String>['txt', 'json'], label: 'Text'),
+      const XTypeGroup(extensions: <String>['jpg', 'png'], label: 'Images'),
+      const XTypeGroup(extensions: <String>['txt', 'json'], label: 'Text'),
     ];
     dialogWrapper.setFileTypeFilters(typeGroups);
     verify(mockFileDialogController.setFileTypes(typeGroups.length, any))
@@ -87,65 +90,137 @@ void main() {
     mockSetFileTypesConditions(
         mockFileDialogController, expectedPszName, expectedPszSpec);
     dialogWrapper.setFileTypeFilters(typeGroups);
-    verify(mockFileDialogController.setFileTypes(any, any)).called(1);
+    verify(mockFileDialogController.setFileTypes(1, any)).called(1);
     expect(dialogWrapper.lastResult, S_OK);
   });
 
-  test('setFileTypeFilters should call setFileTypes with a label', () {
+  test(
+      'setFileTypeFilters should call setFileTypes with a label and default extensions',
+      () {
     const String label = 'All files';
     const String expectedPszSpec = '*.*';
     final List<XTypeGroup> typeGroups = <XTypeGroup>[
-      XTypeGroup(label: label),
+      const XTypeGroup(label: label),
     ];
     mockSetFileTypesConditions(
         mockFileDialogController, label, expectedPszSpec);
     dialogWrapper.setFileTypeFilters(typeGroups);
-    verify(mockFileDialogController.setFileTypes(any, any)).called(1);
+    verify(mockFileDialogController.setFileTypes(1, any)).called(1);
     expect(dialogWrapper.lastResult, S_OK);
   });
 
-  test('setFileTypeFilters should call setFileTypes with extensions', () {
+  test(
+      'setFileTypeFilters should call setFileTypes with both default label and extensions',
+      () {
+    const String defaultLabel = 'Any';
+    const String expectedPszSpec = '*.*';
+    final List<XTypeGroup> typeGroups = <XTypeGroup>[
+      const XTypeGroup(),
+    ];
+    mockSetFileTypesConditions(
+        mockFileDialogController, defaultLabel, expectedPszSpec);
+    dialogWrapper.setFileTypeFilters(typeGroups);
+    verify(mockFileDialogController.setFileTypes(1, any)).called(1);
+    expect(dialogWrapper.lastResult, S_OK);
+  });
+
+  test(
+      'setFileTypeFilters should call setFileTypes with specific labels and extensions',
+      () {
     const String jpg = 'jpg';
     const String png = 'png';
     const String imageLabel = 'Image';
     const String txt = 'txt';
     const String json = 'json';
     const String textLabel = 'Text';
-    final Map<String, String> filterSpecification = <String, String>{
+    final Map<String, String> expectedfilterSpecification = <String, String>{
       imageLabel: '*.$jpg;*.$png;',
       textLabel: '*.$txt;*.$json;',
     };
     final List<XTypeGroup> typeGroups = <XTypeGroup>[
-      XTypeGroup(extensions: <String>[jpg, png], label: imageLabel),
-      XTypeGroup(extensions: <String>[txt, json], label: textLabel),
+      const XTypeGroup(extensions: <String>[jpg, png], label: imageLabel),
+      const XTypeGroup(extensions: <String>[txt, json], label: textLabel),
     ];
     when(mockFileDialogController.setFileTypes(any, any))
         .thenAnswer((Invocation realInvocation) {
-      int result = S_OK;
       final Pointer<COMDLG_FILTERSPEC> pointer =
           realInvocation.positionalArguments[1] as Pointer<COMDLG_FILTERSPEC>;
 
       int index = 0;
-      for (final String key in filterSpecification.keys) {
-        result += pointer[index].pszName.toDartString() == key &&
-                pointer[index].pszSpec.toDartString() ==
-                    filterSpecification[key]
-            ? S_OK
-            : E_FAIL;
+      for (final String key in expectedfilterSpecification.keys) {
+        if (pointer[index].pszName.toDartString() != key ||
+            pointer[index].pszSpec.toDartString() !=
+                expectedfilterSpecification[key]) {
+          return E_FAIL;
+        }
         index++;
       }
-
-      return result;
+      return S_OK;
     });
 
     dialogWrapper.setFileTypeFilters(typeGroups);
-    verify(mockFileDialogController.setFileTypes(any, any)).called(1);
+    verify(mockFileDialogController.setFileTypes(typeGroups.length, any))
+        .called(1);
+    expect(dialogWrapper.lastResult, S_OK);
+  });
+
+  test(
+      'setFileTypeFilters should call setFileTypes with specific extensions and No label',
+      () {
+    const String jpg = 'jpg';
+    const String png = 'png';
+    const String txt = 'txt';
+    const String json = 'json';
+    final Map<String, String> expectedfilterSpecification = <String, String>{
+      '*.$jpg;*.$png;': '*.$jpg;*.$png;',
+      '*.$txt;*.$json;': '*.$txt;*.$json;',
+    };
+    final List<XTypeGroup> typeGroups = <XTypeGroup>[
+      const XTypeGroup(extensions: <String>[jpg, png]),
+      const XTypeGroup(extensions: <String>[txt, json]),
+    ];
+    when(mockFileDialogController.setFileTypes(any, any))
+        .thenAnswer((Invocation realInvocation) {
+      final Pointer<COMDLG_FILTERSPEC> pointer =
+          realInvocation.positionalArguments[1] as Pointer<COMDLG_FILTERSPEC>;
+
+      int index = 0;
+      for (final String key in expectedfilterSpecification.keys) {
+        if (pointer[index].pszName.toDartString() != key ||
+            pointer[index].pszSpec.toDartString() !=
+                expectedfilterSpecification[key]) {
+          return E_FAIL;
+        }
+        index++;
+      }
+      return S_OK;
+    });
+
+    dialogWrapper.setFileTypeFilters(typeGroups);
+    verify(mockFileDialogController.setFileTypes(typeGroups.length, any))
+        .called(1);
     expect(dialogWrapper.lastResult, S_OK);
   });
 
   test('setFolder should not call dialog setFolder if the path is empty', () {
     const String emptyPath = '';
     dialogWrapper.setFolder(emptyPath);
+    verifyNever(mockFileDialogController.setFolder(any));
+  });
+
+  test('setFolder should call dialog setFolder with the provided path', () {
+    const String path = 'path/to/my/folder';
+    when(mockShellWin32Api.createItemFromParsingName(path, any, any))
+      .thenReturn(S_OK);
+    dialogWrapper.setFolder(path);
+    verify(mockFileDialogController.setFolder(any)).called(1);
+  });
+
+    test('setFolder should not call dialog setFolder if createItem fails', () {
+    const String path = 'path/to/my/folder';
+    when(mockShellWin32Api.createItemFromParsingName(path, any, any))
+      .thenReturn(E_FAIL);
+    dialogWrapper.setFolder(path);
     verifyNever(mockFileDialogController.setFolder(any));
   });
 }
@@ -176,4 +251,5 @@ void setDefaultMocks(
       .thenReturn(defaultReturnValue);
   when(mockFileDialogController.setFileTypes(any, any))
       .thenReturn(defaultReturnValue);
+  when(mockFileDialogController.setFolder(any)).thenReturn(defaultReturnValue);
 }

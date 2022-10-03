@@ -13,6 +13,7 @@ import 'dialog_mode.dart';
 import 'file_dialog_controller.dart';
 import 'ifile_dialog_controller_factory.dart';
 import 'ifile_dialog_factory.dart';
+import 'shell_win32_api.dart';
 
 /// Wraps an IFileDialog, managing object lifetime as a scoped object and
 /// providing a simplified API for interacting with it as needed for the plugin.
@@ -28,6 +29,7 @@ class DialogWrapper {
     try {
       final IFileDialog dialog = fileDialogFactory.createInstace(_dialogMode);
       _dialogController = _fileDialogControllerFactory.createController(dialog);
+      _shellWin32Api = ShellWin32Api();
     } catch (ex) {
       if (ex is WindowsException) {
         _lastResult = ex.hr;
@@ -41,7 +43,8 @@ class DialogWrapper {
       FileDialogController dialogController,
       this._fileDialogControllerFactory,
       this._fileDialogFactory,
-      this._dialogMode)
+      this._dialogMode,
+      this._shellWin32Api)
       : _isOpenDialog = true,
         _dialogController = dialogController;
 
@@ -64,8 +67,9 @@ class DialogWrapper {
   // ignore: unused_field
   bool _openingDirectory = false;
 
-  // ignore: unused_field
   late FileDialogController _dialogController;
+
+  late ShellWin32Api _shellWin32Api;
 
   /// Returns the result of the last Win32 API call related to this object.
   int get lastResult => _lastResult;
@@ -79,9 +83,7 @@ class DialogWrapper {
     using((Arena arena) {
       final Pointer<GUID> ptrGuid = GUIDFromString(IID_IShellItem);
       final Pointer<Pointer<COMObject>> ptrPath = arena<Pointer<COMObject>>();
-      // TODO(eugeniorossetto): This won't work on a test environment.
-      _lastResult =
-          SHCreateItemFromParsingName(TEXT(path), nullptr, ptrGuid, ptrPath);
+      _lastResult = _shellWin32Api.createItemFromParsingName(path, ptrGuid, ptrPath);
 
       if (!SUCCEEDED(_lastResult)) {
         return;
