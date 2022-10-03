@@ -142,6 +142,12 @@ void main() {
     verify(mockFileDialogController.setFileTypes(any, any)).called(1);
     expect(dialogWrapper.lastResult, S_OK);
   });
+
+  test('setFolder should not call dialog setFolder if the path is empty', () {
+    const String emptyPath = '';
+    dialogWrapper.setFolder(emptyPath);
+    verifyNever(mockFileDialogController.setFolder(any));
+  });
 }
 
 void mockSetFileTypesConditions(
