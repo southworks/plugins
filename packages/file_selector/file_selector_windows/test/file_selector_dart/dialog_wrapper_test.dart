@@ -211,18 +211,38 @@ void main() {
   test('setFolder should call dialog setFolder with the provided path', () {
     const String path = 'path/to/my/folder';
     when(mockShellWin32Api.createItemFromParsingName(path, any, any))
-      .thenReturn(S_OK);
+        .thenReturn(S_OK);
     dialogWrapper.setFolder(path);
     verify(mockFileDialogController.setFolder(any)).called(1);
   });
 
-    test('setFolder should not call dialog setFolder if createItem fails', () {
+  test('setFolder should not call dialog setFolder if createItem fails', () {
     const String path = 'path/to/my/folder';
     when(mockShellWin32Api.createItemFromParsingName(path, any, any))
-      .thenReturn(E_FAIL);
+        .thenReturn(E_FAIL);
     dialogWrapper.setFolder(path);
     verifyNever(mockFileDialogController.setFolder(any));
   });
+
+  test('[DialogMode == Open] show should return null if parent window is not available', () {
+    const int parentWindow = 0;
+    when(mockFileDialogController.show(parentWindow)).thenReturn(E_FAIL);
+
+    final List<String>? result = dialogWrapper.show(parentWindow);
+
+    expect(result, null);
+    verify(mockFileDialogController.show(parentWindow)).called(1);
+    verifyNever(mockFileDialogController.getResults(any));
+    verifyNever(mockFileDialogController.getResult(any));
+  });
+
+  test("[DialogMode == Open] show should return null if can't get results from dialog", () {});
+
+  test('[DialogMode == Open] show should the list of selected files for DialogMode Open', () {});
+
+  test("[DialogMode == Save] show should return null if can't get result from dialog", () {});
+
+  test('[DialogMode == Save] show should the selected directory for', () {});
 }
 
 void mockSetFileTypesConditions(
