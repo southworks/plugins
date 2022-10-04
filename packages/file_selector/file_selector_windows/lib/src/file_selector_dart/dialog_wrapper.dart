@@ -45,7 +45,7 @@ class DialogWrapper {
       this._fileDialogFactory,
       this._dialogMode,
       this._shellWin32Api)
-      : _isOpenDialog = true,
+      : _isOpenDialog = _dialogMode == DialogMode.Open,
         _dialogController = dialogController;
 
   int _lastResult = S_OK;
@@ -189,7 +189,7 @@ class DialogWrapper {
             calloc<Pointer<COMObject>>();
         shellItemResources.getItemAt(index, shellItemPtr);
         final IShellItem shellItem = IShellItem(shellItemPtr.cast());
-        files.add(getPathForShellItem(shellItem));
+        files.add(_shellWin32Api.getPathForShellItem(shellItem));
       }
     } else {
       final Pointer<Pointer<COMObject>> shellItemPtr =
@@ -199,25 +199,8 @@ class DialogWrapper {
         return null;
       }
       final IShellItem shellItem = IShellItem(shellItemPtr.cast());
-      files.add(getPathForShellItem(shellItem));
+      files.add(_shellWin32Api.getPathForShellItem(shellItem));
     }
     return files;
-  }
-
-  /// Returns the path for [shellItem] as a UTF-8 string, or an empty string on
-  /// failure.
-  String getPathForShellItem(IShellItem shellItem) {
-    // TODO(eugeniorossetto): Review this implementation.
-    return using((Arena arena) {
-      final Pointer<Pointer<Utf16>> ptrPath = arena<Pointer<Utf16>>();
-
-      if (!SUCCEEDED(
-          shellItem.getDisplayName(SIGDN.SIGDN_FILESYSPATH, ptrPath.cast()))) {
-        return '';
-      }
-
-      final Pointer<Utf16> path = Pointer<Utf16>.fromAddress(ptrPath.address);
-      return path.toDartString();
-    });
   }
 }

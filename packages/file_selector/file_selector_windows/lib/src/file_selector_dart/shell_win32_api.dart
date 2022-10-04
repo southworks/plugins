@@ -4,6 +4,7 @@
 
 import 'dart:ffi';
 
+import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
 
 /// A thin wrapper for Win32 platform specific Shell methods.
@@ -16,5 +17,21 @@ class ShellWin32Api {
       Pointer<Pointer<NativeType>> ptrPath) {
     return SHCreateItemFromParsingName(
         TEXT(initialDirectory), nullptr, ptrGuid, ptrPath);
+  }
+
+  /// Returns the path for [shellItem] as a UTF-8 string, or an empty string on
+  /// failure.
+  String getPathForShellItem(IShellItem shellItem) {
+    return using((Arena arena) {
+      final Pointer<Pointer<Utf16>> ptrPath = arena<Pointer<Utf16>>();
+
+      if (!SUCCEEDED(
+          shellItem.getDisplayName(SIGDN.SIGDN_FILESYSPATH, ptrPath.cast()))) {
+        return '';
+      }
+
+      final Pointer<Utf16> path = Pointer<Utf16>.fromAddress(ptrPath.address);
+      return path.toDartString();
+    });
   }
 }

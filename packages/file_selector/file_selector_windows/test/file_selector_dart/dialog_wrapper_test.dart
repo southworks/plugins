@@ -224,7 +224,9 @@ void main() {
     verifyNever(mockFileDialogController.setFolder(any));
   });
 
-  test('[DialogMode == Open] show should return null if parent window is not available', () {
+  test(
+      '[DialogMode == Open] show should return null if parent window is not available',
+      () {
     const int parentWindow = 0;
     when(mockFileDialogController.show(parentWindow)).thenReturn(E_FAIL);
 
@@ -233,16 +235,63 @@ void main() {
     expect(result, null);
     verify(mockFileDialogController.show(parentWindow)).called(1);
     verifyNever(mockFileDialogController.getResults(any));
-    verifyNever(mockFileDialogController.getResult(any));
   });
 
-  test("[DialogMode == Open] show should return null if can't get results from dialog", () {});
+  test(
+      "[DialogMode == Open] show should return null if can't get results from dialog",
+      () {
+    const int parentWindow = 0;
+    when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
+    when(mockFileDialogController.getResults(any)).thenReturn(E_FAIL);
 
-  test('[DialogMode == Open] show should the list of selected files for DialogMode Open', () {});
+    final List<String>? result = dialogWrapper.show(parentWindow);
 
-  test("[DialogMode == Save] show should return null if can't get result from dialog", () {});
+    expect(result, null);
+    verify(mockFileDialogController.show(parentWindow)).called(1);
+    verify(mockFileDialogController.getResults(any)).called(1);
+  });
 
-  test('[DialogMode == Save] show should the selected directory for', () {});
+  test(
+      '[DialogMode == Open] show should the list of selected files for DialogMode Open',
+      () {});
+
+  test(
+      "[DialogMode == Save] show should return null if can't get result from dialog",
+      () {
+    final DialogWrapper dialogWrapperModeSave = DialogWrapper.withFakeDependencies(
+      mockFileDialogController,
+      fileDialogControllerFactory,
+      fileDialogFactory,
+      DialogMode.Save,
+      mockShellWin32Api);
+    const int parentWindow = 0;
+    when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
+    when(mockFileDialogController.getResult(any)).thenReturn(E_FAIL);
+
+    final List<String>? result = dialogWrapperModeSave.show(parentWindow);
+
+    expect(result, null);
+    verify(mockFileDialogController.show(parentWindow)).called(1);
+    verify(mockFileDialogController.getResult(any)).called(1);
+  });
+
+  test('[DialogMode == Save] show should the selected directory for', () {
+    const String filePath = 'path/to/file.txt';
+    final DialogWrapper dialogWrapperModeSave = DialogWrapper.withFakeDependencies(
+      mockFileDialogController,
+      fileDialogControllerFactory,
+      fileDialogFactory,
+      DialogMode.Save,
+      mockShellWin32Api);
+    const int parentWindow = 0;
+    when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
+    when(mockFileDialogController.getResult(any)).thenReturn(S_OK);
+    when(mockShellWin32Api.getPathForShellItem(any)).thenReturn(filePath);
+
+    final List<String>? result = dialogWrapperModeSave.show(parentWindow);
+
+    expect(result?.first, filePath);
+  });
 }
 
 void mockSetFileTypesConditions(
