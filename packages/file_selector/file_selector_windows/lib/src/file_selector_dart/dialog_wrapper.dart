@@ -83,7 +83,8 @@ class DialogWrapper {
     using((Arena arena) {
       final Pointer<GUID> ptrGuid = GUIDFromString(IID_IShellItem);
       final Pointer<Pointer<COMObject>> ptrPath = arena<Pointer<COMObject>>();
-      _lastResult = _shellWin32Api.createItemFromParsingName(path, ptrGuid, ptrPath);
+      _lastResult =
+          _shellWin32Api.createItemFromParsingName(path, ptrGuid, ptrPath);
 
       if (!SUCCEEDED(_lastResult)) {
         return;
@@ -164,7 +165,44 @@ class DialogWrapper {
 
   /// Displays the dialog, and returns the selected files, or nullopt on error.
   /// std::optional<EncodableList>
-  void show(HWND parentWindow) {}
+  List<String>? show(int parentWindow) {
+    _lastResult = _dialogController.show(parentWindow);
+    if (!SUCCEEDED(_lastResult)) {
+      return null;
+    }
+
+    final List<String> files = <String>[];
+    if (_isOpenDialog) {
+      final Pointer<Pointer<COMObject>> shellItemsPtr =
+          calloc<Pointer<COMObject>>();
+      _lastResult = _dialogController.getResults(shellItemsPtr);
+      if (!SUCCEEDED(_lastResult)) {
+        return null;
+      }
+
+      final IShellItemArray shellItemResources =
+          IShellItemArray(shellItemsPtr.cast());
+      final Pointer<Uint32> shellItemCount = calloc<Uint32>();
+      shellItemResources.getCount(shellItemCount);
+      for (int index = 0; index < shellItemCount.value; index++) {
+        final Pointer<Pointer<COMObject>> shellItemPtr =
+            calloc<Pointer<COMObject>>();
+        shellItemResources.getItemAt(index, shellItemPtr);
+        final IShellItem shellItem = IShellItem(shellItemPtr.cast());
+        files.add(getPathForShellItem(shellItem));
+      }
+    } else {
+      final Pointer<Pointer<COMObject>> shellItemPtr =
+          calloc<Pointer<COMObject>>();
+      _lastResult = _dialogController.getResult(shellItemPtr);
+      if (!SUCCEEDED(_lastResult)) {
+        return null;
+      }
+      final IShellItem shellItem = IShellItem(shellItemPtr.cast());
+      files.add(getPathForShellItem(shellItem));
+    }
+    return files;
+  }
 
   /// Returns the path for [shellItem] as a UTF-8 string, or an empty string on
   /// failure.

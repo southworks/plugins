@@ -10,7 +10,7 @@ import 'package:win32/win32.dart';
 ///
 /// The only purpose of this class is to decouple specific Win32 Api call from the bussiness logic so it can be init tested in any environment.
 class ShellWin32Api {
-/// Creates and [initializes](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-shcreateitemfromparsingname) a Shell item object from a parsing name.
+  /// Creates and [initializes](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-shcreateitemfromparsingname) a Shell item object from a parsing name.
   /// If the directory doesn't exist it will return an error result.
   int createItemFromParsingName(String initialDirectory, Pointer<GUID> ptrGuid,
       Pointer<Pointer<NativeType>> ptrPath) {
