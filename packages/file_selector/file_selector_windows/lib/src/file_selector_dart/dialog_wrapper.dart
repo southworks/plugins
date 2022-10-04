@@ -22,14 +22,11 @@ class DialogWrapper {
   /// Creates a DialogWrapper using a [IFileDialogControllerFactory] and a [DialogMode].
   /// It also resposible of creating a [IFileDialog].
   DialogWrapper(IFileDialogControllerFactory fileDialogControllerFactory,
-      IFileDialogFactory fileDialogFactory, DialogMode dialogMode)
-      : _fileDialogControllerFactory = fileDialogControllerFactory,
-        _fileDialogFactory = fileDialogFactory,
-        _dialogMode = dialogMode,
-        _isOpenDialog = dialogMode == DialogMode.Open {
+      IFileDialogFactory fileDialogFactory, this._dialogMode)
+      : _isOpenDialog = _dialogMode == DialogMode.Open {
     try {
       final IFileDialog dialog = fileDialogFactory.createInstace(_dialogMode);
-      _dialogController = _fileDialogControllerFactory.createController(dialog);
+      _dialogController = fileDialogControllerFactory.createController(dialog);
       _shellWin32Api = ShellWin32Api();
     } catch (ex) {
       if (ex is WindowsException) {
@@ -42,8 +39,6 @@ class DialogWrapper {
   @visibleForTesting
   DialogWrapper.withFakeDependencies(
       FileDialogController dialogController,
-      this._fileDialogControllerFactory,
-      this._fileDialogFactory,
       this._dialogMode,
       this._shellWin32Api)
       : _isOpenDialog = _dialogMode == DialogMode.Open,
@@ -51,22 +46,13 @@ class DialogWrapper {
 
   int _lastResult = S_OK;
 
-  final IFileDialogControllerFactory _fileDialogControllerFactory;
-
-  // ignore: unused_field
-  final IFileDialogFactory _fileDialogFactory;
-
   final DialogMode _dialogMode;
 
-  // ignore: unused_field
   final bool _isOpenDialog;
 
   final String _allowAnyValue = 'Any';
 
   final String _allowAnyExtension = '*.*';
-
-  // ignore: unused_field
-  bool _openingDirectory = false;
 
   late FileDialogController _dialogController;
 
@@ -114,14 +100,7 @@ class DialogWrapper {
       if (!SUCCEEDED(_lastResult)) {
         return;
       }
-
       currentOptions.value |= newOptions;
-
-      if (currentOptions.value & FILEOPENDIALOGOPTIONS.FOS_PICKFOLDERS ==
-          currentOptions.value) {
-        _openingDirectory = true;
-      }
-
       _lastResult = _dialogController.setOptions(currentOptions.value);
     });
   }

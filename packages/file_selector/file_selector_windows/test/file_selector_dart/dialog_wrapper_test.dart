@@ -9,8 +9,6 @@ import 'package:file_selector_platform_interface/file_selector_platform_interfac
 import 'package:file_selector_windows/src/file_selector_dart/dialog_mode.dart';
 import 'package:file_selector_windows/src/file_selector_dart/dialog_wrapper.dart';
 import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller.dart';
-import 'package:file_selector_windows/src/file_selector_dart/file_dialog_controller_factory.dart';
-import 'package:file_selector_windows/src/file_selector_dart/ifile_dialog_factory.dart';
 import 'package:file_selector_windows/src/file_selector_dart/shell_win32_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -25,14 +23,9 @@ void main() {
   late final MockFileDialogController mockFileDialogController =
       MockFileDialogController();
   late final MockShellWin32Api mockShellWin32Api = MockShellWin32Api();
-  final FileDialogControllerFactory fileDialogControllerFactory =
-      FileDialogControllerFactory();
-  final IFileDialogFactory fileDialogFactory = IFileDialogFactory();
   const DialogMode dialogMode = DialogMode.Open;
   final DialogWrapper dialogWrapper = DialogWrapper.withFakeDependencies(
       mockFileDialogController,
-      fileDialogControllerFactory,
-      fileDialogFactory,
       dialogMode,
       mockShellWin32Api);
 
@@ -258,8 +251,6 @@ void main() {
     final DialogWrapper dialogWrapperModeSave =
         DialogWrapper.withFakeDependencies(
             mockFileDialogController,
-            fileDialogControllerFactory,
-            fileDialogFactory,
             DialogMode.Save,
             mockShellWin32Api);
     const int parentWindow = 0;
@@ -278,8 +269,6 @@ void main() {
     final DialogWrapper dialogWrapperModeSave =
         DialogWrapper.withFakeDependencies(
             mockFileDialogController,
-            fileDialogControllerFactory,
-            fileDialogFactory,
             DialogMode.Save,
             mockShellWin32Api);
     const int parentWindow = 0;
