@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:core';
 import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
@@ -163,37 +164,51 @@ class DialogWrapper {
     free(registerFilterSpecification);
   }
 
-  /// Displays the dialog, and returns the selected files, or nullopt on error.
+  /// Displays the dialog, and returns the selected files, or null on error.
   /// std::optional<EncodableList>
   List<String>? show(int parentWindow) {
     _lastResult = _dialogController.show(parentWindow);
     if (!SUCCEEDED(_lastResult)) {
       return null;
     }
+    late List<String>? files;
 
+    using((Arena arena) {
+      final Pointer<Pointer<COMObject>> shellItemArrayPtr =
+          arena<Pointer<COMObject>>();
+      final Pointer<Uint32> shellItemCountPtr = arena<Uint32>();
+      final Pointer<Pointer<COMObject>> shellItemPtr =
+          arena<Pointer<COMObject>>();
+
+      files =
+          _getFilePathList(shellItemArrayPtr, shellItemCountPtr, shellItemPtr);
+    });
+    return files;
+  }
+
+  List<String>? _getFilePathList(
+      Pointer<Pointer<COMObject>> shellItemArrayPtr,
+      Pointer<Uint32> shellItemCountPtr,
+      Pointer<Pointer<COMObject>> shellItemPtr) {
     final List<String> files = <String>[];
     if (_isOpenDialog) {
-      final Pointer<Pointer<COMObject>> shellItemsPtr =
-          calloc<Pointer<COMObject>>();
-      _lastResult = _dialogController.getResults(shellItemsPtr);
+      _lastResult = _dialogController.getResults(shellItemArrayPtr);
       if (!SUCCEEDED(_lastResult)) {
         return null;
       }
 
       final IShellItemArray shellItemResources =
-          IShellItemArray(shellItemsPtr.cast());
-      final Pointer<Uint32> shellItemCount = calloc<Uint32>();
-      shellItemResources.getCount(shellItemCount);
-      for (int index = 0; index < shellItemCount.value; index++) {
-        final Pointer<Pointer<COMObject>> shellItemPtr =
-            calloc<Pointer<COMObject>>();
+          IShellItemArray(shellItemArrayPtr.cast());
+      _lastResult = shellItemResources.getCount(shellItemCountPtr);
+      if (!SUCCEEDED(_lastResult)) {
+        return null;
+      }
+      for (int index = 0; index < shellItemCountPtr.value; index++) {
         shellItemResources.getItemAt(index, shellItemPtr);
         final IShellItem shellItem = IShellItem(shellItemPtr.cast());
         files.add(_shellWin32Api.getPathForShellItem(shellItem));
       }
     } else {
-      final Pointer<Pointer<COMObject>> shellItemPtr =
-          calloc<Pointer<COMObject>>();
       _lastResult = _dialogController.getResult(shellItemPtr);
       if (!SUCCEEDED(_lastResult)) {
         return null;

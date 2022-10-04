@@ -42,6 +42,7 @@ void main() {
 
   tearDown(() {
     reset(mockFileDialogController);
+    reset(mockShellWin32Api);
   });
 
   test('setFileName should call dialog setFileName', () {
@@ -252,18 +253,15 @@ void main() {
   });
 
   test(
-      '[DialogMode == Open] show should the list of selected files for DialogMode Open',
-      () {});
-
-  test(
       "[DialogMode == Save] show should return null if can't get result from dialog",
       () {
-    final DialogWrapper dialogWrapperModeSave = DialogWrapper.withFakeDependencies(
-      mockFileDialogController,
-      fileDialogControllerFactory,
-      fileDialogFactory,
-      DialogMode.Save,
-      mockShellWin32Api);
+    final DialogWrapper dialogWrapperModeSave =
+        DialogWrapper.withFakeDependencies(
+            mockFileDialogController,
+            fileDialogControllerFactory,
+            fileDialogFactory,
+            DialogMode.Save,
+            mockShellWin32Api);
     const int parentWindow = 0;
     when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
     when(mockFileDialogController.getResult(any)).thenReturn(E_FAIL);
@@ -277,12 +275,13 @@ void main() {
 
   test('[DialogMode == Save] show should the selected directory for', () {
     const String filePath = 'path/to/file.txt';
-    final DialogWrapper dialogWrapperModeSave = DialogWrapper.withFakeDependencies(
-      mockFileDialogController,
-      fileDialogControllerFactory,
-      fileDialogFactory,
-      DialogMode.Save,
-      mockShellWin32Api);
+    final DialogWrapper dialogWrapperModeSave =
+        DialogWrapper.withFakeDependencies(
+            mockFileDialogController,
+            fileDialogControllerFactory,
+            fileDialogFactory,
+            DialogMode.Save,
+            mockShellWin32Api);
     const int parentWindow = 0;
     when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
     when(mockFileDialogController.getResult(any)).thenReturn(S_OK);
