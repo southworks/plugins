@@ -37,10 +37,8 @@ class DialogWrapper {
 
   /// Creates a DialogWrapper for testing purposes.
   @visibleForTesting
-  DialogWrapper.withFakeDependencies(
-      FileDialogController dialogController,
-      this._dialogMode,
-      this._shellWin32Api)
+  DialogWrapper.withFakeDependencies(FileDialogController dialogController,
+      this._dialogMode, this._shellWin32Api)
       : _isOpenDialog = _dialogMode == DialogMode.Open,
         _dialogController = dialogController;
 
@@ -127,20 +125,21 @@ class DialogWrapper {
       }
     }
 
-    final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
-        malloc<COMDLG_FILTERSPEC>(filterSpecification.length);
+    using((Arena arena) {
+      final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
+          arena<COMDLG_FILTERSPEC>(filterSpecification.length);
 
-    int index = 0;
-    for (final String key in filterSpecification.keys) {
-      registerFilterSpecification[index]
-        ..pszName = TEXT(key)
-        ..pszSpec = TEXT(filterSpecification[key]!);
-      index++;
-    }
+      int index = 0;
+      for (final String key in filterSpecification.keys) {
+        registerFilterSpecification[index]
+          ..pszName = TEXT(key)
+          ..pszSpec = TEXT(filterSpecification[key]!);
+        index++;
+      }
 
-    _lastResult = _dialogController.setFileTypes(
-        filterSpecification.length, registerFilterSpecification);
-    free(registerFilterSpecification);
+      _lastResult = _dialogController.setFileTypes(
+          filterSpecification.length, registerFilterSpecification);
+    });
   }
 
   /// Displays the dialog, and returns the selected files, or null on error.
