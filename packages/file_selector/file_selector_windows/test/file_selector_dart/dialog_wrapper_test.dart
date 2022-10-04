@@ -25,9 +25,7 @@ void main() {
   late final MockShellWin32Api mockShellWin32Api = MockShellWin32Api();
   const DialogMode dialogMode = DialogMode.Open;
   final DialogWrapper dialogWrapper = DialogWrapper.withFakeDependencies(
-      mockFileDialogController,
-      dialogMode,
-      mockShellWin32Api);
+      mockFileDialogController, dialogMode, mockShellWin32Api);
 
   setUp(() {
     setDefaultMocks(mockFileDialogController, defaultReturnValue);
@@ -250,9 +248,7 @@ void main() {
       () {
     final DialogWrapper dialogWrapperModeSave =
         DialogWrapper.withFakeDependencies(
-            mockFileDialogController,
-            DialogMode.Save,
-            mockShellWin32Api);
+            mockFileDialogController, DialogMode.Save, mockShellWin32Api);
     const int parentWindow = 0;
     when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
     when(mockFileDialogController.getResult(any)).thenReturn(E_FAIL);
@@ -268,9 +264,7 @@ void main() {
     const String filePath = 'path/to/file.txt';
     final DialogWrapper dialogWrapperModeSave =
         DialogWrapper.withFakeDependencies(
-            mockFileDialogController,
-            DialogMode.Save,
-            mockShellWin32Api);
+            mockFileDialogController, DialogMode.Save, mockShellWin32Api);
     const int parentWindow = 0;
     when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
     when(mockFileDialogController.getResult(any)).thenReturn(S_OK);
