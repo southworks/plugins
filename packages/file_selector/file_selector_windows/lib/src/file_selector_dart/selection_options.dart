@@ -9,7 +9,7 @@ class SelectionOptions {
   SelectionOptions({
     this.allowMultiple = false,
     this.selectFolders = false,
-    this.allowedTypes = const <XTypeGroup?>[],
+    this.allowedTypes = const <XTypeGroup>[],
   });
 
   /// Indicates whether the user is able to select multiple items at the same time or not.
@@ -19,5 +19,5 @@ class SelectionOptions {
   bool selectFolders;
 
   /// A list of file types that can be selected.
-  List<XTypeGroup?> allowedTypes;
+  List<XTypeGroup> allowedTypes;
 }
