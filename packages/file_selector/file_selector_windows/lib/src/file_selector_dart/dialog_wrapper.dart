@@ -20,7 +20,7 @@ import 'shell_win32_api.dart';
 /// providing a simplified API for interacting with it as needed for the plugin.
 class DialogWrapper {
   /// Creates a DialogWrapper using a [IFileDialogControllerFactory] and a [DialogMode].
-  /// It also resposible of creating a [IFileDialog].
+  /// It is also responsible of creating a [IFileDialog].
   DialogWrapper(IFileDialogControllerFactory fileDialogControllerFactory,
       IFileDialogFactory fileDialogFactory, this._dialogMode)
       : _isOpenDialog = _dialogMode == DialogMode.Open {
