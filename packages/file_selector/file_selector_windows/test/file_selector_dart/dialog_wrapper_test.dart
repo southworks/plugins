@@ -222,7 +222,7 @@ void main() {
     const int parentWindow = 0;
     when(mockFileDialogController.show(parentWindow)).thenReturn(E_FAIL);
 
-    final List<String>? result = dialogWrapper.show(parentWindow);
+    final List<String?>? result = dialogWrapper.show(parentWindow);
 
     expect(result, null);
     verify(mockFileDialogController.show(parentWindow)).called(1);
@@ -236,7 +236,7 @@ void main() {
     when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
     when(mockFileDialogController.getResults(any)).thenReturn(E_FAIL);
 
-    final List<String>? result = dialogWrapper.show(parentWindow);
+    final List<String?>? result = dialogWrapper.show(parentWindow);
 
     expect(result, null);
     verify(mockFileDialogController.show(parentWindow)).called(1);
@@ -253,7 +253,7 @@ void main() {
     when(mockFileDialogController.show(parentWindow)).thenReturn(S_OK);
     when(mockFileDialogController.getResult(any)).thenReturn(E_FAIL);
 
-    final List<String>? result = dialogWrapperModeSave.show(parentWindow);
+    final List<String?>? result = dialogWrapperModeSave.show(parentWindow);
 
     expect(result, null);
     verify(mockFileDialogController.show(parentWindow)).called(1);
@@ -270,7 +270,7 @@ void main() {
     when(mockFileDialogController.getResult(any)).thenReturn(S_OK);
     when(mockShellWin32Api.getPathForShellItem(any)).thenReturn(filePath);
 
-    final List<String>? result = dialogWrapperModeSave.show(parentWindow);
+    final List<String?>? result = dialogWrapperModeSave.show(parentWindow);
 
     expect(result?.first, filePath);
   });

@@ -143,8 +143,7 @@ class DialogWrapper {
   }
 
   /// Displays the dialog, and returns the selected files, or null on error.
-  /// std::optional<EncodableList>
-  List<String>? show(int parentWindow) {
+  List<String?>? show(int parentWindow) {
     _lastResult = _dialogController.show(parentWindow);
     if (!SUCCEEDED(_lastResult)) {
       return null;
