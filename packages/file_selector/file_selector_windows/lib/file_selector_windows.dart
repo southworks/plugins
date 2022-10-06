@@ -3,12 +3,26 @@
 // found in the LICENSE file.
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'package:flutter/cupertino.dart';
 
-import 'src/messages.g.dart';
+import 'src/file_selector_api.dart';
+import 'src/file_selector_dart/dialog_wrapper_factory.dart';
+import 'src/file_selector_dart/file_dialog_controller_factory.dart';
+import 'src/file_selector_dart/ifile_dialog_factory.dart';
+import 'src/file_selector_dart/selection_options.dart';
 
 /// An implementation of [FileSelectorPlatform] for Windows.
 class FileSelectorWindows extends FileSelectorPlatform {
-  final FileSelectorApi _hostApi = FileSelectorApi();
+  /// Creates a new instance of [FileSelectorApi].
+  FileSelectorWindows()
+      : _hostApi = FileSelectorApi(DialogWrapperFactory(
+            FileDialogControllerFactory(), IFileDialogFactory()));
+
+  /// Creates a fake implementation of [FileSelectorApi] for testing purposes.
+  @visibleForTesting
+  FileSelectorWindows.useFakeApi(this._hostApi);
+
+  final FileSelectorApi _hostApi;
 
   /// Registers the Windows implementation.
   static void registerWith() {
@@ -21,11 +35,9 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showOpenDialog(
+    final List<String?> paths = _hostApi.showOpenDialog(
         SelectionOptions(
-          allowMultiple: false,
-          selectFolders: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+          allowedTypes: _allowedXTypeGroups(acceptedTypeGroups),
         ),
         initialDirectory,
         confirmButtonText);
@@ -38,11 +50,10 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showOpenDialog(
+    final List<String?> paths = _hostApi.showOpenDialog(
         SelectionOptions(
           allowMultiple: true,
-          selectFolders: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+          allowedTypes: _allowedXTypeGroups(acceptedTypeGroups),
         ),
         initialDirectory,
         confirmButtonText);
@@ -56,11 +67,9 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? suggestedName,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showSaveDialog(
+    final List<String?> paths = _hostApi.showSaveDialog(
         SelectionOptions(
-          allowMultiple: false,
-          selectFolders: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+          allowedTypes: _allowedXTypeGroups(acceptedTypeGroups),
         ),
         initialDirectory,
         suggestedName,
@@ -73,11 +82,10 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _hostApi.showOpenDialog(
+    final List<String?> paths = _hostApi.showOpenDialog(
         SelectionOptions(
-          allowMultiple: false,
           selectFolders: true,
-          allowedTypes: <TypeGroup>[],
+          allowedTypes: <XTypeGroup>[],
         ),
         initialDirectory,
         confirmButtonText);
@@ -85,7 +93,7 @@ class FileSelectorWindows extends FileSelectorPlatform {
   }
 }
 
-List<TypeGroup> _typeGroupsFromXTypeGroups(List<XTypeGroup>? xtypes) {
+List<XTypeGroup> _allowedXTypeGroups(List<XTypeGroup>? xtypes) {
   return (xtypes ?? <XTypeGroup>[]).map((XTypeGroup xtype) {
     if (!xtype.allowsAny && (xtype.extensions?.isEmpty ?? true)) {
       throw ArgumentError('Provided type group $xtype does not allow '
@@ -93,7 +101,6 @@ List<TypeGroup> _typeGroupsFromXTypeGroups(List<XTypeGroup>? xtypes) {
           'categories. "extensions" must be non-empty for Windows if '
           'anything is non-empty.');
     }
-    return TypeGroup(
-        label: xtype.label ?? '', extensions: xtype.extensions ?? <String>[]);
+    return xtype;
   }).toList();
 }
