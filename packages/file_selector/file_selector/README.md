@@ -87,7 +87,7 @@ pass different `XTypeGroup`s based on `Platform`.
 |----------------|-------|--------|-----|-------------|
 | `extensions`   | ✔️     | ✔️      | ✔️   | ✔️           |
 | `mimeTypes`    | ✔️     | ✔️†     | ✔️   |             |
-| `macUTIs`      |       | ✔️      |     |             |
+| `uniformTypeIdentifiers`      |       | ✔️      |     |             |
 | `webWildCards` |       |        | ✔️   |             |
 
 † `mimeTypes` are not supported on version of macOS earlier than 11 (Big Sur).

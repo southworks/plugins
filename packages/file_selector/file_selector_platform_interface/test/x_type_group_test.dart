@@ -10,14 +10,14 @@ void main() {
     test('toJSON() creates correct map', () {
       const List<String> extensions = <String>['txt', 'jpg'];
       const List<String> mimeTypes = <String>['text/plain'];
-      const List<String> macUTIs = <String>['public.plain-text'];
+      const List<String> uniformTypeIdentifiers = <String>['public.plain-text'];
       const List<String> webWildCards = <String>['image/*'];
       const String label = 'test group';
       const XTypeGroup group = XTypeGroup(
         label: label,
         extensions: extensions,
         mimeTypes: mimeTypes,
-        macUTIs: macUTIs,
+        uniformTypeIdentifiers: uniformTypeIdentifiers,
         webWildCards: webWildCards,
       );
 
@@ -25,7 +25,7 @@ void main() {
       expect(jsonMap['label'], label);
       expect(jsonMap['extensions'], extensions);
       expect(jsonMap['mimeTypes'], mimeTypes);
-      expect(jsonMap['macUTIs'], macUTIs);
+      expect(jsonMap['uniformTypeIdentifiers'], uniformTypeIdentifiers);
       expect(jsonMap['webWildCards'], webWildCards);
     });
 
@@ -37,7 +37,7 @@ void main() {
       final Map<String, dynamic> jsonMap = group.toJSON();
       expect(jsonMap['extensions'], null);
       expect(jsonMap['mimeTypes'], null);
-      expect(jsonMap['macUTIs'], null);
+      expect(jsonMap['uniformTypeIdentifiers'], null);
       expect(jsonMap['webWildCards'], null);
       expect(group.allowsAny, true);
     });
@@ -47,7 +47,7 @@ void main() {
         label: 'Any',
         extensions: <String>[],
         mimeTypes: <String>[],
-        macUTIs: <String>[],
+        uniformTypeIdentifiers: <String>[],
         webWildCards: <String>[],
       );
 
@@ -60,7 +60,7 @@ void main() {
       const XTypeGroup mimeOnly =
           XTypeGroup(label: 'mime', mimeTypes: <String>['text/plain']);
       const XTypeGroup utiOnly =
-          XTypeGroup(label: 'utis', macUTIs: <String>['public.text']);
+          XTypeGroup(label: 'utis', uniformTypeIdentifiers: <String>['public.text']);
       const XTypeGroup webOnly =
           XTypeGroup(label: 'web', webWildCards: <String>['.txt']);
 

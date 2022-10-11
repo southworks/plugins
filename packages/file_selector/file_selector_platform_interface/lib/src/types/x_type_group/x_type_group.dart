@@ -47,7 +47,7 @@ class XTypeGroup {
       'label': label,
       'extensions': extensions,
       'mimeTypes': mimeTypes,
-      'macUTIs': macUTIs,
+      'uniformTypeIdentifiers': uniformTypeIdentifiers,
       'webWildCards': webWildCards,
     };
   }
@@ -61,6 +61,7 @@ class XTypeGroup {
   }
 
   /// Returns the list of uniform type identifiers for this group
+  @Deprecated('Using macUTIs is deprecated, consider using uniformTypeIdentifiers instead.')
   List<String>? get macUTIs => uniformTypeIdentifiers;
 
   static List<String>? _removeLeadingDots(List<String>? exts) => exts
