@@ -34,14 +34,14 @@ void main() {
         label: 'text',
         extensions: <String>['txt'],
         mimeTypes: <String>['text/plain'],
-        macUTIs: <String>['public.text'],
+        uniformTypeIdentifiers: <String>['public.text'],
       );
 
       const XTypeGroup groupTwo = XTypeGroup(
           label: 'image',
           extensions: <String>['jpg'],
           mimeTypes: <String>['image/jpg'],
-          macUTIs: <String>['public.image'],
+          uniformTypeIdentifiers: <String>['public.image'],
           webWildCards: <String>['image/*']);
 
       await plugin.openFile(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
@@ -122,14 +122,14 @@ void main() {
         label: 'text',
         extensions: <String>['txt'],
         mimeTypes: <String>['text/plain'],
-        macUTIs: <String>['public.text'],
+        uniformTypeIdentifiers: <String>['public.text'],
       );
 
       const XTypeGroup groupTwo = XTypeGroup(
           label: 'image',
           extensions: <String>['jpg'],
           mimeTypes: <String>['image/jpg'],
-          macUTIs: <String>['public.image'],
+          uniformTypeIdentifiers: <String>['public.image'],
           webWildCards: <String>['image/*']);
 
       await plugin.openFiles(acceptedTypeGroups: <XTypeGroup>[group, groupTwo]);
@@ -210,14 +210,14 @@ void main() {
         label: 'text',
         extensions: <String>['txt'],
         mimeTypes: <String>['text/plain'],
-        macUTIs: <String>['public.text'],
+        uniformTypeIdentifiers: <String>['public.text'],
       );
 
       const XTypeGroup groupTwo = XTypeGroup(
           label: 'image',
           extensions: <String>['jpg'],
           mimeTypes: <String>['image/jpg'],
-          macUTIs: <String>['public.image'],
+          uniformTypeIdentifiers: <String>['public.image'],
           webWildCards: <String>['image/*']);
 
       await plugin
@@ -330,13 +330,13 @@ void main() {
         label: 'text',
         extensions: <String>['txt'],
         mimeTypes: <String>['text/plain'],
-        macUTIs: <String>['public.text'],
+        uniformTypeIdentifiers: <String>['public.text'],
       ),
       const XTypeGroup(
         label: 'image',
         extensions: <String>['jpg'],
         mimeTypes: <String>['image/jpg'],
-        macUTIs: <String>['public.image'],
+        uniformTypeIdentifiers: <String>['public.image'],
       ),
       const XTypeGroup(
         label: 'any',
