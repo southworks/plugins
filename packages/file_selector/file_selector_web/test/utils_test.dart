@@ -56,7 +56,7 @@ void main() {
 
       test('throws for a type group that does not support web', () {
         const List<XTypeGroup> acceptedTypes = <XTypeGroup>[
-          XTypeGroup(label: 'text', macUTIs: <String>['public.text']),
+          XTypeGroup(label: 'text', uniformTypeIdentifiers: <String>['public.text']),
         ];
         expect(() => acceptedTypesToString(acceptedTypes), throwsArgumentError);
       });
