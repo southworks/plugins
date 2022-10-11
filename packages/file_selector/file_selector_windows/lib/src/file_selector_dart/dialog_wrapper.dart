@@ -103,6 +103,13 @@ class DialogWrapper {
     });
   }
 
+  // ignore: public_member_api_docs
+  void setDefaultExtension() {
+    const String extension = 'txt';
+    final Pointer<Utf16> pszDefaultExtension = extension.toNativeUtf16();
+    _dialogController.setDefaultExtension(pszDefaultExtension);
+  }
+
   /// Sets the filters for allowed file types to select.
   /// filters -> std::optional<EncodableList>
   void setFileTypeFilters(List<XTypeGroup> filters) {

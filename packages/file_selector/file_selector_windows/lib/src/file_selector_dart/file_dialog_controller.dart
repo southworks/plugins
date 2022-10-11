@@ -4,6 +4,7 @@
 
 import 'dart:ffi';
 
+import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
 
 import 'ifile_open_dialog_factory.dart';
@@ -40,6 +41,11 @@ class FileDialogController {
   /// Sets the allowed file type extensions in the IFileOpenDialog. It also returns the operation result.
   int setFileTypes(int count, Pointer<COMDLG_FILTERSPEC> filters) {
     return _fileDialog.setFileTypes(count, filters);
+  }
+
+  /// Sets the default file type extension
+  int setDefaultExtension(Pointer<Utf16> pszDefaultExtension) {
+    return _fileDialog.setDefaultExtension(pszDefaultExtension);
   }
 
   /// Sets the label of the confirmation button. It also returns the operation result. It also returns the operation result.

@@ -83,6 +83,10 @@ class FileSelectorApi {
       dialogWrapper.setFileTypeFilters(options.allowedTypes);
     }
 
+    if (options.allowedTypes.isNotEmpty || suggestedName != null) {
+      dialogWrapper.setDefaultExtension();
+    }
+
     final List<String?>? files = dialogWrapper.show(parentWindow);
     if (files != null) {
       return files;
