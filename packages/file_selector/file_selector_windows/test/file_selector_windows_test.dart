@@ -26,7 +26,7 @@ void main() {
   test('registered instance', () {
     FileSelectorWindows.registerWith();
     expect(FileSelectorPlatform.instance, isA<FileSelectorWindows>());
-  });
+  }, testOn: 'windows');
 
   group('#openFile', () {
     setUp(() {
