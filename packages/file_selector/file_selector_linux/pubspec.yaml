@@ -4,6 +4,8 @@ repository: https://github.com/flutter/plugins/tree/main/packages/file_selector/
 issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+file_selector%22
 version: 0.9.0+1
 
+publish_to: none
+
 environment:
   sdk: ">=2.12.0 <3.0.0"
   flutter: ">=2.10.0"
@@ -18,7 +20,8 @@ flutter:
 
 dependencies:
   cross_file: ^0.3.1
-  file_selector_platform_interface: ^2.2.0
+  file_selector_platform_interface:
+    path: ../file_selector_platform_interface
   flutter:
     sdk: flutter
 

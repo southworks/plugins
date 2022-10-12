@@ -15,6 +15,7 @@ const char kChannelName[] = "plugins.flutter.dev/file_selector_linux";
 const char kOpenFileMethod[] = "openFile";
 const char kGetSavePathMethod[] = "getSavePath";
 const char kGetDirectoryPathMethod[] = "getDirectoryPath";
+const char kGetDirectoriesPathsMethod[] = "getDirectoriesPaths";
 
 const char kAcceptedTypeGroupsKey[] = "acceptedTypeGroups";
 const char kConfirmButtonTextKey[] = "confirmButtonText";
@@ -131,6 +132,9 @@ GtkFileChooserNative* create_dialog_for_method(GtkWindow* window,
   } else if (strcmp(method, kGetDirectoryPathMethod) == 0) {
     return create_dialog(window, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
                          "Choose Directory", "_Open", properties);
+  } else if (strcmp(method, kGetDirectoriesPathsMethod) == 0) {
+    return create_dialog(window, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                         "Choose one or more Directories", "_Open", properties);
   } else if (strcmp(method, kGetSavePathMethod) == 0) {
     return create_dialog(window, GTK_FILE_CHOOSER_ACTION_SAVE, "Save File",
                          "_Save", properties);
@@ -192,7 +196,8 @@ static void method_call_cb(FlMethodChannel* channel, FlMethodCall* method_call,
   FlValue* args = fl_method_call_get_args(method_call);
 
   g_autoptr(FlMethodResponse) response = nullptr;
-  if (strcmp(method, kOpenFileMethod) == 0) {
+  if (strcmp(method, kOpenFileMethod) == 0 ||
+      strcmp(method, kGetDirectoriesPathsMethod) == 0) {
     response = show_dialog(self, method, args, true);
   } else if (strcmp(method, kGetDirectoryPathMethod) == 0 ||
              strcmp(method, kGetSavePathMethod) == 0) {

@@ -16,6 +16,7 @@ const String _typeGroupMimeTypesKey = 'mimeTypes';
 const String _openFileMethod = 'openFile';
 const String _getSavePathMethod = 'getSavePath';
 const String _getDirectoryPathMethod = 'getDirectoryPath';
+const String _getDirectoriesPathsMethod = 'getDirectoriesPaths';
 
 const String _acceptedTypeGroupsKey = 'acceptedTypeGroups';
 const String _confirmButtonTextKey = 'confirmButtonText';
@@ -109,6 +110,19 @@ class FileSelectorLinux extends FileSelectorPlatform {
         _confirmButtonTextKey: confirmButtonText,
       },
     );
+  }
+
+  @override
+  Future<List<String>?> getDirectoriesPaths({
+    String? initialDirectory,
+    String? confirmButtonText,
+  }) async {
+    return await _channel
+        .invokeListMethod<String>(_getDirectoriesPathsMethod, <String, dynamic>{
+      _initialDirectoryKey: initialDirectory,
+      _confirmButtonTextKey: confirmButtonText,
+      _multipleKey: true,
+    });
   }
 }
 

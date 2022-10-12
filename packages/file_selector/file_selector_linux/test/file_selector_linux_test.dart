@@ -386,4 +386,50 @@ void main() {
       );
     });
   });
+
+    group('#getDirectoriesPaths', () {
+    test('passes initialDirectory correctly', () async {
+      await plugin.getDirectoriesPaths(initialDirectory: '/example/directory');
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoriesPaths', arguments: <String, dynamic>{
+            'initialDirectory': '/example/directory',
+            'confirmButtonText': null,
+            'multiple': true,
+          }),
+        ],
+      );
+    });
+    test('passes confirmButtonText correctly', () async {
+      await plugin.getDirectoriesPaths(confirmButtonText: 'Open File');
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoriesPaths', arguments: <String, dynamic>{
+            'initialDirectory': null,
+            'confirmButtonText': 'Open File',
+            'multiple': true,
+          }),
+        ],
+      );
+    });
+    test('passes multiple flag correctly', () async {
+      await plugin.getDirectoriesPaths();
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoriesPaths', arguments: <String, dynamic>{
+            'initialDirectory': null,
+            'confirmButtonText': null,
+            'multiple': true,
+          }),
+        ],
+      );
+    });
+
+  });
 }
