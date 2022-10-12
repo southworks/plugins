@@ -355,4 +355,51 @@ void main() {
       ],
     );
   });
+
+  group('getDirectoryPaths', () {
+    test('passes initialDirectory correctly', () async {
+      await plugin.getDirectoriesPaths(initialDirectory: '/example/directory');
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoriesPaths', arguments: <String, dynamic>{
+            'initialDirectory': '/example/directory',
+            'confirmButtonText': null,
+            'multiple': true
+          }),
+        ],
+      );
+    });
+
+    test('passes confirmButtonText correctly', () async {
+      await plugin.getDirectoriesPaths(confirmButtonText: 'Open Directories');
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoriesPaths', arguments: <String, dynamic>{
+            'initialDirectory': null,
+            'confirmButtonText': 'Open Directories',
+            'multiple': true
+          }),
+        ],
+      );
+    });
+
+    test('receives argument multiple as true even if the others are null', () async {
+      await plugin.getDirectoriesPaths();
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('getDirectoriesPaths', arguments: <String, dynamic>{
+            'initialDirectory': null,
+            'confirmButtonText': null,
+            'multiple': true
+          }),
+        ],
+      );
+    });
+  });
 }

@@ -258,55 +258,6 @@ void main() {
       expect(directoryPath, expectedDirectoryPath);
     });
   });
-
-  group('getDirectoriesPaths', () {
-    const List<String> expectedDirectoryPaths = <String>[
-      '/example/path',
-      '/example/2/path'
-    ];
-
-    test('works', () async {
-      fakePlatformImplementation
-        ..setExpectations(
-            initialDirectory: initialDirectory,
-            confirmButtonText: confirmButtonText)
-        ..setPathsResponse(expectedDirectoryPaths);
-
-      final List<String?>? directoryPaths = await getDirectoriesPaths(
-        initialDirectory: initialDirectory,
-        confirmButtonText: confirmButtonText,
-      );
-
-      expect(directoryPaths, expectedDirectoryPaths);
-    });
-
-    test('works with no arguments', () async {
-      fakePlatformImplementation.setPathsResponse(expectedDirectoryPaths);
-
-      final List<String?>? directoryPaths = await getDirectoriesPaths();
-      expect(directoryPaths, expectedDirectoryPaths);
-    });
-
-    test('sets the initial directory', () async {
-      fakePlatformImplementation
-        ..setExpectations(initialDirectory: initialDirectory)
-        ..setPathsResponse(expectedDirectoryPaths);
-
-      final List<String?>? directoryPaths =
-          await getDirectoriesPaths(initialDirectory: initialDirectory);
-      expect(directoryPaths, expectedDirectoryPaths);
-    });
-
-    test('sets the button confirmation label', () async {
-      fakePlatformImplementation
-        ..setExpectations(confirmButtonText: confirmButtonText)
-        ..setPathsResponse(expectedDirectoryPaths);
-
-      final List<String?>? directoryPaths =
-          await getDirectoriesPaths(confirmButtonText: confirmButtonText);
-      expect(directoryPaths, expectedDirectoryPaths);
-    });
-  });
 }
 
 class FakeFileSelector extends Fake
@@ -395,15 +346,5 @@ class FakeFileSelector extends Fake
     expect(initialDirectory, this.initialDirectory);
     expect(confirmButtonText, this.confirmButtonText);
     return path;
-  }
-
-  @override
-  Future<List<String?>?> getDirectoriesPaths({
-    String? initialDirectory,
-    String? confirmButtonText,
-  }) async {
-    expect(initialDirectory, this.initialDirectory);
-    expect(confirmButtonText, this.confirmButtonText);
-    return paths;
   }
 }
