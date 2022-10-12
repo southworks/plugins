@@ -8,6 +8,7 @@ import androidx.annotation.VisibleForTesting;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 @VisibleForTesting
 public class PathUtils {
@@ -31,19 +32,28 @@ public class PathUtils {
   }
 
   @VisibleForTesting
-  String copyFileToInternalStorage(Uri uri, Context context) {
-    return copyFileToInternalStorage(uri, context, "");
+  ArrayList<String> copyFilesToInternalStorage(ArrayList<Uri> uri, Context context) {
+    return copyFilesToInternalStorage(uri, context, "");
   }
 
-  public static String copyFileToInternalStorage(Uri uri, Context context, String cacheFolderName) {
-    String newDirPath = context.getFilesDir() + "/" + cacheFolderName;
-    String name = getFileName(uri, context);
+  public static ArrayList<String> copyFilesToInternalStorage(
+      ArrayList<Uri> uris, Context context, String cacheFolderName) {
+    ArrayList<String> absolutePaths = new ArrayList<>();
 
-    File output;
-    File dir = new File(newDirPath);
-    if (!dir.exists()) {
-      dir.mkdir();
+    String newDirPath = context.getFilesDir() + "/" + cacheFolderName;
+    createDirectoryIfNotExists(newDirPath);
+
+    for (Uri uri : uris) {
+      String name = getFileName(uri, context);
+      File output = getFile(context, newDirPath, uri, name);
+      absolutePaths.add(output.getAbsolutePath());
     }
+
+    return absolutePaths;
+  }
+
+  private static File getFile(Context context, String newDirPath, Uri uri, String name) {
+    File output;
     output = new File(newDirPath + "/" + name);
     try {
       InputStream inputStream = context.getContentResolver().openInputStream(uri);
@@ -61,8 +71,14 @@ public class PathUtils {
     } catch (Exception e) {
       System.out.println("There was an error adding a file to the application cache");
     }
+    return output;
+  }
 
-    return output.getAbsolutePath();
+  private static void createDirectoryIfNotExists(String newDirPath) {
+    File dir = new File(newDirPath);
+    if (!dir.exists()) {
+      dir.mkdir();
+    }
   }
 
   @VisibleForTesting

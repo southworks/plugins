@@ -100,7 +100,6 @@ public class FileSelectorPluginTest {
             IllegalArgumentException.class,
             () -> plugin.onMethodCall(new MethodCall(method, null), mockResult));
     assertEquals("Unknown method " + method, exception.getMessage());
-
     verifyNoInteractions(mockResult);
   }
 

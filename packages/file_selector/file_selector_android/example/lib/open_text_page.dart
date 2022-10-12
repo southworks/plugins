@@ -20,7 +20,6 @@ class OpenTextPage extends StatelessWidget {
       // Operation was canceled by the user.
       return;
     }
-
     final String fileName = file.name;
     final String fileContent = await file.readAsString();
 
