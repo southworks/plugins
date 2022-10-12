@@ -4,18 +4,17 @@
 
 package io.flutter.plugins.file_selector;
 
+import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
-import java.util.ArrayList;
 
 /**
  * A delegate class doing the heavy lifting for the plugin.
@@ -38,11 +37,13 @@ public class FileSelectorDelegate
     implements PluginRegistry.ActivityResultListener,
         PluginRegistry.RequestPermissionsResultListener {
   @VisibleForTesting static final int REQUEST_CODE_GET_DIRECTORY_PATH = 2342;
+  @VisibleForTesting static final int REQUEST_CODE_GET_SAVE_PATH = 2344;
 
   /** Constants for key types in the dart invoke methods */
   @VisibleForTesting static final String _confirmButtonText = "confirmButtonText";
 
   @VisibleForTesting static final String _initialDirectory = "initialDirectory";
+  @VisibleForTesting static final String _suggestedNameKey = "suggestedName";
 
   private final Activity activity;
 
@@ -53,27 +54,29 @@ public class FileSelectorDelegate
   }
 
   private MethodChannel.Result pendingResult;
-  private MethodCall methodCall;
 
   public FileSelectorDelegate(final Activity activity) {
     this(activity, null, null);
   }
 
   /**
-   * This constructor is used exclusively for testing; it can be used to provide mocks to final
-   * fields of this class. Otherwise those fields would have to be mutable and visible.
+   * These constructors are used exclusively for testing; they can be used to provide mocks to final
+   * fields of this class. Otherwise, those fields would have to be mutable and visible.
    */
+  @VisibleForTesting
+  FileSelectorDelegate() {
+    this(null, null, null);
+  }
+
   @VisibleForTesting
   FileSelectorDelegate(
       final Activity activity, final MethodChannel.Result result, final MethodCall methodCall) {
     this.activity = activity;
     this.pendingResult = result;
-    this.methodCall = methodCall;
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   public void getDirectoryPath(MethodCall methodCall, MethodChannel.Result result) {
-    if (!setPendingMethodCallAndResult(methodCall, result)) {
+    if (setPendingMethodCallAndResult(result)) {
       finishWithAlreadyActiveError(result);
       return;
     }
@@ -81,7 +84,20 @@ public class FileSelectorDelegate
     launchGetDirectoryPath(methodCall.argument(_initialDirectory));
   }
 
-  private void launchGetDirectoryPath(@Nullable String initialDirectory) {
+  public void getSavePath(MethodCall methodCall, MethodChannel.Result result) {
+    if (setPendingMethodCallAndResult(result)) {
+      finishWithAlreadyActiveError(result);
+      return;
+    }
+
+    String initialDirectory = methodCall.argument(_initialDirectory);
+    String suggestedName = methodCall.argument(_suggestedNameKey);
+
+    launchGetSavePath(initialDirectory, suggestedName);
+  }
+
+  @VisibleForTesting
+  void launchGetDirectoryPath(@Nullable String initialDirectory) {
     Intent getDirectoryPathIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 
     if (initialDirectory != null && !initialDirectory.isEmpty()) {
@@ -95,11 +111,36 @@ public class FileSelectorDelegate
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
+  @VisibleForTesting
+  void launchGetSavePath(@Nullable String initialDirectory, @Nullable String suggestedName) {
+    Intent getSavePathIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+    getSavePathIntent.setType("*/*");
+
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O
+        && initialDirectory != null
+        && !initialDirectory.isEmpty()) {
+      Uri uri = getSavePathIntent.getParcelableExtra(EXTRA_INITIAL_URI);
+      String scheme = uri.toString();
+      scheme = scheme.replace("/root/", initialDirectory);
+      uri = Uri.parse(scheme);
+      getSavePathIntent.putExtra(EXTRA_INITIAL_URI, uri);
+    }
+
+    if (suggestedName != null && !suggestedName.isEmpty()) {
+      getSavePathIntent.putExtra(Intent.EXTRA_TITLE, suggestedName);
+    }
+
+    activity.startActivityForResult(getSavePathIntent, REQUEST_CODE_GET_SAVE_PATH);
+  }
+
   @Override
   public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
     switch (requestCode) {
       case REQUEST_CODE_GET_DIRECTORY_PATH:
         handleGetDirectoryPathResult(resultCode, data);
+        break;
+      case REQUEST_CODE_GET_SAVE_PATH:
+        handleGetSavePathResult(resultCode, data);
         break;
       default:
         return false;
@@ -118,20 +159,34 @@ public class FileSelectorDelegate
     finishWithSuccess(null);
   }
 
+  @VisibleForTesting
+  void handleGetSavePathResult(int resultCode, Intent data) {
+    if (resultCode == Activity.RESULT_OK && data != null) {
+      Uri path = data.getData();
+      String fullPath = PathUtils.getSavePathUri(path, this.activity);
+      handleGetSavePathResult(fullPath);
+      return;
+    }
+
+    finishWithSuccess(null);
+  }
+
   private void handleGetDirectoryPathResult(String path) {
     finishWithSuccess(path);
   }
 
-  private boolean setPendingMethodCallAndResult(
-      MethodCall methodCall, MethodChannel.Result result) {
+  private void handleGetSavePathResult(String path) {
+    finishWithSuccess(path);
+  }
+
+  private boolean setPendingMethodCallAndResult(MethodChannel.Result result) {
     if (pendingResult != null) {
-      return false;
+      return true;
     }
 
-    this.methodCall = methodCall;
     pendingResult = result;
 
-    return true;
+    return false;
   }
 
   private void finishWithSuccess(String srcPath) {
@@ -139,25 +194,11 @@ public class FileSelectorDelegate
     clearMethodCallAndResult();
   }
 
-  private void finishWithListSuccess(ArrayList<String> srcPaths) {
-    if (pendingResult == null) {
-      return;
-    }
-    pendingResult.success(srcPaths);
-    clearMethodCallAndResult();
-  }
-
-  private void finishWithAlreadyActiveError(MethodChannel.Result result) {
+  private void finishWithAlreadyActiveError(@NonNull MethodChannel.Result result) {
     result.error("already_active", "File selector is already active", null);
   }
 
-  private void finishWithError(String errorCode, String errorMessage) {
-    pendingResult.error(errorCode, errorMessage, null);
-    clearMethodCallAndResult();
-  }
-
   private void clearMethodCallAndResult() {
-    methodCall = null;
     pendingResult = null;
   }
 }
