@@ -54,4 +54,30 @@ void main() {
       );
     });
   });
+
+  group('#openFile', () {
+    const XTypeGroup typeGroup =
+        XTypeGroup(mimeTypes: <String>['text/plain', 'application/json']);
+    final List<XTypeGroup> acceptedTypeGroups = <XTypeGroup>[typeGroup];
+    test('passes arguments correctly', () async {
+      await plugin.openFile(acceptedTypeGroups: acceptedTypeGroups);
+
+      expect(
+        log,
+        <Matcher>[
+          isMethodCall('openFile', arguments: <String, dynamic>{
+            'acceptedTypeGroups': <Object>[
+              <String, Object>{
+                'label': '',
+                'mimeTypes': <String>['text/plain', 'application/json']
+              }
+            ],
+            'initialDirectory': null,
+            'confirmButtonText': null,
+            'multiple': false
+          }),
+        ],
+      );
+    });
+  });
 }

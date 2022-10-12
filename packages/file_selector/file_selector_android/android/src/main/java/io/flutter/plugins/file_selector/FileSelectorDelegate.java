@@ -16,6 +16,8 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * A delegate class doing the heavy lifting for the plugin.
@@ -38,12 +40,18 @@ public class FileSelectorDelegate
     implements PluginRegistry.ActivityResultListener,
         PluginRegistry.RequestPermissionsResultListener {
   @VisibleForTesting static final int REQUEST_CODE_GET_DIRECTORY_PATH = 2342;
+  @VisibleForTesting static final int REQUEST_CODE_OPEN_FILE = 2343;
 
   /** Constants for key types in the dart invoke methods */
   @VisibleForTesting static final String _confirmButtonText = "confirmButtonText";
 
   @VisibleForTesting static final String _initialDirectory = "initialDirectory";
+  @VisibleForTesting static final String _acceptedTypeGroups = "acceptedTypeGroups";
+  @VisibleForTesting static final String _multiple = "multiple";
+  @VisibleForTesting static String cacheFolder = "file_selector";
 
+  private MethodChannel.Result pendingResult;
+  private MethodCall methodCall;
   private final Activity activity;
 
   @Override
@@ -52,23 +60,29 @@ public class FileSelectorDelegate
     return true;
   }
 
-  private MethodChannel.Result pendingResult;
-  private MethodCall methodCall;
-
   public FileSelectorDelegate(final Activity activity) {
     this(activity, null, null);
   }
 
   /**
-   * This constructor is used exclusively for testing; it can be used to provide mocks to final
-   * fields of this class. Otherwise those fields would have to be mutable and visible.
+   * These constructors are used exclusively for testing; they can be used to provide mocks to final
+   * fields of this class. Otherwise, those fields would have to be mutable and visible.
    */
+  @VisibleForTesting
+  FileSelectorDelegate() {
+    this(null, null, null);
+  }
+
   @VisibleForTesting
   FileSelectorDelegate(
       final Activity activity, final MethodChannel.Result result, final MethodCall methodCall) {
     this.activity = activity;
     this.pendingResult = result;
     this.methodCall = methodCall;
+  }
+
+  public void clearCache() {
+    PathUtils.clearCache(this.activity, cacheFolder);
   }
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -81,6 +95,32 @@ public class FileSelectorDelegate
     launchGetDirectoryPath(methodCall.argument(_initialDirectory));
   }
 
+  public void openFile(MethodCall methodCall, MethodChannel.Result result) {
+    if (!setPendingMethodCallAndResult(methodCall, result)) {
+      finishWithAlreadyActiveError(result);
+      return;
+    }
+
+    launchOpenFile(methodCall.argument(_multiple), methodCall.argument(_acceptedTypeGroups));
+  }
+
+  @Override
+  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+    switch (requestCode) {
+      case REQUEST_CODE_GET_DIRECTORY_PATH:
+        handleGetDirectoryPathResult(resultCode, data);
+        break;
+      case REQUEST_CODE_OPEN_FILE:
+        handleOpenFileResult(resultCode, data);
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   private void launchGetDirectoryPath(@Nullable String initialDirectory) {
     Intent getDirectoryPathIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 
@@ -91,21 +131,25 @@ public class FileSelectorDelegate
       uri = Uri.parse(scheme);
       getDirectoryPathIntent.putExtra("android.provider.extra.INITIAL_URI", uri);
     }
-
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
-  @Override
-  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-    switch (requestCode) {
-      case REQUEST_CODE_GET_DIRECTORY_PATH:
-        handleGetDirectoryPathResult(resultCode, data);
-        break;
-      default:
-        return false;
+  @VisibleForTesting
+  void launchOpenFile(boolean isMultipleSelection, ArrayList acceptedTypeGroups) {
+    Intent openFileIntent = new Intent(Intent.ACTION_GET_CONTENT);
+    openFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
+    openFileIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultipleSelection);
+    openFileIntent.setType("*/*");
+
+    if (acceptedTypeGroups != null && !acceptedTypeGroups.isEmpty()) {
+      String[] mimeTypes = getMimeTypes(acceptedTypeGroups);
+
+      if (mimeTypes.length > 0) {
+        openFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+      }
     }
 
-    return true;
+    activity.startActivityForResult(openFileIntent, REQUEST_CODE_OPEN_FILE);
   }
 
   private void handleGetDirectoryPathResult(int resultCode, Intent data) {
@@ -118,8 +162,26 @@ public class FileSelectorDelegate
     finishWithSuccess(null);
   }
 
+  @VisibleForTesting
+  void handleOpenFileResult(int resultCode, Intent data) {
+    if (resultCode == Activity.RESULT_OK && data != null) {
+      Uri uri = data.getData();
+      String filePath = PathUtils.copyFileToInternalStorage(uri, this.activity, cacheFolder);
+      ArrayList<String> srcPaths = new ArrayList<>(Collections.singletonList(filePath));
+
+      handleActionResults(srcPaths);
+      return;
+    }
+
+    finishWithSuccess(null);
+  }
+
   private void handleGetDirectoryPathResult(String path) {
     finishWithSuccess(path);
+  }
+
+  private void handleActionResults(ArrayList<String> srcPaths) {
+    finishWithListSuccess(srcPaths);
   }
 
   private boolean setPendingMethodCallAndResult(
@@ -159,5 +221,13 @@ public class FileSelectorDelegate
   private void clearMethodCallAndResult() {
     methodCall = null;
     pendingResult = null;
+  }
+
+  private String[] getMimeTypes(ArrayList acceptedTypeGroups) {
+    HashMap xTypeGroups = (HashMap) acceptedTypeGroups.get(0);
+    ArrayList<String> mimeTypesList = (ArrayList<String>) xTypeGroups.get("mimeTypes");
+    String[] mimeTypes =
+        mimeTypesList == null ? new String[0] : mimeTypesList.toArray(new String[0]);
+    return mimeTypes;
   }
 }

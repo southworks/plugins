@@ -6,7 +6,9 @@ package io.flutter.plugins.file_selector;
 
 import android.app.Activity;
 import android.app.Application;
+import android.os.Build;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -23,11 +25,11 @@ public class FileSelectorPlugin
   static final String METHOD_GET_DIRECTORY_PATH = "getDirectoryPath";
   static final String METHOD_OPEN_FILE = "openFile";
   static final String METHOD_GET_SAVE_PATH = "getSavePath";
-
   private static final String CHANNEL = "plugins.flutter.io/file_selector_android";
 
-  private FlutterPluginBinding pluginBinding;
-  private ActivityStateHelper activityState;
+  @VisibleForTesting FlutterPluginBinding pluginBinding;
+  @VisibleForTesting ActivityStateHelper activityState;
+  @VisibleForTesting FileSelectorDelegate delegate;
 
   /**
    * Default constructor for the plugin.
@@ -92,21 +94,26 @@ public class FileSelectorPlugin
             CHANNEL, application, activity, messenger, this, registrar, activityBinding);
   }
 
-  private void tearDown() {
+  @VisibleForTesting
+  void tearDown() {
     if (activityState != null) {
       activityState.release();
       activityState = null;
+      delegate.clearCache();
     }
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result rawResult) {
     if (activityState == null || activityState.getActivity() == null) {
       rawResult.error("no_activity", "file_selector plugin requires a foreground activity.", null);
       return;
     }
+
     MethodChannel.Result result = new MethodResultWrapper(rawResult);
-    FileSelectorDelegate delegate = activityState.getDelegate();
+    delegate = activityState.getDelegate();
+
     switch (call.method) {
       case METHOD_GET_DIRECTORY_PATH:
         delegate.getDirectoryPath(call, result);
@@ -114,7 +121,8 @@ public class FileSelectorPlugin
       case METHOD_GET_SAVE_PATH:
         throw new UnsupportedOperationException("getSavePath is not supported yet");
       case METHOD_OPEN_FILE:
-        throw new UnsupportedOperationException("openFile is not supported yet");
+        delegate.openFile(call, result);
+        break;
       default:
         throw new IllegalArgumentException("Unknown method " + call.method);
     }

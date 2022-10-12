@@ -72,7 +72,7 @@ class FileSelectorAndroid extends FileSelectorPlatform {
         _acceptedTypeGroupsKey: serializedTypeGroups,
       _initialDirectoryKey: initialDirectory,
       _confirmButtonTextKey: confirmButtonText,
-      _multipleKey: false,
+      _multipleKey: true,
     });
 
     return pathList?.map((String path) => XFile(path)).toList() ?? <XFile>[];
