@@ -1,6 +1,6 @@
-## 2.2.0+1
+## 2.3.0
 
-* Adds `getDirectoriesPaths` method to interface.
+* Adds getDirectoriesPaths method to the interface.
 
 ## 2.2.0
 
