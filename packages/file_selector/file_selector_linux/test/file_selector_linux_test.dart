@@ -387,7 +387,7 @@ void main() {
     });
   });
 
-    group('#getDirectoriesPaths', () {
+  group('#getDirectoriesPaths', () {
     test('passes initialDirectory correctly', () async {
       await plugin.getDirectoriesPaths(initialDirectory: '/example/directory');
 
@@ -430,6 +430,5 @@ void main() {
         ],
       );
     });
-
   });
 }
