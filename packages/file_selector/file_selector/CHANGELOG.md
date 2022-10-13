@@ -1,6 +1,6 @@
 ## 0.9.2+2
 
-* Adds `getDirectoriesPaths` method.
+* Adds `getDirectoryPaths` method.
 
 ## 0.9.2+1
 
