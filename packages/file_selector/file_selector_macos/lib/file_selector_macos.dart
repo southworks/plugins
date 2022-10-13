@@ -88,6 +88,21 @@ class FileSelectorMacOS extends FileSelectorPlatform {
     );
   }
 
+  @override
+  Future<List<String>?> getDirectoriesPaths({
+    String? initialDirectory,
+    String? confirmButtonText,
+  }) async {
+    return await _channel.invokeListMethod<String>(
+      'getDirectoriesPaths',
+      <String, dynamic>{
+        'initialDirectory': initialDirectory,
+        'confirmButtonText': confirmButtonText,
+        'multiple': true,
+      },
+    );
+  }
+
   // Converts the type group list into a flat list of all allowed types, since
   // macOS doesn't support filter groups.
   Map<String, List<String>>? _allowedTypeListFromTypeGroups(

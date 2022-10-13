@@ -46,6 +46,7 @@ public class FileSelectorPlugin: NSObject, FlutterPlugin {
 
   private let openMethod = "openFile"
   private let openDirectoryMethod = "getDirectoryPath"
+  private let openDirectoriesMethod = "getDirectoriesPaths"
   private let saveMethod = "getSavePath"
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -67,11 +68,14 @@ public class FileSelectorPlugin: NSObject, FlutterPlugin {
     let arguments = (call.arguments ?? [:]) as! [String: Any]
     switch call.method {
     case openMethod,
-         openDirectoryMethod:
+         openDirectoryMethod,
+         openDirectoriesMethod:
       let choosingDirectory = call.method == openDirectoryMethod
+      let choosingDirectories = call.method == openDirectoriesMethod
       let panel = NSOpenPanel()
       configure(panel: panel, with: arguments)
-      configure(openPanel: panel, with: arguments, choosingDirectory: choosingDirectory)
+      if (choosingDirectories) { configure(openPanel: panel, with: arguments, choosingDirectory: choosingDirectories) }
+      if (choosingDirectory) { configure(openPanel: panel, with: arguments, choosingDirectory: choosingDirectory) }
       panelController.display(panel, for: viewProvider.view?.window) { (selection: [URL]?) in
         if (choosingDirectory) {
           result(selection?.first?.path)
