@@ -1,3 +1,7 @@
+## 2.2.0+1
+
+* Adds `getDirectoriesPaths` method to interface.
+
 ## 2.2.0
 
 * Makes `XTypeGroup`'s constructor constant.
