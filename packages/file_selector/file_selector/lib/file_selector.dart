@@ -135,10 +135,10 @@ Future<String?> getDirectoryPath({
 /// When not provided, the default OS label is used (for example, "Open").
 ///
 /// Returns `null` if the user cancels the operation.
-Future<List<String?>?> getDirectoryPaths({
+Future<List<String?>?> getDirectoriesPaths({
   String? initialDirectory,
   String? confirmButtonText,
 }) async {
-  return FileSelectorPlatform.instance.getDirectoryPaths(
+  return FileSelectorPlatform.instance.getDirectoriesPaths(
       initialDirectory: initialDirectory, confirmButtonText: confirmButtonText);
 }

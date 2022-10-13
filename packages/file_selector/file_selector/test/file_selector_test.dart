@@ -259,7 +259,7 @@ void main() {
     });
   });
 
-  group('getDirectoryPaths', () {
+  group('getDirectoriesPaths', () {
     const List<String> expectedDirectoryPaths = <String>[
       '/example/path',
       '/example/2/path'
@@ -272,7 +272,7 @@ void main() {
             confirmButtonText: confirmButtonText)
         ..setPathsResponse(expectedDirectoryPaths);
 
-      final List<String?>? directoryPaths = await getDirectoryPaths(
+      final List<String?>? directoryPaths = await getDirectoriesPaths(
         initialDirectory: initialDirectory,
         confirmButtonText: confirmButtonText,
       );
@@ -283,7 +283,7 @@ void main() {
     test('works with no arguments', () async {
       fakePlatformImplementation.setPathsResponse(expectedDirectoryPaths);
 
-      final List<String?>? directoryPaths = await getDirectoryPaths();
+      final List<String?>? directoryPaths = await getDirectoriesPaths();
       expect(directoryPaths, expectedDirectoryPaths);
     });
 
@@ -293,7 +293,7 @@ void main() {
         ..setPathsResponse(expectedDirectoryPaths);
 
       final List<String?>? directoryPaths =
-          await getDirectoryPaths(initialDirectory: initialDirectory);
+          await getDirectoriesPaths(initialDirectory: initialDirectory);
       expect(directoryPaths, expectedDirectoryPaths);
     });
 
@@ -303,7 +303,7 @@ void main() {
         ..setPathsResponse(expectedDirectoryPaths);
 
       final List<String?>? directoryPaths =
-          await getDirectoryPaths(confirmButtonText: confirmButtonText);
+          await getDirectoriesPaths(confirmButtonText: confirmButtonText);
       expect(directoryPaths, expectedDirectoryPaths);
     });
   });
@@ -398,7 +398,7 @@ class FakeFileSelector extends Fake
   }
 
   @override
-  Future<List<String?>?> getDirectoryPaths({
+  Future<List<String?>?> getDirectoriesPaths({
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
