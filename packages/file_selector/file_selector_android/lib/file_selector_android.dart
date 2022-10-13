@@ -5,33 +5,13 @@
 import 'dart:async';
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
+import 'messages.g.dart';
 
-const MethodChannel _channel =
-    MethodChannel('plugins.flutter.io/file_selector_android');
-
-const String _typeGroupLabelKey = 'label';
-const String _typeGroupExtensionsKey = 'extensions';
-const String _typeGroupMimeTypesKey = 'mimeTypes';
-
-const String _openFileMethod = 'openFile';
-const String _getSavePathMethod = 'getSavePath';
-const String _getDirectoryPathMethod = 'getDirectoryPath';
-
-const String _acceptedTypeGroupsKey = 'acceptedTypeGroups';
-const String _confirmButtonTextKey = 'confirmButtonText';
-const String _initialDirectoryKey = 'initialDirectory';
-const String _multipleKey = 'multiple';
-const String _suggestedNameKey = 'suggestedName';
-
-/// An implementation of [FileSelectorPlatform] for Android.
+/// The Android implementation of [FileSelectorPlatform].
 class FileSelectorAndroid extends FileSelectorPlatform {
-  /// The MethodChannel that is being used by this implementation of the plugin.
-  @visibleForTesting
-  MethodChannel get channel => _channel;
+  final FileSelectorApi _api = FileSelectorApi();
 
-  /// Registers the Android implementation.
+  /// Registers this class as the default instance of [FileSelectorPlatform].
   static void registerWith() {
     FileSelectorPlatform.instance = FileSelectorAndroid();
   }
@@ -42,19 +22,15 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<Map<String, Object>> serializedTypeGroups =
-        _serializeTypeGroups(acceptedTypeGroups);
+    final List<String?> path = await _api.openFiles(
+        SelectionOptions(
+          allowMultiple: false,
+          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+        ),
+        initialDirectory,
+        confirmButtonText);
 
-    final List<String>? path = await _channel
-        .invokeListMethod<String>(_openFileMethod, <String, dynamic>{
-      if (serializedTypeGroups.isNotEmpty)
-        _acceptedTypeGroupsKey: serializedTypeGroups,
-      _initialDirectoryKey: initialDirectory,
-      _confirmButtonTextKey: confirmButtonText,
-      _multipleKey: false,
-    });
-
-    return path == null ? null : XFile(path.first);
+    return path.first == null ? null : XFile(path.first!);
   }
 
   @override
@@ -63,19 +39,15 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<Map<String, Object>> serializedTypeGroups =
-        _serializeTypeGroups(acceptedTypeGroups);
+    final List<String?> paths = await _api.openFiles(
+        SelectionOptions(
+          allowMultiple: true,
+          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+        ),
+        initialDirectory,
+        confirmButtonText);
 
-    final List<String>? pathList = await _channel
-        .invokeListMethod<String>(_openFileMethod, <String, dynamic>{
-      if (serializedTypeGroups.isNotEmpty)
-        _acceptedTypeGroupsKey: serializedTypeGroups,
-      _initialDirectoryKey: initialDirectory,
-      _confirmButtonTextKey: confirmButtonText,
-      _multipleKey: true,
-    });
-
-    return pathList?.map((String path) => XFile(path)).toList() ?? <XFile>[];
+    return paths.map((String? path) => XFile(path!)).toList();
   }
 
   /// Android doesn't currently support to set the Confirm Button Text
@@ -86,63 +58,31 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    return _channel.invokeMethod<String>(
-      _getDirectoryPathMethod,
-      <String, dynamic>{
-        _initialDirectoryKey: initialDirectory,
-      },
-    );
-  }
-
-  /// Android doesn't currently support to set the Confirm Button Text
-  /// As for MIME types, Android handles the save Intent quite diferently than a desktop OS,
-  /// and doesn't get a list of types to filter in the save action.
-  /// For references, please check the following link:
-  /// https://developer.android.com/reference/android/content/Intent#ACTION_CREATE_DOCUMENT
-  @override
-  Future<String?> getSavePath({
-    List<XTypeGroup>? acceptedTypeGroups,
-    String? initialDirectory,
-    String? suggestedName,
-    String? confirmButtonText,
-  }) async {
-    return _channel.invokeMethod<String>(
-      _getSavePathMethod,
-      <String, dynamic>{
-        _initialDirectoryKey: initialDirectory,
-        _suggestedNameKey: suggestedName
-      },
-    );
+    return _api.getDirectoryPath(initialDirectory);
   }
 }
 
-List<Map<String, Object>> _serializeTypeGroups(List<XTypeGroup>? groups) {
-  return (groups ?? <XTypeGroup>[]).map(_serializeTypeGroup).toList();
-}
+List<TypeGroup> _typeGroupsFromXTypeGroups(List<XTypeGroup>? xtypes) {
+  return (xtypes ?? <XTypeGroup>[]).map((XTypeGroup xtype) {
+    if (xtype.allowsAny) {
+      return TypeGroup(
+          label: xtype.label ?? '',
+          extensions: <String>['*'],
+          mimeTypes: <String>['*']);
+    }
 
-Map<String, Object> _serializeTypeGroup(XTypeGroup group) {
-  final Map<String, Object> serialization = <String, Object>{
-    _typeGroupLabelKey: group.label ?? '',
-  };
-  if (group.allowsAny) {
-    serialization[_typeGroupExtensionsKey] = <String>['*'];
-  } else {
-    if ((group.extensions?.isEmpty ?? true) &&
-        (group.mimeTypes?.isEmpty ?? true)) {
-      throw ArgumentError('Provided type group $group does not allow '
-          'all files, but does not set any of the Linux-supported filter '
-          'categories. "extensions" or "mimeTypes" must be non-empty for Linux '
-          'if anything is non-empty.');
+    if (!xtype.allowsAny &&
+        (xtype.extensions?.isEmpty ?? true) &&
+        (xtype.mimeTypes?.isEmpty ?? true)) {
+      throw ArgumentError('Provided type group $xtype does not allow '
+          'all files, but does not set any of the Android-supported filter '
+          'categories. "extensions" or "mimeTypes" must be non-empty for Android if '
+          'anything is non-empty.');
     }
-    if (group.extensions?.isNotEmpty ?? false) {
-      serialization[_typeGroupExtensionsKey] = group.extensions
-              ?.map((String extension) => '*.$extension')
-              .toList() ??
-          <String>[];
-    }
-    if (group.mimeTypes?.isNotEmpty ?? false) {
-      serialization[_typeGroupMimeTypesKey] = group.mimeTypes ?? <String>[];
-    }
-  }
-  return serialization;
+
+    return TypeGroup(
+        label: xtype.label ?? '',
+        extensions: xtype.extensions ?? <String>[],
+        mimeTypes: xtype.mimeTypes ?? <String>[]);
+  }).toList();
 }
