@@ -5,8 +5,8 @@
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
 import 'package:flutter/material.dart';
 
-/// Screen that allows the user to select a directory using `getDirectoryPath`,
-///  then displays the selected directory in a dialog.
+/// Screen that allows the user to select one or more directories using `getDirectoriesPaths`,
+/// then displays the selected directories in a dialog.
 class GetMultipleDirectoriesPage extends StatelessWidget {
   /// Default Constructor
   const GetMultipleDirectoriesPage({Key? key}) : super(key: key);
@@ -63,10 +63,10 @@ class GetMultipleDirectoriesPage extends StatelessWidget {
 /// Widget that displays a text file in a dialog.
 class TextDisplay extends StatelessWidget {
   /// Creates a `TextDisplay`.
-  const TextDisplay(this.directoryPath, {Key? key}) : super(key: key);
+  const TextDisplay(this.directoriesPaths, {Key? key}) : super(key: key);
 
   /// The path selected in the dialog.
-  final String directoryPath;
+  final String directoriesPaths;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class TextDisplay extends StatelessWidget {
       title: const Text('Selected Directories'),
       content: Scrollbar(
         child: SingleChildScrollView(
-          child: Text(directoryPath),
+          child: Text(directoriesPaths),
         ),
       ),
       actions: <Widget>[
