@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart' show WriteBuffer, ReadBuffer;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:file_selector_android/messages.g.dart';
+import 'package:file_selector_android/src/messages.g.dart';
 
 class _TestFileSelectorApiCodec extends StandardMessageCodec {
   const _TestFileSelectorApiCodec();
@@ -19,10 +19,6 @@ class _TestFileSelectorApiCodec extends StandardMessageCodec {
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is SelectionOptions) {
       buffer.putUint8(128);
-      writeValue(buffer, value.encode());
-    } else 
-    if (value is TypeGroup) {
-      buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -35,9 +31,6 @@ class _TestFileSelectorApiCodec extends StandardMessageCodec {
       case 128:       
         return SelectionOptions.decode(readValue(buffer)!);
       
-      case 129:       
-        return TypeGroup.decode(readValue(buffer)!);
-      
       default:      
         return super.readValueOfType(type, buffer);
       
@@ -47,8 +40,8 @@ class _TestFileSelectorApiCodec extends StandardMessageCodec {
 abstract class TestFileSelectorApi {
   static const MessageCodec<Object?> codec = _TestFileSelectorApiCodec();
 
-  List<String?> openFiles(SelectionOptions options, String? initialDirectory, String? confirmButtonText);
-  String? getDirectoryPath(String? initialDirectory);
+  Future<List<String?>> openFiles(SelectionOptions options);
+  Future<String?> getDirectoryPath(String? initialDirectory);
   static void setup(TestFileSelectorApi? api, {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
@@ -61,9 +54,7 @@ abstract class TestFileSelectorApi {
           final List<Object?> args = (message as List<Object?>?)!;
           final SelectionOptions? arg_options = (args[0] as SelectionOptions?);
           assert(arg_options != null, 'Argument for dev.flutter.pigeon.FileSelectorApi.openFiles was null, expected non-null SelectionOptions.');
-          final String? arg_initialDirectory = (args[1] as String?);
-          final String? arg_confirmButtonText = (args[2] as String?);
-          final List<String?> output = api.openFiles(arg_options!, arg_initialDirectory, arg_confirmButtonText);
+          final List<String?> output = await api.openFiles(arg_options!);
           return <Object?, Object?>{'result': output};
         });
       }
@@ -78,7 +69,7 @@ abstract class TestFileSelectorApi {
           assert(message != null, 'Argument for dev.flutter.pigeon.FileSelectorApi.getDirectoryPath was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_initialDirectory = (args[0] as String?);
-          final String? output = api.getDirectoryPath(arg_initialDirectory);
+          final String? output = await api.getDirectoryPath(arg_initialDirectory);
           return <Object?, Object?>{'result': output};
         });
       }

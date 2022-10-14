@@ -4,7 +4,6 @@
 
 package io.flutter.plugins.file_selector;
 
-import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
 
 import android.app.Activity;
 import android.content.ClipData;
@@ -14,10 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 /**
  * A delegate class doing the heavy lifting for the plugin.
@@ -40,7 +38,6 @@ public class FileSelectorDelegate
     implements PluginRegistry.ActivityResultListener,
         PluginRegistry.RequestPermissionsResultListener {
   @VisibleForTesting static final int REQUEST_CODE_GET_DIRECTORY_PATH = 2342;
-  @VisibleForTesting static final int REQUEST_CODE_GET_SAVE_PATH = 2344;
   @VisibleForTesting static final int REQUEST_CODE_OPEN_FILE = 2343;
 
   /** Constants for key types in the dart invoke methods */
@@ -54,7 +51,7 @@ public class FileSelectorDelegate
 
   @VisibleForTesting Intent openFileIntent = new Intent();
 
-  private MethodChannel.Result pendingResult;
+  private Messages.Result pendingResult;
   private final Activity activity;
 
   @Override
@@ -78,7 +75,7 @@ public class FileSelectorDelegate
 
   @VisibleForTesting
   FileSelectorDelegate(
-      final Activity activity, final MethodChannel.Result result, final MethodCall methodCall) {
+      final Activity activity, final Messages.Result result, final MethodCall methodCall) {
     this.activity = activity;
     this.pendingResult = result;
   }
@@ -88,35 +85,25 @@ public class FileSelectorDelegate
     PathUtils.clearCache(this.activity, cacheFolder);
   }
 
-  public void getDirectoryPath(MethodCall methodCall, MethodChannel.Result result) {
+  public void getDirectoryPath(@Nullable String initialDirectory, Messages.Result<String> result) {
     if (setPendingResult(result)) {
       finishWithAlreadyActiveError(result);
       return;
     }
 
-    launchGetDirectoryPath(methodCall.argument(_initialDirectory));
+    launchGetDirectoryPath(initialDirectory);
   }
 
-  public void getSavePath(MethodCall methodCall, MethodChannel.Result result) {
+  public void openFile(
+      @NonNull Messages.SelectionOptions options,
+      Messages.Result<List<String>> result) {
     if (setPendingResult(result)) {
       finishWithAlreadyActiveError(result);
       return;
     }
 
-    String initialDirectory = methodCall.argument(_initialDirectory);
-    String suggestedName = methodCall.argument(_suggestedNameKey);
-
-    launchGetSavePath(initialDirectory, suggestedName);
-  }
-
-  public void openFile(MethodCall methodCall, MethodChannel.Result result) {
-    if (setPendingResult(result)) {
-      finishWithAlreadyActiveError(result);
-      return;
-    }
-
-    Boolean multipleFiles = methodCall.argument(_multiple);
-    ArrayList acceptedTypeGroups = methodCall.argument(_acceptedTypeGroups);
+    Boolean multipleFiles = options.getAllowMultiple();
+    List<String> acceptedTypeGroups = options.getAllowedTypes();
 
     launchOpenFile(multipleFiles, acceptedTypeGroups);
   }
@@ -135,36 +122,11 @@ public class FileSelectorDelegate
     activity.startActivityForResult(getDirectoryPathIntent, REQUEST_CODE_GET_DIRECTORY_PATH);
   }
 
-  @VisibleForTesting
-  void launchGetSavePath(@Nullable String initialDirectory, @Nullable String suggestedName) {
-    Intent getSavePathIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-    getSavePathIntent.setType("*/*");
-
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O
-        && initialDirectory != null
-        && !initialDirectory.isEmpty()) {
-      Uri uri = getSavePathIntent.getParcelableExtra(EXTRA_INITIAL_URI);
-      String scheme = uri.toString();
-      scheme = scheme.replace("/root/", initialDirectory);
-      uri = Uri.parse(scheme);
-      getSavePathIntent.putExtra(EXTRA_INITIAL_URI, uri);
-    }
-
-    if (suggestedName != null && !suggestedName.isEmpty()) {
-      getSavePathIntent.putExtra(Intent.EXTRA_TITLE, suggestedName);
-    }
-
-    activity.startActivityForResult(getSavePathIntent, REQUEST_CODE_GET_SAVE_PATH);
-  }
-
   @Override
   public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
     switch (requestCode) {
       case REQUEST_CODE_GET_DIRECTORY_PATH:
         handleGetDirectoryPathResult(resultCode, data);
-        break;
-      case REQUEST_CODE_GET_SAVE_PATH:
-        handleGetSavePathResult(resultCode, data);
         break;
       case REQUEST_CODE_OPEN_FILE:
         handleOpenFileResult(resultCode, data);
@@ -176,18 +138,15 @@ public class FileSelectorDelegate
     return true;
   }
 
-  void launchOpenFile(boolean isMultipleSelection, ArrayList acceptedTypeGroups) {
+  void launchOpenFile(boolean isMultipleSelection, List<String> acceptedTypeGroups) {
     openFileIntent.setAction(Intent.ACTION_GET_CONTENT);
     openFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
     openFileIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, isMultipleSelection);
-    openFileIntent.setType("*/*");
 
     if (acceptedTypeGroups != null && !acceptedTypeGroups.isEmpty()) {
-      String[] mimeTypes = getMimeTypes(acceptedTypeGroups);
+      openFileIntent.setType(acceptedTypeGroups.get(0));
 
-      if (mimeTypes.length > 0) {
-        openFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-      }
+      openFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, acceptedTypeGroups.toArray(new String[0]));
     }
 
     activity.startActivityForResult(openFileIntent, REQUEST_CODE_OPEN_FILE);
@@ -203,18 +162,6 @@ public class FileSelectorDelegate
     finishWithSuccess(null);
   }
 
-  @VisibleForTesting
-  void handleGetSavePathResult(int resultCode, Intent data) {
-    if (resultCode == Activity.RESULT_OK && data != null) {
-      Uri path = data.getData();
-      String fullPath = PathUtils.getSavePathUri(path, this.activity);
-
-      handleGetSavePathResult(fullPath);
-      return;
-    }
-
-    finishWithSuccess(null);
-  }
 
   void handleOpenFileResult(int resultCode, Intent data) {
     if (resultCode != Activity.RESULT_OK || data == null) {
@@ -233,16 +180,12 @@ public class FileSelectorDelegate
     finishWithSuccess(path);
   }
 
-  private void handleGetSavePathResult(String path) {
-    finishWithSuccess(path);
-  }
-
   @VisibleForTesting
   void handleOpenFileActionResults(ArrayList<String> srcPaths) {
     finishWithListSuccess(srcPaths);
   }
 
-  private boolean setPendingResult(MethodChannel.Result result) {
+  private <T> boolean setPendingResult(Messages.Result<T> result) {
     if (pendingResult != null) {
       return true;
     }
@@ -266,29 +209,13 @@ public class FileSelectorDelegate
     clearMethodCallAndResult();
   }
 
-  private void finishWithAlreadyActiveError(@NonNull MethodChannel.Result result) {
-    result.error("already_active", "File selector is already active", null);
-  }
-
-  private void finishWithError(String errorCode, String errorMessage) {
-    pendingResult.error(errorCode, errorMessage, null);
-    clearMethodCallAndResult();
+  private void finishWithAlreadyActiveError(@NonNull Messages.Result result) {
+    result.error(new Throwable("File selector is already active", null));
   }
 
   @VisibleForTesting
   void clearMethodCallAndResult() {
     pendingResult = null;
-  }
-
-  @VisibleForTesting
-  String[] getMimeTypes(ArrayList acceptedTypeGroups) {
-    ArrayList<String> mimeTypesList = new ArrayList<>();
-    for (Object acceptedType : acceptedTypeGroups) {
-      HashMap xTypeGroup = (HashMap) acceptedType;
-      ArrayList<String> types = (ArrayList<String>) xTypeGroup.get("mimeTypes");
-      if (types != null) mimeTypesList.addAll(types);
-    }
-    return mimeTypesList.toArray(new String[0]);
   }
 
   @VisibleForTesting

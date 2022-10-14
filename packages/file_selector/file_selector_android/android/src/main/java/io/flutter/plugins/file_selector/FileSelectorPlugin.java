@@ -6,24 +6,21 @@ package io.flutter.plugins.file_selector;
 
 import android.app.Activity;
 import android.app.Application;
+import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugins.file_selector.Messages.FileSelectorApi;
+import java.util.List;
 
 /** Android platform implementation of the FileSelectorPlugin. */
-public class FileSelectorPlugin
-    implements MethodChannel.MethodCallHandler, FlutterPlugin, ActivityAware {
+public class FileSelectorPlugin implements FlutterPlugin, FileSelectorApi, ActivityAware {
 
-  static final String METHOD_GET_DIRECTORY_PATH = "getDirectoryPath";
-  static final String METHOD_OPEN_FILE = "openFile";
-  static final String METHOD_GET_SAVE_PATH = "getSavePath";
-  private static final String CHANNEL = "plugins.flutter.io/file_selector_android";
+  static final String TAG = "FileSelectorPlugin";
 
   @VisibleForTesting FlutterPluginBinding pluginBinding;
   @VisibleForTesting ActivityStateHelper activityState;
@@ -46,6 +43,20 @@ public class FileSelectorPlugin
     return activityState;
   }
 
+  private void setup(
+      BinaryMessenger messenger,
+      final Application application,
+      final Activity activity,
+      final ActivityPluginBinding activityBinding) {
+
+    try {
+      FileSelectorApi.setup(messenger, this);
+      activityState = new ActivityStateHelper(application, activity, activityBinding);
+    } catch (Exception ex) {
+      Log.e(TAG, "Received exception while setting up PathProviderPlugin", ex);
+    }
+  }
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
     pluginBinding = binding;
@@ -62,13 +73,7 @@ public class FileSelectorPlugin
         pluginBinding.getBinaryMessenger(),
         (Application) pluginBinding.getApplicationContext(),
         binding.getActivity(),
-        null,
         binding);
-  }
-
-  @Override
-  public void onDetachedFromActivity() {
-    tearDown();
   }
 
   @Override
@@ -81,15 +86,9 @@ public class FileSelectorPlugin
     onAttachedToActivity(binding);
   }
 
-  private void setup(
-      final BinaryMessenger messenger,
-      final Application application,
-      final Activity activity,
-      final PluginRegistry.Registrar registrar,
-      final ActivityPluginBinding activityBinding) {
-    activityState =
-        new ActivityStateHelper(
-            CHANNEL, application, activity, messenger, this, registrar, activityBinding);
+  @Override
+  public void onDetachedFromActivity() {
+    tearDown();
   }
 
   @VisibleForTesting
@@ -102,26 +101,26 @@ public class FileSelectorPlugin
   }
 
   @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+  public void openFiles(
+      @NonNull Messages.SelectionOptions options,
+      Messages.Result<List<String>> result) {
     if (activityState == null || activityState.getActivity() == null) {
-      result.error("no_activity", "file_selector plugin requires a foreground activity.", null);
-      return;
+      result.error(new Throwable("file_selector plugin requires a foreground activity.", null));
     }
 
     delegate = activityState.getDelegate();
 
-    switch (call.method) {
-      case METHOD_GET_DIRECTORY_PATH:
-        delegate.getDirectoryPath(call, result);
-        break;
-      case METHOD_GET_SAVE_PATH:
-        delegate.getSavePath(call, result);
-        break;
-      case METHOD_OPEN_FILE:
-        delegate.openFile(call, result);
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown method " + call.method);
+    delegate.openFile(options, result);
+  }
+
+  @Override
+  public void getDirectoryPath(@Nullable String initialDirectory, Messages.Result<String> result) {
+    if (activityState == null || activityState.getActivity() == null) {
+      result.error(new Throwable("file_selector plugin requires a foreground activity.", null));
     }
+
+    delegate = activityState.getDelegate();
+
+    delegate.getDirectoryPath(initialDirectory, result);
   }
 }

@@ -26,80 +26,6 @@ import java.util.HashMap;
 public class Messages {
 
   /** Generated class from Pigeon that represents data sent in messages. */
-  public static class TypeGroup {
-    private @NonNull String label;
-    public @NonNull String getLabel() { return label; }
-    public void setLabel(@NonNull String setterArg) {
-      if (setterArg == null) {
-        throw new IllegalStateException("Nonnull field \"label\" is null.");
-      }
-      this.label = setterArg;
-    }
-
-    private @NonNull List<String> extensions;
-    public @NonNull List<String> getExtensions() { return extensions; }
-    public void setExtensions(@NonNull List<String> setterArg) {
-      if (setterArg == null) {
-        throw new IllegalStateException("Nonnull field \"extensions\" is null.");
-      }
-      this.extensions = setterArg;
-    }
-
-    private @NonNull List<String> mimeTypes;
-    public @NonNull List<String> getMimeTypes() { return mimeTypes; }
-    public void setMimeTypes(@NonNull List<String> setterArg) {
-      if (setterArg == null) {
-        throw new IllegalStateException("Nonnull field \"mimeTypes\" is null.");
-      }
-      this.mimeTypes = setterArg;
-    }
-
-    /** Constructor is private to enforce null safety; use Builder. */
-    private TypeGroup() {}
-    public static final class Builder {
-      private @Nullable String label;
-      public @NonNull Builder setLabel(@NonNull String setterArg) {
-        this.label = setterArg;
-        return this;
-      }
-      private @Nullable List<String> extensions;
-      public @NonNull Builder setExtensions(@NonNull List<String> setterArg) {
-        this.extensions = setterArg;
-        return this;
-      }
-      private @Nullable List<String> mimeTypes;
-      public @NonNull Builder setMimeTypes(@NonNull List<String> setterArg) {
-        this.mimeTypes = setterArg;
-        return this;
-      }
-      public @NonNull TypeGroup build() {
-        TypeGroup pigeonReturn = new TypeGroup();
-        pigeonReturn.setLabel(label);
-        pigeonReturn.setExtensions(extensions);
-        pigeonReturn.setMimeTypes(mimeTypes);
-        return pigeonReturn;
-      }
-    }
-    @NonNull Map<String, Object> toMap() {
-      Map<String, Object> toMapResult = new HashMap<>();
-      toMapResult.put("label", label);
-      toMapResult.put("extensions", extensions);
-      toMapResult.put("mimeTypes", mimeTypes);
-      return toMapResult;
-    }
-    static @NonNull TypeGroup fromMap(@NonNull Map<String, Object> map) {
-      TypeGroup pigeonResult = new TypeGroup();
-      Object label = map.get("label");
-      pigeonResult.setLabel((String)label);
-      Object extensions = map.get("extensions");
-      pigeonResult.setExtensions((List<String>)extensions);
-      Object mimeTypes = map.get("mimeTypes");
-      pigeonResult.setMimeTypes((List<String>)mimeTypes);
-      return pigeonResult;
-    }
-  }
-
-  /** Generated class from Pigeon that represents data sent in messages. */
   public static class SelectionOptions {
     private @NonNull Boolean allowMultiple;
     public @NonNull Boolean getAllowMultiple() { return allowMultiple; }
@@ -110,9 +36,9 @@ public class Messages {
       this.allowMultiple = setterArg;
     }
 
-    private @NonNull List<TypeGroup> allowedTypes;
-    public @NonNull List<TypeGroup> getAllowedTypes() { return allowedTypes; }
-    public void setAllowedTypes(@NonNull List<TypeGroup> setterArg) {
+    private @NonNull List<String> allowedTypes;
+    public @NonNull List<String> getAllowedTypes() { return allowedTypes; }
+    public void setAllowedTypes(@NonNull List<String> setterArg) {
       if (setterArg == null) {
         throw new IllegalStateException("Nonnull field \"allowedTypes\" is null.");
       }
@@ -127,8 +53,8 @@ public class Messages {
         this.allowMultiple = setterArg;
         return this;
       }
-      private @Nullable List<TypeGroup> allowedTypes;
-      public @NonNull Builder setAllowedTypes(@NonNull List<TypeGroup> setterArg) {
+      private @Nullable List<String> allowedTypes;
+      public @NonNull Builder setAllowedTypes(@NonNull List<String> setterArg) {
         this.allowedTypes = setterArg;
         return this;
       }
@@ -150,9 +76,14 @@ public class Messages {
       Object allowMultiple = map.get("allowMultiple");
       pigeonResult.setAllowMultiple((Boolean)allowMultiple);
       Object allowedTypes = map.get("allowedTypes");
-      pigeonResult.setAllowedTypes((List<TypeGroup>)allowedTypes);
+      pigeonResult.setAllowedTypes((List<String>)allowedTypes);
       return pigeonResult;
     }
+  }
+
+  public interface Result<T> {
+    void success(T result);
+    void error(Throwable error);
   }
   private static class FileSelectorApiCodec extends StandardMessageCodec {
     public static final FileSelectorApiCodec INSTANCE = new FileSelectorApiCodec();
@@ -162,9 +93,6 @@ public class Messages {
       switch (type) {
         case (byte)128:         
           return SelectionOptions.fromMap((Map<String, Object>) readValue(buffer));
-        
-        case (byte)129:         
-          return TypeGroup.fromMap((Map<String, Object>) readValue(buffer));
         
         default:        
           return super.readValueOfType(type, buffer);
@@ -177,10 +105,6 @@ public class Messages {
         stream.write(128);
         writeValue(stream, ((SelectionOptions) value).toMap());
       } else 
-      if (value instanceof TypeGroup) {
-        stream.write(129);
-        writeValue(stream, ((TypeGroup) value).toMap());
-      } else 
 {
         super.writeValue(stream, value);
       }
@@ -189,8 +113,8 @@ public class Messages {
 
   /** Generated interface from Pigeon that represents a handler of messages from Flutter.*/
   public interface FileSelectorApi {
-    @NonNull List<String> openFiles(@NonNull SelectionOptions options, @Nullable String initialDirectory, @Nullable String confirmButtonText);
-    @Nullable String getDirectoryPath(@Nullable String initialDirectory);
+    void openFiles(@NonNull SelectionOptions options, Result<List<String>> result);
+    void getDirectoryPath(@Nullable String initialDirectory, Result<String> result);
 
     /** The codec used by FileSelectorApi. */
     static MessageCodec<Object> getCodec() {
@@ -211,15 +135,23 @@ public class Messages {
               if (optionsArg == null) {
                 throw new NullPointerException("optionsArg unexpectedly null.");
               }
-              String initialDirectoryArg = (String)args.get(1);
-              String confirmButtonTextArg = (String)args.get(2);
-              List<String> output = api.openFiles(optionsArg, initialDirectoryArg, confirmButtonTextArg);
-              wrapped.put("result", output);
+              Result<List<String>> resultCallback = new Result<List<String>>() {
+                public void success(List<String> result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.openFiles(optionsArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
             }
-            reply.reply(wrapped);
           });
         } else {
           channel.setMessageHandler(null);
@@ -234,13 +166,23 @@ public class Messages {
             try {
               ArrayList<Object> args = (ArrayList<Object>)message;
               String initialDirectoryArg = (String)args.get(0);
-              String output = api.getDirectoryPath(initialDirectoryArg);
-              wrapped.put("result", output);
+              Result<String> resultCallback = new Result<String>() {
+                public void success(String result) {
+                  wrapped.put("result", result);
+                  reply.reply(wrapped);
+                }
+                public void error(Throwable error) {
+                  wrapped.put("error", wrapError(error));
+                  reply.reply(wrapped);
+                }
+              };
+
+              api.getDirectoryPath(initialDirectoryArg, resultCallback);
             }
             catch (Error | RuntimeException exception) {
               wrapped.put("error", wrapError(exception));
+              reply.reply(wrapped);
             }
-            reply.reply(wrapped);
           });
         } else {
           channel.setMessageHandler(null);

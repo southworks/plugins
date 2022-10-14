@@ -10,35 +10,6 @@ import 'dart:typed_data' show Uint8List, Int32List, Int64List, Float64List;
 import 'package:flutter/foundation.dart' show WriteBuffer, ReadBuffer;
 import 'package:flutter/services.dart';
 
-class TypeGroup {
-  TypeGroup({
-    required this.label,
-    required this.extensions,
-    required this.mimeTypes,
-  });
-
-  String label;
-  List<String?> extensions;
-  List<String?> mimeTypes;
-
-  Object encode() {
-    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['label'] = label;
-    pigeonMap['extensions'] = extensions;
-    pigeonMap['mimeTypes'] = mimeTypes;
-    return pigeonMap;
-  }
-
-  static TypeGroup decode(Object message) {
-    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
-    return TypeGroup(
-      label: pigeonMap['label']! as String,
-      extensions: (pigeonMap['extensions'] as List<Object?>?)!.cast<String?>(),
-      mimeTypes: (pigeonMap['mimeTypes'] as List<Object?>?)!.cast<String?>(),
-    );
-  }
-}
-
 class SelectionOptions {
   SelectionOptions({
     required this.allowMultiple,
@@ -46,7 +17,7 @@ class SelectionOptions {
   });
 
   bool allowMultiple;
-  List<TypeGroup?> allowedTypes;
+  List<String?> allowedTypes;
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
@@ -59,7 +30,7 @@ class SelectionOptions {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
     return SelectionOptions(
       allowMultiple: pigeonMap['allowMultiple']! as bool,
-      allowedTypes: (pigeonMap['allowedTypes'] as List<Object?>?)!.cast<TypeGroup?>(),
+      allowedTypes: (pigeonMap['allowedTypes'] as List<Object?>?)!.cast<String?>(),
     );
   }
 }
@@ -72,10 +43,6 @@ class _FileSelectorApiCodec extends StandardMessageCodec {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
-    if (value is TypeGroup) {
-      buffer.putUint8(129);
-      writeValue(buffer, value.encode());
-    } else 
 {
       super.writeValue(buffer, value);
     }
@@ -85,9 +52,6 @@ class _FileSelectorApiCodec extends StandardMessageCodec {
     switch (type) {
       case 128:       
         return SelectionOptions.decode(readValue(buffer)!);
-      
-      case 129:       
-        return TypeGroup.decode(readValue(buffer)!);
       
       default:      
         return super.readValueOfType(type, buffer);
@@ -106,11 +70,11 @@ class FileSelectorApi {
 
   static const MessageCodec<Object?> codec = _FileSelectorApiCodec();
 
-  Future<List<String?>> openFiles(SelectionOptions arg_options, String? arg_initialDirectory, String? arg_confirmButtonText) async {
+  Future<List<String?>> openFiles(SelectionOptions arg_options) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.FileSelectorApi.openFiles', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_options, arg_initialDirectory, arg_confirmButtonText]) as Map<Object?, Object?>?;
+        await channel.send(<Object?>[arg_options]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

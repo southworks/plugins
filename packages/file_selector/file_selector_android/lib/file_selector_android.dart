@@ -5,7 +5,7 @@
 import 'dart:async';
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
-import 'messages.g.dart';
+import 'src/messages.g.dart';
 
 /// The Android implementation of [FileSelectorPlatform].
 class FileSelectorAndroid extends FileSelectorPlatform {
@@ -16,36 +16,36 @@ class FileSelectorAndroid extends FileSelectorPlatform {
     FileSelectorPlatform.instance = FileSelectorAndroid();
   }
 
+  /// Android doesn't currently support to set the Confirm Button Text nor the Initial Directory
+  /// For references, please check the following link:
+  /// https://developer.android.com/reference/android/content/Intent#ACTION_GET_CONTENT
   @override
   Future<XFile?> openFile({
     List<XTypeGroup>? acceptedTypeGroups,
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> path = await _api.openFiles(
-        SelectionOptions(
-          allowMultiple: false,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        confirmButtonText);
+    final List<String?> path = await _api.openFiles(SelectionOptions(
+      allowMultiple: false,
+      allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+    ));
 
     return path.first == null ? null : XFile(path.first!);
   }
 
+  /// Android doesn't currently support to set the Confirm Button Text nor the Initial Directory
+  /// For references, please check the following link:
+  /// https://developer.android.com/reference/android/content/Intent#ACTION_GET_CONTENT
   @override
   Future<List<XFile>> openFiles({
     List<XTypeGroup>? acceptedTypeGroups,
     String? initialDirectory,
     String? confirmButtonText,
   }) async {
-    final List<String?> paths = await _api.openFiles(
-        SelectionOptions(
-          allowMultiple: true,
-          allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        confirmButtonText);
+    final List<String?> paths = await _api.openFiles(SelectionOptions(
+      allowMultiple: true,
+      allowedTypes: _typeGroupsFromXTypeGroups(acceptedTypeGroups),
+    ));
 
     return paths.map((String? path) => XFile(path!)).toList();
   }
@@ -62,27 +62,14 @@ class FileSelectorAndroid extends FileSelectorPlatform {
   }
 }
 
-List<TypeGroup> _typeGroupsFromXTypeGroups(List<XTypeGroup>? xtypes) {
-  return (xtypes ?? <XTypeGroup>[]).map((XTypeGroup xtype) {
-    if (xtype.allowsAny) {
-      return TypeGroup(
-          label: xtype.label ?? '',
-          extensions: <String>['*'],
-          mimeTypes: <String>['*']);
-    }
-
-    if (!xtype.allowsAny &&
-        (xtype.extensions?.isEmpty ?? true) &&
-        (xtype.mimeTypes?.isEmpty ?? true)) {
+List<String?> _typeGroupsFromXTypeGroups(List<XTypeGroup>? xtypes) {
+  return (xtypes ?? <XTypeGroup>[]).expand((XTypeGroup xtype) {
+    if (!xtype.allowsAny && (xtype.mimeTypes?.isEmpty ?? true)) {
       throw ArgumentError('Provided type group $xtype does not allow '
           'all files, but does not set any of the Android-supported filter '
-          'categories. "extensions" or "mimeTypes" must be non-empty for Android if '
+          'categories. "mimeTypes" must be non-empty for Android if '
           'anything is non-empty.');
     }
-
-    return TypeGroup(
-        label: xtype.label ?? '',
-        extensions: xtype.extensions ?? <String>[],
-        mimeTypes: xtype.mimeTypes ?? <String>[]);
+    return xtype.mimeTypes!;
   }).toList();
 }

@@ -10,9 +10,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.Lifecycle;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.embedding.engine.plugins.lifecycle.FlutterLifecycleAdapter;
-import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry;
 
 /**
  * Move all activity-lifetime-bound states into this helper object, so that {@code setup} and {@code
@@ -22,7 +19,6 @@ public class ActivityStateHelper {
   private Application application;
   private Activity activity;
   private FileSelectorDelegate delegate;
-  private MethodChannel channel;
   private LifeCycleHelper observer;
   private ActivityPluginBinding activityBinding;
 
@@ -31,33 +27,20 @@ public class ActivityStateHelper {
 
   // Default constructor
   ActivityStateHelper(
-      final String CHANNEL,
       final Application application,
       final Activity activity,
-      final BinaryMessenger messenger,
-      final MethodChannel.MethodCallHandler handler,
-      final PluginRegistry.Registrar registrar,
       final ActivityPluginBinding activityBinding) {
     this.application = application;
     this.activity = activity;
     this.activityBinding = activityBinding;
 
     delegate = constructDelegate(activity);
-    channel = new MethodChannel(messenger, CHANNEL);
-    channel.setMethodCallHandler(handler);
     observer = new LifeCycleHelper(activity);
-    if (registrar != null) {
-      // V1 embedding setup for activity listeners.
-      application.registerActivityLifecycleCallbacks(observer);
-      registrar.addActivityResultListener(delegate);
-      registrar.addRequestPermissionsResultListener(delegate);
-    } else {
-      // V2 embedding setup for activity listeners.
-      activityBinding.addActivityResultListener(delegate);
-      activityBinding.addRequestPermissionsResultListener(delegate);
-      lifecycle = FlutterLifecycleAdapter.getActivityLifecycle(activityBinding);
-      lifecycle.addObserver(observer);
-    }
+
+    activityBinding.addActivityResultListener(delegate);
+    activityBinding.addRequestPermissionsResultListener(delegate);
+    lifecycle = FlutterLifecycleAdapter.getActivityLifecycle(activityBinding);
+    lifecycle.addObserver(observer);
   }
 
   // Only invoked by {@link #FileSelectorPlugin(FileSelectorDelegate, Activity)}
@@ -77,11 +60,6 @@ public class ActivityStateHelper {
     if (lifecycle != null) {
       lifecycle.removeObserver(observer);
       lifecycle = null;
-    }
-
-    if (channel != null) {
-      channel.setMethodCallHandler(null);
-      channel = null;
     }
 
     if (application != null) {

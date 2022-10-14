@@ -10,35 +10,28 @@ import 'package:pigeon/pigeon.dart';
       'android/src/main/java/io/flutter/plugins/file_selector/Messages.java',
   javaOptions: JavaOptions(
       className: 'Messages', package: 'io.flutter.plugins.file_selector'),
-  dartOut: 'lib/messages.g.dart',
+  dartOut: 'lib/src/messages.g.dart',
   dartTestOut: 'test/messages_test.g.dart',
   copyrightHeader: 'pigeons/copyright.txt',
 ))
-class TypeGroup {
-  TypeGroup(this.label, {required this.extensions, required this.mimeTypes});
-
-  String label;
-  List<String?> extensions;
-  List<String?> mimeTypes;
-}
 
 class SelectionOptions {
   SelectionOptions({
     this.allowMultiple = false,
-    this.allowedTypes = const <TypeGroup?>[],
+    this.allowedTypes = const <String?>[],
   });
   bool allowMultiple;
 
-  List<TypeGroup?> allowedTypes;
+  List<String?> allowedTypes;
 }
 
 @HostApi(dartHostTestHandler: 'TestFileSelectorApi')
 abstract class FileSelectorApi {
+  @async
   List<String?> openFiles(
     SelectionOptions options,
-    String? initialDirectory,
-    String? confirmButtonText,
   );
+  @async
   String? getDirectoryPath(
     String? initialDirectory,
   );
