@@ -102,13 +102,12 @@ public class FileSelectorPlugin
   }
 
   @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result rawResult) {
+  public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
     if (activityState == null || activityState.getActivity() == null) {
-      rawResult.error("no_activity", "file_selector plugin requires a foreground activity.", null);
+      result.error("no_activity", "file_selector plugin requires a foreground activity.", null);
       return;
     }
 
-    MethodChannel.Result result = new MethodResultWrapper(rawResult);
     delegate = activityState.getDelegate();
 
     switch (call.method) {
