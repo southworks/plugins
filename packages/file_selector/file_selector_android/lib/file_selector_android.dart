@@ -5,11 +5,19 @@
 import 'dart:async';
 
 import 'package:file_selector_platform_interface/file_selector_platform_interface.dart';
+import 'package:flutter/cupertino.dart';
 import 'src/messages.g.dart';
 
 /// The Android implementation of [FileSelectorPlatform].
 class FileSelectorAndroid extends FileSelectorPlatform {
-  final FileSelectorApi _api = FileSelectorApi();
+  /// Creates a new instance of [FileSelectorApi].
+  FileSelectorAndroid() : _api = FileSelectorApi();
+
+  /// Creates a fake implementation of [FileSelectorApi] for testing purposes.
+  @visibleForTesting
+  FileSelectorAndroid.useFakeApi(this._api);
+
+  final FileSelectorApi _api;
 
   /// Registers this class as the default instance of [FileSelectorPlatform].
   static void registerWith() {
