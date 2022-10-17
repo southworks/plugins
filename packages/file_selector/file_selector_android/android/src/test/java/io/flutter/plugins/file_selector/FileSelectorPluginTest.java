@@ -4,10 +4,6 @@
 
 package io.flutter.plugins.file_selector;
 
-import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_GET_DIRECTORY_PATH;
-import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_GET_SAVE_PATH;
-import static io.flutter.plugins.file_selector.FileSelectorPlugin.METHOD_OPEN_FILE;
-import static io.flutter.plugins.file_selector.TestHelpers.buildMethodCall;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -22,6 +18,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import static io.flutter.plugins.file_selector.TestHelpers.buildSelectionOptions;
+
 import android.app.Activity;
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -30,10 +28,10 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.embedding.engine.plugins.lifecycle.HiddenLifecycleReference;
 import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +50,7 @@ public class FileSelectorPluginTest {
   @Mock Activity mockActivity;
   @Mock Application mockApplication;
   @Mock FileSelectorDelegate mockFileSelectorDelegate;
-  @Mock MethodChannel.Result mockResult;
+  @Mock Messages.Result mockResult;
   @Mock PathUtils mockPathUtils;
   @Mock ActivityStateHelper mockActivityStateHelper;
   FileSelectorPlugin plugin;
@@ -82,61 +80,31 @@ public class FileSelectorPluginTest {
   }
 
   @Test
-  public void onMethodCall_WhenActivityIsNull_FinishesWithForegroundActivityRequiredError() {
-    MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH);
+  public void onOpenFilesCall_WhenActivityIsNull_FinishesWithForegroundActivityRequiredError() {
     FileSelectorPlugin fileSelectorPluginWithNullActivity =
         new FileSelectorPlugin(mockFileSelectorDelegate, null);
-    fileSelectorPluginWithNullActivity.onMethodCall(call, mockResult);
+
+    Messages.SelectionOptions options = buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
+
+    fileSelectorPluginWithNullActivity.openFiles(options, mockResult);
     verify(mockResult)
-        .error("no_activity", "file_selector plugin requires a foreground activity.", null);
+        .error(new Throwable("file_selector plugin requires a foreground activity.", null));
     verifyNoInteractions(mockFileSelectorDelegate);
-  }
-
-  @Test
-  public void onMethodCall_WhenCalledWithUnknownMethod_ThrowsException() {
-    String method = "unknown_test_method";
-
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> plugin.onMethodCall(new MethodCall(method, null), mockResult));
-    assertEquals("Unknown method " + method, exception.getMessage());
-    verifyNoInteractions(mockResult);
   }
 
   @Test
   public void
       onMethodCall_GetDirectoryPath_WhenCalledWithoutInitialDirectory_InvokesRootSourceFolder() {
-    MethodCall call = buildMethodCall(METHOD_GET_DIRECTORY_PATH, null, null, null, false, null);
-    plugin.onMethodCall(call, mockResult);
+    plugin.getDirectoryPath(null, mockResult);
 
     verifyNoInteractions(mockResult);
   }
 
   @Test
   public void onMethodCall_GetDirectoryPath_WhenCalledWithInitialDirectory_InvokesSourceFolder() {
-    MethodCall call =
-        buildMethodCall(METHOD_GET_DIRECTORY_PATH, "Documents", null, null, false, null);
-    plugin.onMethodCall(call, mockResult);
+    plugin.getDirectoryPath("Documents", mockResult);
 
-    verify(mockFileSelectorDelegate).getDirectoryPath(eq(call), any());
-    verifyNoInteractions(mockResult);
-  }
-
-  @Test
-  public void onMethodCall_GetSavePath_WhenCalledWithoutSuggestedName_InvokesSuccessfully() {
-    MethodCall call = buildMethodCall(METHOD_GET_SAVE_PATH, null, null, null, null, null);
-    plugin.onMethodCall(call, mockResult);
-    verify(mockFileSelectorDelegate).getSavePath(eq(call), any());
-    verifyNoInteractions(mockResult);
-  }
-
-  @Test
-  public void onMethodCall_GetSavePath_WhenCalledWithSuggestedName_InvokesSuccessfully() {
-    MethodCall call =
-        buildMethodCall(METHOD_GET_SAVE_PATH, "Documents", null, "test.txt", null, null);
-    plugin.onMethodCall(call, mockResult);
-    verify(mockFileSelectorDelegate).getSavePath(eq(call), any());
+    verify(mockFileSelectorDelegate).getDirectoryPath(eq("Documents"), any());
     verifyNoInteractions(mockResult);
   }
 
@@ -164,10 +132,10 @@ public class FileSelectorPluginTest {
   @Test
   public void onMethodCall_OpenFile_ShouldBeCalledWithCorrespondingArguments() {
     final ArrayList<HashMap> arguments = prepareArguments();
-    MethodCall call = buildMethodCall(METHOD_OPEN_FILE, null, null, null, false, arguments);
-    plugin.onMethodCall(call, mockResult);
+    Messages.SelectionOptions options = buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
+    plugin.openFiles(options, mockResult);
 
-    verify(mockFileSelectorDelegate).openFile(eq(call), any());
+    verify(mockFileSelectorDelegate).openFile(eq(options), any());
     verifyNoInteractions(mockResult);
   }
 

@@ -153,51 +153,6 @@ public class PathUtilsTest {
   }
 
   @Test
-  public void getSavePathUri_whenDownloadsUri_ReturnsDownloadFolderFileUri() {
-    Uri uri = Uri.parse("content://com.android.providers.downloads.documents/document/745");
-    when(mockContentResolver.query(
-            uri, new String[] {MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null))
-        .thenReturn(mockCursor);
-    String expected = PathUtils.getSavePathUri(uri, mockActivity);
-
-    Assert.assertEquals(expected, externalDirectoryName + "/Download/" + fileName);
-  }
-
-  @Test
-  public void getSavePathUri_whenExternalStorageUri_ReturnsExternalStorageFileUri() {
-    try (MockedStatic<PathUtils> mocked =
-        Mockito.mockStatic(PathUtils.class, Mockito.CALLS_REAL_METHODS)) {
-      String externalDir = "TestDir";
-
-      Uri uri =
-          Uri.parse(
-              "content://com.android.externalstorage.documents/document/primary:"
-                  + externalDir
-                  + "/123");
-      mocked.when(() -> PathUtils.fileExists(anyString())).thenReturn(true);
-
-      when(mockContentResolver.query(
-              uri, new String[] {MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null))
-          .thenReturn(mockCursor);
-
-      String expected = PathUtils.getSavePathUri(uri, mockActivity);
-      Assert.assertEquals(expected, externalDirectoryName + "/" + externalDir + "/" + fileName);
-    }
-  }
-
-  @Test
-  public void getSavePathUri_whenMediaUri_ReturnsMediaFolderFileUri() {
-    Uri uri = Uri.parse("content://com.android.providers.media.documents/document/image:31");
-    String dir = "content://media/external/images/media";
-    when(mockContentResolver.query(
-            Uri.parse(dir), new String[] {"_data"}, "_id=?", new String[] {"31"}, null))
-        .thenReturn(mockCursor);
-    String expected = PathUtils.getSavePathUri(uri, mockActivity);
-
-    Assert.assertEquals(expected, dir + "/" + fileName);
-  }
-
-  @Test
   public void clearCache_whenExecutedSuccessfully_shouldRemoveAllFilesFromFolder() {
     int initialFilesCount = Objects.requireNonNull(folder.getRoot().listFiles()).length;
     pathUtils.clearCache(mockActivity);

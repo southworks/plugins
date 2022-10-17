@@ -61,7 +61,7 @@ public class FileSelectorDelegate
   }
 
   public FileSelectorDelegate(final Activity activity) {
-    this(activity, null, null);
+    this(activity, null);
   }
 
   /**
@@ -70,12 +70,12 @@ public class FileSelectorDelegate
    */
   @VisibleForTesting
   FileSelectorDelegate() {
-    this(null, null, null);
+    this(null, null);
   }
 
   @VisibleForTesting
   FileSelectorDelegate(
-      final Activity activity, final Messages.Result result, final MethodCall methodCall) {
+      final Activity activity, final Messages.Result result) {
     this.activity = activity;
     this.pendingResult = result;
   }
