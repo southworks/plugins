@@ -20,40 +20,44 @@ class _TestFileSelectorApiCodec extends StandardMessageCodec {
     if (value is SelectionOptions) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return SelectionOptions.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
+
 abstract class TestFileSelectorApi {
   static const MessageCodec<Object?> codec = _TestFileSelectorApiCodec();
 
   Future<List<String?>> openFiles(SelectionOptions options);
   Future<String?> getDirectoryPath(String? initialDirectory);
-  static void setup(TestFileSelectorApi? api, {BinaryMessenger? binaryMessenger}) {
+  static void setup(TestFileSelectorApi? api,
+      {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FileSelectorApi.openFiles', codec, binaryMessenger: binaryMessenger);
+          'dev.flutter.pigeon.FileSelectorApi.openFiles', codec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         channel.setMockMessageHandler(null);
       } else {
         channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FileSelectorApi.openFiles was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FileSelectorApi.openFiles was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final SelectionOptions? arg_options = (args[0] as SelectionOptions?);
-          assert(arg_options != null, 'Argument for dev.flutter.pigeon.FileSelectorApi.openFiles was null, expected non-null SelectionOptions.');
+          assert(arg_options != null,
+              'Argument for dev.flutter.pigeon.FileSelectorApi.openFiles was null, expected non-null SelectionOptions.');
           final List<String?> output = await api.openFiles(arg_options!);
           return <Object?, Object?>{'result': output};
         });
@@ -61,15 +65,18 @@ abstract class TestFileSelectorApi {
     }
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.FileSelectorApi.getDirectoryPath', codec, binaryMessenger: binaryMessenger);
+          'dev.flutter.pigeon.FileSelectorApi.getDirectoryPath', codec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         channel.setMockMessageHandler(null);
       } else {
         channel.setMockMessageHandler((Object? message) async {
-          assert(message != null, 'Argument for dev.flutter.pigeon.FileSelectorApi.getDirectoryPath was null.');
+          assert(message != null,
+              'Argument for dev.flutter.pigeon.FileSelectorApi.getDirectoryPath was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_initialDirectory = (args[0] as String?);
-          final String? output = await api.getDirectoryPath(arg_initialDirectory);
+          final String? output =
+              await api.getDirectoryPath(arg_initialDirectory);
           return <Object?, Object?>{'result': output};
         });
       }

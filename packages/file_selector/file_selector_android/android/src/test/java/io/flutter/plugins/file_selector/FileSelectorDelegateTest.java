@@ -22,13 +22,10 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,8 +37,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 public class FileSelectorDelegateTest {
-  final List<String> textMimeType = new ArrayList<String>(Collections.singletonList("text"));
-  final List<String> pngMimeType = new ArrayList<String>(Collections.singletonList("png"));
+  final List<String> typesList = Arrays.asList("text", "png");
+  final List<String> textMimeType = Collections.singletonList("text");
+  final List<String> pngMimeType = Collections.singletonList("png");
   String fakeFolder = "fakeFolder";
   int numberOfPickedFiles = 2;
 
@@ -111,8 +109,8 @@ public class FileSelectorDelegateTest {
   public void openFile_WhenPendingResultExists_FinishesWithAlreadyActiveError() {
     FileSelectorDelegate delegate = new FileSelectorDelegate(mockActivity, mockResult);
 
-
-    Messages.SelectionOptions options = buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
+    Messages.SelectionOptions options =
+        buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
 
     delegate.openFile(options, mockResult);
 
@@ -133,7 +131,8 @@ public class FileSelectorDelegateTest {
   @Test
   public void openFile_WhenItIsCalled_InvokesLaunchOpenFile() {
     spyFileSelectorDelegate = spy(new FileSelectorDelegate(mockActivity));
-    Messages.SelectionOptions options = buildSelectionOptions(new ArrayList<String>(Collections.singleton("text")), false);
+    Messages.SelectionOptions options =
+        buildSelectionOptions(new ArrayList<String>(Collections.singleton("text")), false);
 
     doAnswer(
             (invocation) -> {
@@ -310,40 +309,34 @@ public class FileSelectorDelegateTest {
   @Test
   public void
       launchOpenFile_WhenAllArgumentsAreNotEmpty_ShouldSetSeveralPropertiesOfIntentWithSpecificValues() {
-    List<String> types = new ArrayList<String>(textMimeType);
-    types.add(pngMimeType.get(0));
-
     spyFileSelectorDelegate.openFileIntent = mockIntent;
-    spyFileSelectorDelegate.launchOpenFile(false, types);
+    spyFileSelectorDelegate.launchOpenFile(false, textMimeType);
 
     verify(mockIntent, times(1)).setAction(Intent.ACTION_GET_CONTENT);
     verify(mockIntent, times(1)).addCategory(Intent.CATEGORY_OPENABLE);
     verify(mockIntent, times(1)).putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-    verify(mockIntent, times(1)).setType("*/*");
+    verify(mockIntent, times(1)).setType("text");
   }
 
   @Test
   public void launchOpenFile_WhenMimeTypesAreEmpty_ShouldNotInvokePutExtraForExtraMimeTypes() {
     spyFileSelectorDelegate.openFileIntent = mockIntent;
     mockClipData(numberOfPickedFiles);
-    List<String> types = new ArrayList<String>(textMimeType);
-    types.add(pngMimeType.get(0));
 
-    spyFileSelectorDelegate.launchOpenFile(false, types);
+    spyFileSelectorDelegate.launchOpenFile(false, null);
 
-    verify(mockIntent, never()).putExtra(Intent.EXTRA_MIME_TYPES, types.toArray(new String[0]));
+    verify(mockIntent, never()).putExtra(Intent.EXTRA_MIME_TYPES, typesList.toArray(new String[0]));
   }
 
   @Test
   public void launchOpenFile_WhenMimeTypesAreNotEmpty_ShouldInvokePutExtraForExtraMimeTypes() {
     spyFileSelectorDelegate.openFileIntent = mockIntent;
     mockClipData(numberOfPickedFiles);
-    List<String> types = new ArrayList<String>(textMimeType);
-    types.add(pngMimeType.get(0));
 
-    spyFileSelectorDelegate.launchOpenFile(false, types);
+    spyFileSelectorDelegate.launchOpenFile(false, typesList);
 
-    verify(mockIntent, times(1)).putExtra(Intent.EXTRA_MIME_TYPES, types.toArray(new String[0]));
+    verify(mockIntent, times(1))
+        .putExtra(Intent.EXTRA_MIME_TYPES, typesList.toArray(new String[0]));
   }
 
   private FileSelectorDelegate createDelegate() {
@@ -355,7 +348,7 @@ public class FileSelectorDelegateTest {
   }
 
   private void verifyFinishedWithAlreadyActiveError() {
-    verify(mockResult).error(new Throwable("File selector is already active", null));
+    verify(mockResult).error(any(Throwable.class));
   }
 
   private void mockClipData(int uriCount) {

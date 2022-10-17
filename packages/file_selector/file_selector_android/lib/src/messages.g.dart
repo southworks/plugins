@@ -30,7 +30,8 @@ class SelectionOptions {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
     return SelectionOptions(
       allowMultiple: pigeonMap['allowMultiple']! as bool,
-      allowedTypes: (pigeonMap['allowedTypes'] as List<Object?>?)!.cast<String?>(),
+      allowedTypes:
+          (pigeonMap['allowedTypes'] as List<Object?>?)!.cast<String?>(),
     );
   }
 }
@@ -42,20 +43,19 @@ class _FileSelectorApiCodec extends StandardMessageCodec {
     if (value is SelectionOptions) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else 
-{
+    } else {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:       
+      case 128:
         return SelectionOptions.decode(readValue(buffer)!);
-      
-      default:      
+
+      default:
         return super.readValueOfType(type, buffer);
-      
     }
   }
 }
@@ -64,7 +64,8 @@ class FileSelectorApi {
   /// Constructor for [FileSelectorApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  FileSelectorApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
+  FileSelectorApi({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
 
   final BinaryMessenger? _binaryMessenger;
 
@@ -72,7 +73,8 @@ class FileSelectorApi {
 
   Future<List<String?>> openFiles(SelectionOptions arg_options) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.FileSelectorApi.openFiles', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.FileSelectorApi.openFiles', codec,
+        binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object?>[arg_options]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -81,7 +83,8 @@ class FileSelectorApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -99,16 +102,18 @@ class FileSelectorApi {
 
   Future<String?> getDirectoryPath(String? arg_initialDirectory) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.FileSelectorApi.getDirectoryPath', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_initialDirectory]) as Map<Object?, Object?>?;
+        'dev.flutter.pigeon.FileSelectorApi.getDirectoryPath', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object?>[arg_initialDirectory]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,

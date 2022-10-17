@@ -102,8 +102,7 @@ public class FileSelectorPlugin implements FlutterPlugin, FileSelectorApi, Activ
 
   @Override
   public void openFiles(
-      @NonNull Messages.SelectionOptions options,
-      Messages.Result<List<String>> result) {
+      @NonNull Messages.SelectionOptions options, Messages.Result<List<String>> result) {
     if (activityState == null || activityState.getActivity() == null) {
       result.error(new Throwable("file_selector plugin requires a foreground activity.", null));
     }

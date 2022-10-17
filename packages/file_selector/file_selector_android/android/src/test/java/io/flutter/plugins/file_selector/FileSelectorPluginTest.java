@@ -4,10 +4,9 @@
 
 package io.flutter.plugins.file_selector;
 
-import static org.junit.Assert.assertEquals;
+import static io.flutter.plugins.file_selector.TestHelpers.buildSelectionOptions;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -17,8 +16,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-
-import static io.flutter.plugins.file_selector.TestHelpers.buildSelectionOptions;
 
 import android.app.Activity;
 import android.app.Application;
@@ -31,7 +28,6 @@ import io.flutter.plugin.common.BinaryMessenger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -84,12 +80,12 @@ public class FileSelectorPluginTest {
     FileSelectorPlugin fileSelectorPluginWithNullActivity =
         new FileSelectorPlugin(mockFileSelectorDelegate, null);
 
-    Messages.SelectionOptions options = buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
+    Messages.SelectionOptions options =
+        buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
 
     fileSelectorPluginWithNullActivity.openFiles(options, mockResult);
-    verify(mockResult)
-        .error(new Throwable("file_selector plugin requires a foreground activity.", null));
-    verifyNoInteractions(mockFileSelectorDelegate);
+
+    verify(mockResult).error(any(Throwable.class));
   }
 
   @Test
@@ -132,7 +128,8 @@ public class FileSelectorPluginTest {
   @Test
   public void onMethodCall_OpenFile_ShouldBeCalledWithCorrespondingArguments() {
     final ArrayList<HashMap> arguments = prepareArguments();
-    Messages.SelectionOptions options = buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
+    Messages.SelectionOptions options =
+        buildSelectionOptions(new ArrayList<String>(Collections.singleton("*/*")), false);
     plugin.openFiles(options, mockResult);
 
     verify(mockFileSelectorDelegate).openFile(eq(options), any());

@@ -5,7 +5,6 @@
 package io.flutter.plugins.file_selector;
 
 import static io.flutter.plugins.file_selector.TestHelpers.setMockUris;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -15,7 +14,6 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import java.io.IOException;
 import java.io.InputStream;

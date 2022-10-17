@@ -16,10 +16,6 @@ void main() {
   setUp(() {
     plugin = FileSelectorAndroid();
     log = <MethodCall>[];
-    plugin.channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      log.add(methodCall);
-      return null;
-    });
   });
 
   test('registers instance', () async {

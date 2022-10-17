@@ -4,7 +4,6 @@
 
 package io.flutter.plugins.file_selector;
 
-
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.PluginRegistry;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,8 +72,7 @@ public class FileSelectorDelegate
   }
 
   @VisibleForTesting
-  FileSelectorDelegate(
-      final Activity activity, final Messages.Result result) {
+  FileSelectorDelegate(final Activity activity, final Messages.Result result) {
     this.activity = activity;
     this.pendingResult = result;
   }
@@ -95,8 +92,7 @@ public class FileSelectorDelegate
   }
 
   public void openFile(
-      @NonNull Messages.SelectionOptions options,
-      Messages.Result<List<String>> result) {
+      @NonNull Messages.SelectionOptions options, Messages.Result<List<String>> result) {
     if (setPendingResult(result)) {
       finishWithAlreadyActiveError(result);
       return;
@@ -161,7 +157,6 @@ public class FileSelectorDelegate
 
     finishWithSuccess(null);
   }
-
 
   void handleOpenFileResult(int resultCode, Intent data) {
     if (resultCode != Activity.RESULT_OK || data == null) {

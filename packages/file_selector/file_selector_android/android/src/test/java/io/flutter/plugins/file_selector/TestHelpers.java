@@ -10,8 +10,12 @@ import java.util.List;
 
 public class TestHelpers {
 
-  public static Messages.SelectionOptions buildSelectionOptions(List<String> allowedTypes, Boolean allowMultiple) {
-    return new Messages.SelectionOptions.Builder().setAllowedTypes(allowedTypes).setAllowMultiple(allowMultiple).build();
+  public static Messages.SelectionOptions buildSelectionOptions(
+      List<String> allowedTypes, Boolean allowMultiple) {
+    return new Messages.SelectionOptions.Builder()
+        .setAllowedTypes(allowedTypes)
+        .setAllowMultiple(allowMultiple)
+        .build();
   }
 
   public static ArrayList<Uri> setMockUris(int uriCount, Uri mockUri) {

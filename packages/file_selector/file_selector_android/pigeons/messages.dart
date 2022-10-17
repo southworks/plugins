@@ -14,7 +14,6 @@ import 'package:pigeon/pigeon.dart';
   dartTestOut: 'test/messages_test.g.dart',
   copyrightHeader: 'pigeons/copyright.txt',
 ))
-
 class SelectionOptions {
   SelectionOptions({
     this.allowMultiple = false,
