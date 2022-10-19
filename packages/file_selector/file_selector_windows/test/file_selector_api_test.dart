@@ -31,9 +31,9 @@ void main() {
   setUp(() {
     mockDialogWrapper = MockDialogWrapper();
     when(mockDialogWrapper.lastResult).thenReturn(S_OK);
-    when(mockDialogWrapperFactory.createInstance(DialogMode.Save))
+    when(mockDialogWrapperFactory.createInstance(DialogMode.save))
         .thenReturn(mockDialogWrapper);
-    when(mockDialogWrapperFactory.createInstance(DialogMode.Open))
+    when(mockDialogWrapperFactory.createInstance(DialogMode.open))
         .thenReturn(mockDialogWrapper);
     when(mockDialogWrapper.show(parentWindow)).thenReturn(expectedFileList);
   });
@@ -64,7 +64,7 @@ void main() {
       fileSelectorApi.showSaveDialog(emptyOptions, null, null, null);
 
       // Assert
-      verify(mockDialogWrapperFactory.createInstance(DialogMode.Save))
+      verify(mockDialogWrapperFactory.createInstance(DialogMode.save))
           .called(1);
     });
   });
@@ -74,7 +74,7 @@ void main() {
       fileSelectorApi.showOpenDialog(emptyOptions, null, null);
 
       // Assert
-      verify(mockDialogWrapperFactory.createInstance(DialogMode.Open))
+      verify(mockDialogWrapperFactory.createInstance(DialogMode.open))
           .called(1);
     });
   });
@@ -82,7 +82,7 @@ void main() {
     test('should throw a WindowsException is DialogWrapper can not be created',
         () {
       // Arrange
-      when(mockDialogWrapperFactory.createInstance(DialogMode.Open))
+      when(mockDialogWrapperFactory.createInstance(DialogMode.open))
           .thenReturn(mockDialogWrapper);
       when(mockDialogWrapper.lastResult).thenReturn(E_FAIL);
 

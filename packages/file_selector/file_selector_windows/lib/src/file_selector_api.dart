@@ -21,7 +21,9 @@ class FileSelectorApi {
   /// from the outside.
   @visibleForTesting
   FileSelectorApi.useFakeForegroundWindow(
-      this._dialogWrapperFactory, this._foregroundWindow);
+    this._dialogWrapperFactory,
+    this._foregroundWindow,
+  );
 
   final DialogWrapperFactory _dialogWrapperFactory;
 
@@ -33,8 +35,14 @@ class FileSelectorApi {
     String? initialDirectory,
     String? confirmButtonText,
   ) =>
-      _showDialog(_foregroundWindow, DialogMode.Open, options, initialDirectory,
-          null, confirmButtonText);
+      _showDialog(
+        _foregroundWindow,
+        DialogMode.open,
+        options,
+        initialDirectory,
+        null,
+        confirmButtonText,
+      );
 
   /// Displays a dialog used to save a file.
   List<String?> showSaveDialog(
@@ -43,18 +51,24 @@ class FileSelectorApi {
     String? suggestedName,
     String? confirmButtonText,
   ) =>
-      _showDialog(_foregroundWindow, DialogMode.Save, options, initialDirectory,
-          suggestedName, confirmButtonText);
+      _showDialog(
+        _foregroundWindow,
+        DialogMode.save,
+        options,
+        initialDirectory,
+        suggestedName,
+        confirmButtonText,
+      );
 
   List<String?> _showDialog(
-      int parentWindow,
-      DialogMode mode,
-      SelectionOptions options,
-      String? initialDirectory,
-      String? suggestedName,
-      String? confirmLabel) {
-    final DialogWrapper dialogWrapper =
-        _dialogWrapperFactory.createInstance(mode);
+    int parentWindow,
+    DialogMode mode,
+    SelectionOptions options,
+    String? initialDirectory,
+    String? suggestedName,
+    String? confirmLabel,
+  ) {
+    final DialogWrapper dialogWrapper = _dialogWrapperFactory.createInstance(mode);
     if (!SUCCEEDED(dialogWrapper.lastResult)) {
       throw WindowsException(E_FAIL);
     }

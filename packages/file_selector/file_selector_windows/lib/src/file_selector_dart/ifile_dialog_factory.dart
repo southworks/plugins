@@ -10,10 +10,11 @@ import 'dialog_mode.dart';
 class IFileDialogFactory {
   /// Creates the corresponding IFileDialog instace. The caller is responsible of releasing the resource.
   IFileDialog createInstace(DialogMode dialogMode) {
-    if (dialogMode == DialogMode.Open) {
-      return FileOpenDialog.createInstance();
+    switch (dialogMode) {
+      case DialogMode.open:
+        return FileOpenDialog.createInstance();
+      case DialogMode.save:
+        return FileSaveDialog.createInstance();
     }
-
-    return FileSaveDialog.createInstance();
   }
 }

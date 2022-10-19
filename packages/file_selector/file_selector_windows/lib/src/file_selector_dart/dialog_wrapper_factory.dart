@@ -12,7 +12,9 @@ class DialogWrapperFactory {
   /// Creates a [DialogWrapperFactory] that makes use of [IFileDialogControllerFactory] and [IFileDialogFactory]
   /// to create [DialogWrapper] instances.
   DialogWrapperFactory(
-      this._fileDialogControllerFactory, this._fileDialogFactory);
+    this._fileDialogControllerFactory,
+    this._fileDialogFactory,
+  );
 
   final IFileDialogControllerFactory _fileDialogControllerFactory;
 
@@ -21,6 +23,9 @@ class DialogWrapperFactory {
   /// Creates a [DialogWrapper] based on [dialogMode].
   DialogWrapper createInstance(DialogMode dialogMode) {
     return DialogWrapper(
-        _fileDialogControllerFactory, _fileDialogFactory, dialogMode);
+      _fileDialogControllerFactory,
+      _fileDialogFactory,
+      dialogMode,
+    );
   }
 }

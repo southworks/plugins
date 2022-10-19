@@ -302,7 +302,7 @@ bool _xTypeGroupListsMatch(List<XTypeGroup?> a, List<XTypeGroup?> b) {
   if (a.length != b.length) {
     return false;
   }
-  for (int i = 0; i < a.length; i++) {
+  for (int i = 0; i < a.length; i += 1) {
     if (!_xTypeGroupsMatch(a[i], b[i])) {
       return false;
     }

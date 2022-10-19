@@ -21,49 +21,49 @@ class FakeIFileDialog extends Fake implements IFileDialog {
 
   @override
   int getOptions(Pointer<Uint32> pfos) {
-    _getOptionsCalledTimes++;
+    _getOptionsCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int setOptions(int options) {
-    _setOptionsCalledTimes++;
+    _setOptionsCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int getResult(Pointer<Pointer<COMObject>> ppsi) {
-    _getResultCalledTimes++;
+    _getResultCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int setFolder(Pointer<COMObject> psi) {
-    _setFolderCalledTimes++;
+    _setFolderCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int setFileTypes(int cFileTypes, Pointer<COMDLG_FILTERSPEC> rgFilterSpec) {
-    _setFileTypesCalledTimes++;
+    _setFileTypesCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int setFileName(Pointer<Utf16> pszName) {
-    _setFileNameCalledTimes++;
+    _setFileNameCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int setOkButtonLabel(Pointer<Utf16> pszText) {
-    _setOkButtonLabelCalledTimes++;
+    _setOkButtonLabelCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int show(int hwndOwner) {
-    _showCalledTimes++;
+    _showCalledTimes += 1;
     return S_OK;
   }
 

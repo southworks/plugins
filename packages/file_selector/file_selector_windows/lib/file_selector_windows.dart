@@ -16,7 +16,9 @@ class FileSelectorWindows extends FileSelectorPlatform {
   /// Creates a new instance of [FileSelectorApi].
   FileSelectorWindows()
       : _hostApi = FileSelectorApi(DialogWrapperFactory(
-            FileDialogControllerFactory(), IFileDialogFactory()));
+          FileDialogControllerFactory(),
+          IFileDialogFactory(),
+        ));
 
   /// Creates a fake implementation of [FileSelectorApi] for testing purposes.
   @visibleForTesting
@@ -36,11 +38,10 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? confirmButtonText,
   }) async {
     final List<String?> paths = _hostApi.showOpenDialog(
-        SelectionOptions(
-          allowedTypes: _allowedXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        confirmButtonText);
+      SelectionOptions(allowedTypes: _allowedXTypeGroups(acceptedTypeGroups)),
+      initialDirectory,
+      confirmButtonText,
+    );
     return paths.isEmpty ? null : XFile(paths.first!);
   }
 
@@ -51,12 +52,10 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? confirmButtonText,
   }) async {
     final List<String?> paths = _hostApi.showOpenDialog(
-        SelectionOptions(
-          allowMultiple: true,
-          allowedTypes: _allowedXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        confirmButtonText);
+      SelectionOptions(allowMultiple: true, allowedTypes: _allowedXTypeGroups(acceptedTypeGroups)),
+      initialDirectory,
+      confirmButtonText,
+    );
     return paths.map((String? path) => XFile(path!)).toList();
   }
 
@@ -68,12 +67,11 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? confirmButtonText,
   }) async {
     final List<String?> paths = _hostApi.showSaveDialog(
-        SelectionOptions(
-          allowedTypes: _allowedXTypeGroups(acceptedTypeGroups),
-        ),
-        initialDirectory,
-        suggestedName,
-        confirmButtonText);
+      SelectionOptions(allowedTypes: _allowedXTypeGroups(acceptedTypeGroups)),
+      initialDirectory,
+      suggestedName,
+      confirmButtonText,
+    );
     return paths.isEmpty ? null : paths.first!;
   }
 
@@ -83,12 +81,10 @@ class FileSelectorWindows extends FileSelectorPlatform {
     String? confirmButtonText,
   }) async {
     final List<String?> paths = _hostApi.showOpenDialog(
-        SelectionOptions(
-          selectFolders: true,
-          allowedTypes: <XTypeGroup>[],
-        ),
-        initialDirectory,
-        confirmButtonText);
+      SelectionOptions(selectFolders: true, allowedTypes: <XTypeGroup>[]),
+      initialDirectory,
+      confirmButtonText,
+    );
     return paths.isEmpty ? null : paths.first!;
   }
 }

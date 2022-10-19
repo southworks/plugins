@@ -13,10 +13,18 @@ import 'package:win32/win32.dart';
 class ShellWin32Api {
   /// Creates and [initializes](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-shcreateitemfromparsingname) a Shell item object from a parsing name.
   /// If the directory doesn't exist it will return an error result.
-  int createItemFromParsingName(String initialDirectory, Pointer<GUID> ptrGuid,
-      Pointer<Pointer<NativeType>> ptrPath) {
-    return SHCreateItemFromParsingName(
-        TEXT(initialDirectory), nullptr, ptrGuid, ptrPath);
+  int createItemFromParsingName(
+    String initialDirectory,
+    Pointer<GUID> ptrGuid,
+    Pointer<Pointer<NativeType>> ptrPath,
+  ) {
+    return using((Arena arena) {
+      return SHCreateItemFromParsingName(
+          initialDirectory.toNativeUtf16(allocator: arena),
+          nullptr,
+          ptrGuid,
+          ptrPath);
+    }, malloc);
   }
 
   /// Returns the path for [shellItem] as a UTF-8 string, or an empty string on
@@ -24,12 +32,14 @@ class ShellWin32Api {
   String getPathForShellItem(IShellItem shellItem) {
     return using((Arena arena) {
       final Pointer<Pointer<Utf16>> ptrPath = arena<Pointer<Utf16>>();
+      final int operationResult = shellItem.getDisplayName(
+        SIGDN.SIGDN_FILESYSPATH,
+        ptrPath.cast(),
+      );
 
-      if (!SUCCEEDED(
-          shellItem.getDisplayName(SIGDN.SIGDN_FILESYSPATH, ptrPath.cast()))) {
+      if (!SUCCEEDED(operationResult)) {
         return '';
       }
-
       return ptrPath.value.toDartString();
     });
   }

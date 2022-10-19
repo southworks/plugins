@@ -21,9 +21,11 @@ import 'shell_win32_api.dart';
 class DialogWrapper {
   /// Creates a DialogWrapper using a [IFileDialogControllerFactory] and a [DialogMode].
   /// It is also responsible of creating a [IFileDialog].
-  DialogWrapper(IFileDialogControllerFactory fileDialogControllerFactory,
-      IFileDialogFactory fileDialogFactory, this._dialogMode)
-      : _isOpenDialog = _dialogMode == DialogMode.Open {
+  DialogWrapper(
+    IFileDialogControllerFactory fileDialogControllerFactory,
+    IFileDialogFactory fileDialogFactory,
+    this._dialogMode,
+  ) : _isOpenDialog = _dialogMode == DialogMode.open {
     try {
       final IFileDialog dialog = fileDialogFactory.createInstace(_dialogMode);
       _dialogController = fileDialogControllerFactory.createController(dialog);
@@ -37,39 +39,40 @@ class DialogWrapper {
 
   /// Creates a DialogWrapper for testing purposes.
   @visibleForTesting
-  DialogWrapper.withFakeDependencies(FileDialogController dialogController,
-      this._dialogMode, this._shellWin32Api)
-      : _isOpenDialog = _dialogMode == DialogMode.Open,
+  DialogWrapper.withFakeDependencies(
+    FileDialogController dialogController,
+    this._dialogMode,
+    this._shellWin32Api,
+  )   : _isOpenDialog = _dialogMode == DialogMode.open,
         _dialogController = dialogController;
-
-  int _lastResult = S_OK;
 
   final DialogMode _dialogMode;
 
   final bool _isOpenDialog;
 
-  final String _allowAnyValue = 'Any';
+  late final FileDialogController _dialogController;
 
-  final String _allowAnyExtension = '*.*';
+  late final ShellWin32Api _shellWin32Api;
 
-  late FileDialogController _dialogController;
+  static const String _allowAnyValue = 'Any';
 
-  late ShellWin32Api _shellWin32Api;
+  static const String _allowAnyExtension = '*.*';
 
   /// Returns the result of the last Win32 API call related to this object.
   int get lastResult => _lastResult;
 
+  int _lastResult = S_OK;
+
   /// Attempts to set the default folder for the dialog to [path], if it exists.
   void setFolder(String path) {
-    if (path == null || path.isEmpty) {
+    if (path.isEmpty) {
       return;
     }
 
     using((Arena arena) {
       final Pointer<GUID> ptrGuid = GUIDFromString(IID_IShellItem);
       final Pointer<Pointer<COMObject>> ptrPath = arena<Pointer<COMObject>>();
-      _lastResult =
-          _shellWin32Api.createItemFromParsingName(path, ptrGuid, ptrPath);
+      _lastResult = _shellWin32Api.createItemFromParsingName(path, ptrGuid, ptrPath);
 
       if (!SUCCEEDED(_lastResult)) {
         return;
@@ -125,19 +128,19 @@ class DialogWrapper {
     }
 
     using((Arena arena) {
-      final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification =
-          arena<COMDLG_FILTERSPEC>(filterSpecification.length);
-
+      final Pointer<COMDLG_FILTERSPEC> registerFilterSpecification = arena<COMDLG_FILTERSPEC>(filterSpecification.length);
       int index = 0;
       for (final String key in filterSpecification.keys) {
         registerFilterSpecification[index]
-          ..pszName = TEXT(key)
-          ..pszSpec = TEXT(filterSpecification[key]!);
-        index++;
+          ..pszName = key.toNativeUtf16(allocator: arena)
+          ..pszSpec = filterSpecification[key]!.toNativeUtf16(allocator: arena);
+        index += 1;
       }
 
       _lastResult = _dialogController.setFileTypes(
-          filterSpecification.length, registerFilterSpecification);
+          filterSpecification.length,
+          registerFilterSpecification,
+        );
     });
   }
 
@@ -150,11 +153,9 @@ class DialogWrapper {
     late List<String>? files;
 
     using((Arena arena) {
-      final Pointer<Pointer<COMObject>> shellItemArrayPtr =
-          arena<Pointer<COMObject>>();
+      final Pointer<Pointer<COMObject>> shellItemArrayPtr = arena<Pointer<COMObject>>();
       final Pointer<Uint32> shellItemCountPtr = arena<Uint32>();
-      final Pointer<Pointer<COMObject>> shellItemPtr =
-          arena<Pointer<COMObject>>();
+      final Pointer<Pointer<COMObject>> shellItemPtr = arena<Pointer<COMObject>>();
 
       files =
           _getFilePathList(shellItemArrayPtr, shellItemCountPtr, shellItemPtr);
@@ -179,7 +180,7 @@ class DialogWrapper {
       if (!SUCCEEDED(_lastResult)) {
         return null;
       }
-      for (int index = 0; index < shellItemCountPtr.value; index++) {
+      for (int index = 0; index < shellItemCountPtr.value; index += 1) {
         shellItemResources.getItemAt(index, shellItemPtr);
         final IShellItem shellItem = IShellItem(shellItemPtr.cast());
         files.add(_shellWin32Api.getPathForShellItem(shellItem));

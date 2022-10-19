@@ -18,13 +18,13 @@ class FakeIFileOpenDialog extends Fake implements IFileOpenDialog {
 
   @override
   int release() {
-    _getReleaseCalledTimes++;
+    _getReleaseCalledTimes += 1;
     return S_OK;
   }
 
   @override
   int getResults(Pointer<Pointer<COMObject>> ppsi) {
-    _getResultsCalledTimes++;
+    _getResultsCalledTimes += 1;
     if (_shouldFail) {
       throw WindowsException(E_FAIL);
     }
@@ -37,19 +37,11 @@ class FakeIFileOpenDialog extends Fake implements IFileOpenDialog {
     _getReleaseCalledTimes = 0;
   }
 
-  int getResultsCalledTimes() {
-    return _getResultsCalledTimes;
-  }
+  int getResultsCalledTimes() => _getResultsCalledTimes;
 
-  int getReleaseCalledTimes() {
-    return _getReleaseCalledTimes;
-  }
+  int getReleaseCalledTimes() => _getReleaseCalledTimes;
 
-  void mockFailure() {
-    _shouldFail = true;
-  }
+  void mockFailure() => _shouldFail = true;
 
-  void mockSuccess() {
-    _shouldFail = false;
-  }
+  void mockSuccess() => _shouldFail = false;
 }

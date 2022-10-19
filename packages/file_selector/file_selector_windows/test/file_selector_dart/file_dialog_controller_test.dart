@@ -92,8 +92,9 @@ void main() {
     fileDialogController.getResults(ptrCOMObject);
     free(ptrCOMObject);
     expect(
-        fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getResultsCalledTimes(),
-        1);
+      fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getResultsCalledTimes(),
+      1,
+    );
   });
 
   test(
@@ -115,8 +116,9 @@ void main() {
     free(ptrCOMObject);
     expect(fileDialogController.getResults(ptrCOMObject), E_FAIL);
     expect(
-        fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getReleaseCalledTimes(),
-        1);
+      fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getReleaseCalledTimes(),
+      1,
+    );
   });
 
   test('getResults should call dialog release', () {
@@ -125,7 +127,8 @@ void main() {
     fileDialogController.getResults(ptrCOMObject);
     free(ptrCOMObject);
     expect(
-        fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getReleaseCalledTimes(),
-        1);
+      fakeIFileOpenDialogFactory.fakeIFileOpenDialog.getReleaseCalledTimes(),
+      1,
+    );
   });
 }

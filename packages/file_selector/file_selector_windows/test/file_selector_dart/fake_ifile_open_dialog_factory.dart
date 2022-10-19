@@ -18,7 +18,7 @@ class FakeIFileOpenDialogFactory extends Fake
 
   @override
   IFileOpenDialog from(IFileDialog dialog) {
-    _fromCalledTimes++;
+    _fromCalledTimes += 1;
     if (_shouldFail) {
       throw WindowsException(E_NOINTERFACE);
     }

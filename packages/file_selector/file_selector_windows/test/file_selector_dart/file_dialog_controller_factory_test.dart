@@ -15,7 +15,9 @@ void main() {
   final IFileDialog dialog = FakeIFileDialog();
 
   test('createController should return a FileDialogController', () {
-    expect(fileDialogControllerFactory.createController(dialog),
-        isA<FileDialogController>());
+    expect(
+      fileDialogControllerFactory.createController(dialog),
+      isA<FileDialogController>(),
+    );
   });
 }

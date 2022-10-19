@@ -5,8 +5,8 @@
 /// The kind of file dialog to show.
 enum DialogMode {
   /// Used for chosing files.
-  Open,
+  open,
 
   /// Used for chosing a directory to save a file.
-  Save
+  save
 }
