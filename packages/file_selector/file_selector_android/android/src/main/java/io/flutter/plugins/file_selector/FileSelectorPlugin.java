@@ -95,7 +95,9 @@ public class FileSelectorPlugin implements FlutterPlugin, FileSelectorApi, Activ
     if (activityState != null) {
       activityState.release();
       activityState = null;
-      delegate.clearCache();
+      if (delegate != null) {
+        delegate.clearCache();
+      }
     }
   }
 

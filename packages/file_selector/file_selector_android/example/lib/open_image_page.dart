@@ -50,7 +50,7 @@ class OpenImagePage extends StatelessWidget {
                 // ignore: deprecated_member_use
                 onPrimary: Colors.white,
               ),
-              child: const Text('Press to open an image file(png, jpg)'),
+              child: const Text('Press to open an image file (png, jpg)'),
               onPressed: () => _openImageFile(context),
             ),
           ],
